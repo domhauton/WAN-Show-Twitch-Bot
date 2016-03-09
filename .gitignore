@@ -1,0 +1,14 @@
+/.settings
+/bin
+/lib
+/out
+/src/resources
+/banlog.txt
+/settings
+/settings.txt
+/LTT IRC Bot.iml
+/chatlog.txt
+/timestamps.txt
+/.classpath
+/.project
+/.idea

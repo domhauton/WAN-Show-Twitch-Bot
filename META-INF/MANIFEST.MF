@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: pircbot.jar pircbot.jar bitlyj-2.0.0.jar
+Main-Class: Start
+
