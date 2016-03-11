@@ -25,7 +25,7 @@ public class MyBot extends PircBot {
             .appendSuffix(" day, ", " days, ")
             .appendHours()
             .appendSuffix(" hour ", " hours ")
-            .appendSeparatorIfFieldsAfter( "and " )
+            .appendSeparatorIfFieldsBefore( "and " )
             .appendMinutes()
             .appendSuffix(" minute.", " minutes.")
             .toFormatter();
@@ -502,6 +502,9 @@ public class MyBot extends PircBot {
         Interval intervalToShow = new Interval(DateTime.now(), showStartTime);
         Period periodTillShow = new Period(intervalToShow);
 		timeLastTTLsent = System.currentTimeMillis() / 1000;
+		if(periodTillShow.toStandardDays().getDays() > 5){
+			return null;
+		}
 		if(periodTillShow.toStandardSeconds().getSeconds() < 60){
 			return "The next WAN Show should begin soon.";
 		} else {
