@@ -41,7 +41,7 @@ public class MyBot extends PircBot {
 	private int repetitionSearch = 4;
 	boolean banASCII = true;
 	
-	private DateTime showStartTime = new DateTime(1426897800L, DateTimeZone.UTC); //The set time the show should start every week.
+	private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
 	private long timeLastTTLsent, timeLastLinusLink, timeLastHelp; //Saves the last time each help message was sent.
 	private HashMap<String, LinkedList<String[]>> messageHistory = new HashMap<>();
 	private LinkedList<String[]> mainMessageHistory = new LinkedList<>();
@@ -62,7 +62,7 @@ public class MyBot extends PircBot {
 	//Help message that is posted if someone asks for the help command.
 	private String helpMessage = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
 	
-	private List<String> commandWords = new ArrayList<String>(Arrays.asList("!ttl", "!lll", "!help"));
+	private List<String> commandWords = new ArrayList<String>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
 	//VIP Lists
 	//tier 0 is reserved for hosts.
 	//tier 1 is reserved for bot operators.
@@ -439,9 +439,11 @@ public class MyBot extends PircBot {
 	 *            Message sent.
 	 */
 	private void userCommands(String sender, String message) {
-		if (message.equalsIgnoreCase("TTL"))
-			timeTillLive();
-		else if (message.equalsIgnoreCase("LLL"))
+		if (message.equalsIgnoreCase("TTL") || message.equalsIgnoreCase("TTT")) {
+			String timeTillLive = getTimeTillLive();
+			if( !Objects.isNull(timeTillLive) )
+				sendMessageP( timeTillLive );
+		} else if (message.equalsIgnoreCase("LLL"))
 			lastLinusLink();
 		else if (message.equalsIgnoreCase("HELP"))
 			sendHelpMessage();
@@ -491,20 +493,20 @@ public class MyBot extends PircBot {
 	/**
 	 * Sends a Message to chat displaying how long till the show begins.
 	 */
-	private void timeTillLive() {
+	public String getTimeTillLive() {
 		if ((System.currentTimeMillis() / 1000) < (timeLastTTLsent + 40))
-			return;
+			return null;
 		while (showStartTime.getMillis() < System.currentTimeMillis() ) {
 			showStartTime = showStartTime.plusDays(7);
 		}
-        Interval intervalToShow = new Interval(showStartTime, DateTime.now());
+        Interval intervalToShow = new Interval(DateTime.now(), showStartTime);
         Period periodTillShow = new Period(intervalToShow);
-		if(periodTillShow.toStandardSeconds().getSeconds() < 60){
-			sendMessageP("The next WAN Show should begin soon.");
-		} else {
-            sendMessageP("The next WAN Show should begin in: " + periodTillShow.toString(periodFormatter));
-        }
 		timeLastTTLsent = System.currentTimeMillis() / 1000;
+		if(periodTillShow.toStandardSeconds().getSeconds() < 60){
+			return "The next WAN Show should begin soon.";
+		} else {
+            return "The next WAN Show should begin in: " + periodTillShow.toString(periodFormatter);
+        }
 	}
 
 	private void hostCommands(String sender, String message){
@@ -583,44 +585,14 @@ public class MyBot extends PircBot {
 	private void messageChecker(String sender, String message) {
 		for (int x = 0; x < this.wordBlacklist.size(); x++) {
 			if (message.contains(wordBlacklist.get(x))) {
-				ban(sender, message, 45, "Blacklisted word: " + wordBlacklist.get(x), "Autoban - Blacklisted word");
+				ban(sender, message, 45, "Blacklisted word: " + wordBlacklist.get(x), "Timeout - Blacklisted word");
 			}
 		}
 		for (int x = 0; x < this.messageBlacklist.size(); x++) {
 			if (message.equals(messageBlacklist.get(x))) {
-				ban(sender, message, 45, "Blacklisted message: " + messageBlacklist.get(x), "Autoban - Blacklisted Message");
+				ban(sender, message, 45, "Blacklisted message: " + messageBlacklist.get(x), "Timeout - Blacklisted Message");
 			}
 		}
-	}
-	
-	private void reportUser(String sender, String message){
-		message = message.toLowerCase();
-		message = message.replaceAll(" ", "_");
-		ArrayList<String> requestList;
-		requestList = banVotes.get(message);
-		if(requestList == null) requestList = new ArrayList<String>();
-		if(!requestList.contains(sender)) requestList.add(sender);
-		if(requestList.size() >= voteBanMax){
-			System.out.println("There is a timeout request for user: " + message);
-			String reportedBy = "";
-			for(int idx1 = 0; idx1 < requestList.size(); idx1++) reportedBy += requestList.get(idx1) + ", ";
-			System.out.println("Reported by: " + reportedBy);
-			sendMessageP("Thank you for reporting " + message);
-			LinkedList<String[]> userMessages = messageHistory.get(message);
-			if(userMessages == null)System.out.println("User does not exist.");
-			else{
-				int cap1 = userMessages.size();
-				int postingFrequency = (Integer.parseInt(userMessages.getFirst()[0]) - Integer.parseInt(userMessages.getLast()[0]))/cap1;
-				System.out.println("Average posting speed: " + String.valueOf(postingFrequency) + " seconds per message.");
-				if(cap1>messageCap) cap1 = messageCap;
-				for(int idx1 = 0; idx1 <= cap1; idx1++){
-					System.out.println(userMessages.get(idx1)[1]);
-				}
-			}
-			//requestList.clear(); 
-			requestList = new ArrayList<>(); //Remove the user to prevent further printouts.
-		}
-		banVotes.put(message, requestList);
 	}
 
 	/**
@@ -672,7 +644,7 @@ public class MyBot extends PircBot {
 			}
 		}
 		if((message.length() > 5) && (((float)validCharCount/(float)message.length()) < 0.1) && banASCII){
-			ban(sender, message, 20, "ASCII art ban", "Autoban - Excessive symbol use.");
+			ban(sender, message, 20, "ASCII art ban", "Timeout - Excessive symbol use.");
 		}
 		
 		if(userMessages == null) return;//This should never happen.
@@ -688,17 +660,17 @@ public class MyBot extends PircBot {
 			postingFrequency = userMessages.size()/postingFrequency;
 		}
 		if(postingFrequency > msgpersec){
-			ban(sender, message, 20, "More than " + msgpersec + " messages/second", "Autoban - Flooding Chat");
+			ban(sender, message, 20, "More than " + msgpersec + " messages/second", "Timeout - Flooding Chat");
 			return;
 		}
 		
 		if(commandWords.contains(message)) return;
 		if(findExactMessage(userMessages)){
-			ban(sender, message, 20, "Repeated Message Found", "Autoban - Message Repetition");
+			ban(sender, message, 20, "Repeated Message Found", "Timeout - Message Repetition");
 			return;
 		}
 		if(findExactMessage(mainMessageHistory)){
-			ban(sender, message, 20, "Repeated Message Found", "Autoban - Message Repetition");
+			ban(sender, message, 20, "Repeated Message Found", "Timeout - Message Repetition");
 			return;
 		}
 	}
