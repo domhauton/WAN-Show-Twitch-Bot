@@ -1,23 +1,31 @@
-import java.util.*;
-import java.io.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import channel.ChannelManager;
+import channel.message.ImmutableMessageList;
+import channel.message.TwitchMessage;
+import channel.users.TwitchUser;
+import channel.users.UserPermission;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jibble.pircbot.*;
-import org.joda.time.*;
+import org.jibble.pircbot.IrcException;
+import org.jibble.pircbot.PircBot;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Interval;
+import org.joda.time.Period;
 import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
-import channel.users.UserPermission;
-import channel.users.TwitchUser;
 import util.BitlyDecorator;
-import util.TwitchMessage;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class MyBot extends PircBot {
 	private Logger log = LogManager.getLogger();
@@ -39,6 +47,8 @@ public class MyBot extends PircBot {
 	private Set<String> blockedWords;
 	private Set<String> blockedMessage;
 
+	private String lastHostLink;
+
 	private int maxMsg = 20;
 	private int linkRepeatCountHost = 7;
 	private int linkRepeatCountMod = 5;
@@ -48,34 +58,20 @@ public class MyBot extends PircBot {
 	private float msgpersec = 2.5f;
 	private int longestSubStringAllowed = 13;
 	private int repetitionSearch = 4;
-	boolean banASCII = true;
 	
 	private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
 	private long timeLastTTLsent, timeLastLinusLink, timeLastHelp; //Saves the last time each help message was sent.
-	private HashMap<String, LinkedList<String[]>> messageHistory = new HashMap<>();
-	private LinkedList<String[]> mainMessageHistory = new LinkedList<>();
-	private HashMap<String, ArrayList<String>> banVotes = new HashMap<>();
-	private String alphabetList = "abcdefghijklmnopqrstuvwxyz.!@$%123454567890";
+	private ImmutableSet<Character> permittedChars;
 	private HashMap<String, Integer> banHistory = new HashMap<>();
-	//Sets up the file writers.
-	private FileWriter outSettings = null;
-	private FileWriter timeStampFile = null;
-	//To store the timestamps.
-	private HashMap<String, ArrayList<String>> timeStamps = new HashMap<>();
-	//Stores the actual show start time.
+
 	private long startOfShow;
 
-	//Help message that is posted if someone asks for the help command.
-	private String helpMessage = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
-	
-	private List<String> commandWords = new ArrayList<String>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
+    private List<String> commandWords = new ArrayList<>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
 	
 	private MessageSender msgSender;
-	private Thread msgSenderThread;
-	private MessageRepeater msgRep;
-	private Thread msgRepThread;
+    private MessageRepeater msgRep;
 
-	private BitlyDecorator bitlyDecorator;
+    private BitlyDecorator bitlyDecorator;
 
 	@Inject
 	public MyBot( @Named("twitch.irc.channel") String twitchChannelName,
@@ -88,6 +84,7 @@ public class MyBot extends PircBot {
         Objects.requireNonNull(bitlyDecorator);
         this.bitlyDecorator = bitlyDecorator;
 		channelManager = new ChannelManager();
+        permittedChars = ImmutableSet.copyOf("abcdefghijklmnopqrstuvwxyz.!@$%123454567890".chars().mapToObj(a -> (char) a).collect(Collectors.toList()));
 		this.blockedMessage = new HashSet<>();
 		this.blockedWords	= new HashSet<>();
 
@@ -109,10 +106,10 @@ public class MyBot extends PircBot {
 		startOfShow = System.currentTimeMillis()/1000;
 		loadSettings();
 		msgSender = new MessageSender(this, twitchChannelName);
-		msgSenderThread = new Thread(msgSender);
+        Thread msgSenderThread = new Thread(msgSender);
 		msgSenderThread.start();
 		msgRep = new MessageRepeater(msgSender);
-		msgRepThread = new Thread(msgRep);
+        Thread msgRepThread = new Thread(msgRep);
 		msgRepThread.start();
 	}
 
@@ -124,15 +121,15 @@ public class MyBot extends PircBot {
 		TwitchUser twitchUser = channelManager.getTwitchUserManager().getUser(hostname);
 		TwitchMessage twitchMessage = new TwitchMessage(message, twitchUser, DateTime.now(), channel, hostname);
 
-		addMsgToLog(sender, twitchMessage.getMessagePayload().toLowerCase());
+		channelManager.getMessageManager().getMessageBuffer().addMessageToBuffer(twitchMessage);
 
 		messageLog.info( "{} : {}", twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload().toLowerCase() ); //Stores the message in the chat log.
 		if(twitchMessage.getMessagePayload().startsWith("!")){//Checks if the message is a command
-			userCommands(sender, twitchMessage.getMessagePayload().substring(1)); //Checks if the message contains keywords for the bot.
+			userCommands(twitchMessage.getMessagePayload().substring(1)); //Checks if the message contains keywords for the bot.
 		}
 
 		if( twitchUser.getUserPermission().checkPermission( UserPermission.ChannelOwner ) )
-			hostCommands( twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload() );
+			hostCommands( twitchMessage );
 
 		if( twitchUser.getUserPermission().checkPermission( UserPermission.BotAdmin ) && message.startsWith("!bot") )
 			sendMessageP( botCommand( twitchMessage.getMessagePayload() ) );
@@ -142,38 +139,14 @@ public class MyBot extends PircBot {
 
 		if( !twitchUser.getUserPermission().checkPermission( UserPermission.ChannelModerator ) ) {
 			messageChecker( sender, twitchMessage.getMessagePayload().toLowerCase() ); //Checks if the message is allowed.
-			spamDetector( sender, twitchMessage.getMessagePayload().toLowerCase() );
+			spamDetector(twitchMessage);
 		}
-	}
-	
-	/**
-	 * Adds a message to the messageHistory hashtable
-	 * @param sender
-	 * @param message
-	 */
-	private void addMsgToLog(String sender, String message){
-		LinkedList<String[]> messagelist;
-		if(!messageHistory.containsKey(sender)){
-			messagelist = new LinkedList<>();
-		} else {
-			messagelist = messageHistory.get(sender);
-		}
-		String[] messageToStore = {String.valueOf(System.currentTimeMillis()/1000), message}; 
-		while(messagelist.size() > maxMsg-1) messagelist.removeLast();
-		messagelist.addFirst(messageToStore);
-		messageHistory.put(sender, messagelist);
-		//Add the message to the main history
-		String[] mainMessageToStore = {String.valueOf(System.currentTimeMillis()/1000), message, sender}; 
-		while(mainMessageHistory.size() > maxMsg*10) mainMessageHistory.removeLast();
-		mainMessageHistory.addFirst(mainMessageToStore);
 	}
 
 	/**
 	 * Used to add a word to the blacklist
-	 * 
-	 * @param word
 	 */
-	public String botCommand(String word) {
+    private String botCommand(String word) {
 		if(word.startsWith("!bot")){
 			word = word.substring(5); //remove the !bot section.
 			if(word.startsWith("blw")){
@@ -267,22 +240,12 @@ public class MyBot extends PircBot {
 				} else {
 					return "longestSubStringAllowed must be between 3 and 50";
 				}
-			}else if(sCommand[0].equalsIgnoreCase("repetitionSearch")){
+			} else if(sCommand[0].equalsIgnoreCase("repetitionSearch")){
 				if(newVal > 1 && newVal <= maxMsg-1){
 					repetitionSearch = (int) newVal;
 					return "repetitionSearch set to " + repetitionSearch;
 				} else {
 					return "repetitionSearch must be between 1 and maxMsg";
-				}
-			}else if(sCommand[0].equalsIgnoreCase("banASCII")){
-				if(newVal == 0){
-					banASCII = false;
-					return "Bot will no longer ban ASCII";
-				} else if(newVal == 1){
-					banASCII = true;
-					return "Bot will ban ASCII art.";
-				} else {
-					return "banASCII must be 0 or 1";
 				}
 			} else if(sCommand[0].equalsIgnoreCase("messageFrequency")){
                 if(newVal > 60){
@@ -310,25 +273,21 @@ public class MyBot extends PircBot {
 	 * @param word Word to add to blacklist
 	 * @return response message
 	 */
-	private String bLWord(String word){
-		word = word.toLowerCase();
-		if(word.length()<3) return "Word not long enough.";
-		if(blockedWords.contains(word))
-			return word + " already on blacklist.";
-		blockedWords.add(word);
-		int historyCheck = mainMessageHistory.size();
-		if (historyCheck > 200) historyCheck = 200;
-		String message, messageSender;
-		TwitchUser twitchUser;
-		for(int idx1 = 0; idx1 < historyCheck; idx1++){
-			message = mainMessageHistory.get(idx1)[1];
-			messageSender = mainMessageHistory.get(idx1)[2];
-			twitchUser = channelManager.getTwitchUserManager().getUser(messageSender);
-			if (message.contains(word) && !twitchUser.getUserPermission().checkPermission(UserPermission.ChannelModerator)) {
-				ban(messageSender, message, 45, "Blacklisted word: " + word, "");
-			}
-		}
-		return word + " added to blacklist. Previous messages breaching rule this will be banned.";
+	private String bLWord(final String word){
+        final String lowerCaseWord = word.toLowerCase();
+		if(lowerCaseWord.length()<3) return "Word not long enough.";
+		if(blockedWords.contains(lowerCaseWord))
+			return lowerCaseWord + " already on blacklist.";
+		blockedWords.add(lowerCaseWord);
+        channelManager.getMessageManager()
+                .getMessageBuffer()
+                .getMessageBufferSnapshot()
+                .getTwitchMessages()
+                .stream()
+                .filter(message -> !message.getSender().getUserPermission().checkPermission(UserPermission.ChannelModerator))
+                .filter(message -> message.getMessagePayload().toLowerCase().contains(lowerCaseWord))
+                .forEach(message -> ban(message.getSender().getUsername(), message.getMessagePayload(), 45, "Blacklisted word: " + word, ""));
+		return lowerCaseWord + " added to blacklist. Previous messages breaching rule this will be banned.";
 	}
 
 	/**
@@ -349,24 +308,17 @@ public class MyBot extends PircBot {
 	 * @param word Word to add to blacklist
 	 * @return response word
 	 */
-	private String bLMsg(String word){
-		word = word.toLowerCase();
-		if(blockedMessage.contains(word))
-			return word + " already on blacklist.";
-		blockedMessage.add(word);
-		int historyCheck = mainMessageHistory.size();
-		if (historyCheck > 100) historyCheck = 100;
-		String message, messageSender;
-		TwitchUser twitchUser;
-		for(int idx1 = 0; idx1 < historyCheck; idx1++){
-			message = mainMessageHistory.get(idx1)[1];
-			messageSender = mainMessageHistory.get(idx1)[2];
-			twitchUser = channelManager.getTwitchUserManager().getUser(messageSender);
-			if (message.equals(word) && !twitchUser.getUserPermission().checkPermission(UserPermission.ChannelModerator)) {
-				ban(messageSender, message, 45, "Blacklisted message: " + word, "");
-			}
-		}
-		return word + " added to message blacklist. Previous messages breaching this rule will be banned.";
+	private String bLMsg(final String word){
+        final String lowerCaseMessage = word.toLowerCase();
+		if(blockedMessage.contains(lowerCaseMessage))
+			return lowerCaseMessage + " already on blacklist.";
+		blockedMessage.add(lowerCaseMessage);
+        ImmutableMessageList channelMessageHistory = channelManager.getMessageManager().getMessageBuffer().getMessageBufferSnapshot();
+        channelMessageHistory.getTwitchMessages().stream()
+                .filter(message -> !message.getSender().getUserPermission().checkPermission(UserPermission.ChannelModerator))
+                .filter(message -> message.getMessagePayload().equalsIgnoreCase(lowerCaseMessage))
+                .forEach(message -> ban(message.getSender().getUsername(), message.getMessagePayload(), 45, "Blacklisted message: " + word, ""));
+		return lowerCaseMessage + " added to message blacklist. Previous messages breaching this rule will be banned.";
 	}
 	/**
 	 * Removes a word from the blacklist if possible. If not possible it is ignored.
@@ -404,9 +356,6 @@ public class MyBot extends PircBot {
 	
 	private String setStartTime(){
 		startOfShow = System.currentTimeMillis()/1000;
-		timeStamps = null;
-		System.gc();
-		timeStamps = new HashMap<>();
 		return "Show Start time has been set.";
 	}
 
@@ -415,7 +364,7 @@ public class MyBot extends PircBot {
 	 * @param message
 	 *            Message being sent.
 	 */
-	public void sendMessageP(String message) {
+    private void sendMessageP(String message) {
 		messageLog.info("Sending message: {}", message);
 		msgSender.sendMessage(message);
 	}
@@ -423,12 +372,10 @@ public class MyBot extends PircBot {
 	/**
 	 * Checks if the message sent is a current request
 	 * 
-	 * @param sender
-	 *            Message sender.
 	 * @param message
 	 *            Message sent.
 	 */
-	private void userCommands(String sender, String message) {
+	private void userCommands(String message) {
 		if (message.equalsIgnoreCase("TTL") || message.equalsIgnoreCase("TTT")) {
 			String timeTillLive = getTimeTillLive();
 			if( !Objects.isNull(timeTillLive) )
@@ -437,8 +384,6 @@ public class MyBot extends PircBot {
 			lastLinusLink();
 		else if (message.equalsIgnoreCase("HELP"))
 			sendHelpMessage();
-		else if (message.startsWith("ts"))
-			timeStamp(sender, message.substring(3)); 
 		else if (message.startsWith("uptime"))
 			uptime();
 	}
@@ -483,7 +428,7 @@ public class MyBot extends PircBot {
 	/**
 	 * Sends a Message to chat displaying how long till the show begins.
 	 */
-	public String getTimeTillLive() {
+	private String getTimeTillLive() {
 		if ((System.currentTimeMillis() / 1000) < (timeLastTTLsent + 40))
 			return null;
 		while (showStartTime.getMillis() < System.currentTimeMillis() ) {
@@ -499,16 +444,19 @@ public class MyBot extends PircBot {
         }
 	}
 
-	private void hostCommands(String sender, String message){
+	private void hostCommands(TwitchMessage twitchMessage){
+        final String message = twitchMessage.getMessagePayload();
 		//Repeats messages starting with HTTP:// & HTTPS://
 		if(message.startsWith("http://") || message.startsWith("https://")){
 			try{
-				message = bitlyDecorator.shortenURL(message);
+				final String shortenedURL = bitlyDecorator.shortenURL(message);
+                lastHostLink = shortenedURL;
+                IntStream.range(0, linkRepeatCountHost).forEach(ignore -> sendMessageP(shortenedURL));
 			} catch (Exception e){
-				//Do Nothing (BAD)
+                // Send un-shortened anyway.
+                IntStream.range(0, linkRepeatCountHost).forEach(ignore -> sendMessageP(message));
 			}
-			addMsgToLog("Host Link Log", message);
-			for (int x = 0; x < linkRepeatCountHost; x++) sendMessageP(message);
+
 		}	
 	}
 	
@@ -546,9 +494,9 @@ public class MyBot extends PircBot {
 	 */
 	private void lastLinusLink() {
 		if ((System.currentTimeMillis() / 1000) > (timeLastLinusLink + 30)) {
-			if (messageHistory.containsKey("Host Link Log")) {
-				String lastLink = messageHistory.get("Host Link Log").getFirst()[1];
-				sendMessageP("Linus' Last Link: " + lastLink);
+
+			if (lastHostLink != null) {
+				sendMessageP("Linus' Last Link: " + lastHostLink);
 			} else {
 				sendMessageP("Linus has not posted a link recently.");
 			}
@@ -561,16 +509,14 @@ public class MyBot extends PircBot {
 	 */
 	private void sendHelpMessage() {
 		if ((System.currentTimeMillis() / 1000) > (timeLastHelp + 30)) {
-			sendMessageP(helpMessage);
+            String helpMessage = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
+            sendMessageP(helpMessage);
 		}
 		timeLastHelp = System.currentTimeMillis() / 1000;
 	}
 
 	/**
 	 * Checks if a message is in the blacklist
-	 * 
-	 * @param sender
-	 * @param message
 	 */
 	private void messageChecker(String sender, String message) {
 		if( blockedWords.stream().anyMatch(message::contains) )
@@ -598,84 +544,26 @@ public class MyBot extends PircBot {
 	/**
 	 * If a sender sends the same message 3 times in a row they are timed out.
 	 */
-	private void spamDetector(String sender, String message) {
-		LinkedList<String[]> userMessages = messageHistory.get(sender);
-		
-		char[] messagecharArray = message.toLowerCase().toCharArray();
-		int validCharCount = 0;
-		for(char msgchar : messagecharArray){
-			if(alphabetList.contains(String.valueOf(msgchar))){
-				validCharCount++;
-			}
-		}
-		if((message.length() > 5) && (((float)validCharCount/(float)message.length()) < 0.1) && banASCII){
-			ban(sender, message, 20, "ASCII art ban", "Timeout - Excessive symbol use.");
-		}
-		
-		if(userMessages == null) return;//This should never happen.
-		if(userMessages.size() < 5) return;//If a user has <5 messages it ignores them.
-		int postingFrequency;
-		if(userMessages.size() > rPostVal){
-			postingFrequency = Integer.parseInt(userMessages.getFirst()[0]) - Integer.parseInt(userMessages.get(userMessages.size()-rPostVal)[0]);
-				if(postingFrequency == 0) postingFrequency++;
-			postingFrequency = rPostVal/postingFrequency;
-		} else {
-			postingFrequency = Integer.parseInt(userMessages.getFirst()[0]) - Integer.parseInt(userMessages.getLast()[0]);
-			if(postingFrequency == 0) postingFrequency++;
-			postingFrequency = userMessages.size()/postingFrequency;
-		}
-		if(postingFrequency > msgpersec){
-			ban(sender, message, 20, "More than " + msgpersec + " messages/second", "Timeout - Flooding Chat");
+	private void spamDetector(TwitchMessage twitchMessage) {
+        ImmutableMessageList userMessages = channelManager.getMessageManager()
+                .getMessageBuffer()
+                .getMessageBufferSnapshot()
+                .filterUser(twitchMessage.getSender());
+
+		if(twitchMessage.getMessagePayload().length() > 5 && twitchMessage.getLegalCharRatio(permittedChars) < 0.1)
+			ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "ASCII art ban", "Timeout - Excessive symbol use.");
+
+        assert userMessages != null;
+		if(userMessages.size() < 5) return; //If a user has <5 messages it ignores them. //TODO Improve Logic
+
+		if(userMessages.getTimeSpanSeconds() > msgpersec){
+			ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "More than " + msgpersec + " messages/second", "Timeout - Flooding Chat");
 			return;
 		}
 		
-		if(commandWords.contains(message)) return;
-		if(findExactMessage(userMessages)){
-			ban(sender, message, 20, "Repeated Message Found", "Timeout - Message Repetition");
-			return;
-		}
-		if(findExactMessage(mainMessageHistory)){
-			ban(sender, message, 20, "Repeated Message Found", "Timeout - Message Repetition");
-			return;
-		}
-	}
-	
-	private void timeStamp(String sender, String message){
-		ArrayList<String> currentList;
-		if(timeStamps.containsKey(sender)){
-			currentList = timeStamps.get(sender);
-		} else {
-			currentList = new ArrayList<String>();
-		}
-		if(message.equalsIgnoreCase("save") && timeStamps.containsKey(sender) && currentList.size()>0){
-			try{
-				timeStampFile.write("Time Stamps by: " + sender + "\r\n");
-				for (String timeStamp: currentList){
-					timeStampFile.write(timeStamp + "\r\n");
-				}
-				timeStampFile.write("\r\n");
-				timeStampFile.flush();
-				sendMessageP("You have submitted " + Integer.toString(currentList.size()) + " timestamps.");
-				timeStamps.remove(sender);
-			} catch(Exception e){
-				System.err.println("Failed to save timestamps");
-			}
-			return;
-		}
-		long timeIntoShow = (System.currentTimeMillis()/1000)-startOfShow;
-		String time = "";
-		long hours = timeIntoShow / (60 * 60);
-		if (0<=hours && hours<=9) time += "0";
-		time += Integer.toString((int) hours) + ":";
-		timeIntoShow -= (hours * 60 * 60);
-		long minutes = timeIntoShow / (60);
-		if (0<=minutes && minutes<=9)time += "0";
-		time += Integer.toString((int) minutes) + ":";
-		long seconds = timeIntoShow - (minutes * 60);
-		if (0<=seconds && seconds<=9)time += "0";
-		time += Integer.toString((int) seconds) + " ";
-		currentList.add(time + message);
-		timeStamps.put(sender, currentList);
+		if(commandWords.contains(twitchMessage.getMessagePayload())) return;
+		if(findExactMessage(twitchMessage, channelManager.getMessageManager().getMessageBuffer().getMessageBufferSnapshot().getTwitchMessages()))
+			ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "Timeout - Message Repetition");
 	}
     
 	/**
@@ -701,33 +589,18 @@ public class MyBot extends PircBot {
 		banHistory.put(sender, banLength);
 		actionLog.info("Timeout {} for {}s. Reason: {}. Message: {}", sender, banLength, reason, message);
 	}
-    
-	private boolean findExactMessage(LinkedList<String[]> messageList){
-		String lastMessage = messageList.getFirst()[1].replaceAll(" ", "");
-		for(int idx1 = 1; idx1<repetitionSearch+1; idx1++){
-			if(lastMessage.equals(messageList.get(idx1)[1].replaceAll(" ", ""))) return true;
-		}
-		return false;
-	}
-	
-	private String compareStrings(String s1, String s2){
-		String longestMatch = "";//Stores the longest match
-		int cnt1, tillEnd, tillEnd2, idx1, idx2;
-		for(idx1 = 0; idx1 < s1.length(); idx1++){
-			for(idx2 = 0; idx2 < s2.length(); idx2++){
-				cnt1 = 0; //Reset counter
-				//Find chars till the end.
-				tillEnd = s1.length()-idx1;
-				tillEnd2 = s2.length()-idx2;
-				if(tillEnd2 < tillEnd) tillEnd = tillEnd2;
-				//Loop forward through the strings while the chars are the same
-				while(cnt1<tillEnd && s1.charAt(idx1 +cnt1) == s2.charAt(idx2+cnt1)){
-					cnt1++;
-				}
-				//If the result is longer than the previous best put it in instead.
-				if(cnt1>longestMatch.length()) longestMatch = s1.substring(idx1, idx1+cnt1);
-			}
-		}
-		return longestMatch;
+
+    /**
+     * Checks if the given message payload exactly (ignoreCase,ignoreSpaces) matches any in the list
+     * @param currentMessage    Message to search for
+     * @param messageList       Message list to search in
+     * @return                  true if any payload matches
+     */
+	private boolean findExactMessage(TwitchMessage currentMessage, Collection<TwitchMessage> messageList){
+		String lastMessage = currentMessage.getMessagePayload().replaceAll(" ", "");
+		return messageList.stream()
+                .map(TwitchMessage::getMessagePayload)
+                .map(message -> message.replaceAll(" ", ""))
+                .anyMatch(lastMessage::equalsIgnoreCase);
 	}
 }
