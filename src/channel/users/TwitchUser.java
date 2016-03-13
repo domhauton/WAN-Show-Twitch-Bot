@@ -19,6 +19,13 @@ public class TwitchUser {
         return username;
     }
 
+    /**
+     * Checks if the username of the user is the same as the given string.
+     */
+    public boolean equalsUsername(String username) {
+        return this.getUsername().equalsIgnoreCase(username);
+    }
+
     public UserPermission getUserPermission() {
         return userPermission;
     }
@@ -27,8 +34,11 @@ public class TwitchUser {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         TwitchUser that = (TwitchUser) o;
+
         return username != null ? username.equals(that.username) : that.username == null;
+
     }
 
     @Override

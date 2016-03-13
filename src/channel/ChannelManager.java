@@ -1,8 +1,6 @@
 package channel;
 
-import channel.message.MessageManager;
 import channel.users.TwitchUserManager;
-import irc.IRCMessageRouter;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -10,20 +8,23 @@ import irc.IRCMessageRouter;
 public class ChannelManager {
     private TwitchUserManager       twitchUserManager;
     private MessageManager          messageManager;
+    private TwitchConnectionPool    twitchConnectionPool;
     private ChannelAnnouncer        channelAnnouncer;
 
     public ChannelManager() {
         twitchUserManager =     new TwitchUserManager();
         messageManager =        new MessageManager();
+        twitchConnectionPool =  new TwitchConnectionPool();
         channelAnnouncer =      new ChannelAnnouncer();
     }
 
     public ChannelManager(TwitchUserManager twitchUserManager,
                           MessageManager messageManager,
-                          IRCMessageRouter IRCMessageRouter,
+                          TwitchConnectionPool twitchConnectionPool,
                           ChannelAnnouncer channelAnnouncer) {
         this.twitchUserManager  = twitchUserManager;
         this.messageManager     = messageManager;
+        this.twitchConnectionPool = twitchConnectionPool;
         this.channelAnnouncer   = channelAnnouncer;
     }
 
@@ -33,6 +34,10 @@ public class ChannelManager {
 
     public MessageManager getMessageManager() {
         return messageManager;
+    }
+
+    public TwitchConnectionPool getTwitchConnectionPool() {
+        return twitchConnectionPool;
     }
 
     public ChannelAnnouncer getChannelAnnouncer() {
