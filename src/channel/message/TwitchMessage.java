@@ -1,7 +1,11 @@
-package util;
+package channel.message;
 
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import channel.users.TwitchUser;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -33,5 +37,11 @@ public class TwitchMessage {
         return messageDateTime;
     }
 
-
+    public double getLegalCharRatio(ImmutableSet<Character> permittedCharSet) {
+        long permittedCharCount = getMessagePayload().chars()
+                .mapToObj(a -> (char)a)
+                .filter(permittedCharSet::contains)
+                .count();
+        return ((double) permittedCharCount) / ((double) messagePayload.length());
+    }
 }

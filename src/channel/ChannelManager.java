@@ -1,5 +1,6 @@
 package channel;
 
+import channel.message.MessageManager;
 import channel.users.TwitchUserManager;
 
 /**
@@ -7,7 +8,7 @@ import channel.users.TwitchUserManager;
  */
 public class ChannelManager {
     private TwitchUserManager       twitchUserManager;
-    private MessageManager          messageManager;
+    private MessageManager messageManager;
     private TwitchConnectionPool    twitchConnectionPool;
     private ChannelAnnouncer        channelAnnouncer;
 
