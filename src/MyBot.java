@@ -1,7 +1,9 @@
 import java.util.*;
 import java.io.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import channel.ChannelManager;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -12,7 +14,10 @@ import org.joda.time.*;
 import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
+import channel.users.UserPermission;
+import channel.users.TwitchUser;
 import util.BitlyDecorator;
+import util.TwitchMessage;
 
 public class MyBot extends PircBot {
 	private Logger log = LogManager.getLogger();
@@ -29,6 +34,10 @@ public class MyBot extends PircBot {
             .appendMinutes()
             .appendSuffix(" minute.", " minutes.")
             .toFormatter();
+
+	private ChannelManager channelManager;
+	private Set<String> blockedWords;
+	private Set<String> blockedMessage;
 
 	private int maxMsg = 20;
 	private int linkRepeatCountHost = 7;
@@ -49,26 +58,17 @@ public class MyBot extends PircBot {
 	private String alphabetList = "abcdefghijklmnopqrstuvwxyz.!@$%123454567890";
 	private HashMap<String, Integer> banHistory = new HashMap<>();
 	//Sets up the file writers.
-	private FileWriter outBans = null;
 	private FileWriter outSettings = null;
 	private FileWriter timeStampFile = null;
 	//To store the timestamps.
 	private HashMap<String, ArrayList<String>> timeStamps = new HashMap<>();
 	//Stores the actual show start time.
 	private long startOfShow;
-	//Stores blacklisted words.
-	private List<String> wordBlacklist;
-	private List<String> messageBlacklist;
+
 	//Help message that is posted if someone asks for the help command.
 	private String helpMessage = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
 	
 	private List<String> commandWords = new ArrayList<String>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
-	//VIP Lists
-	//tier 0 is reserved for hosts.
-	//tier 1 is reserved for bot operators.
-	//tier 2 is reserved for elevated permission moderators.
-	//tier 3 is reserved for people immune to auto moderation.
-	private List<String> tier0, tier1, tier2, tier3;
 	
 	private MessageSender msgSender;
 	private Thread msgSenderThread;
@@ -76,9 +76,7 @@ public class MyBot extends PircBot {
 	private Thread msgRepThread;
 
 	private BitlyDecorator bitlyDecorator;
-	
-	private String blacklistFileName = "settings.txt";
-	
+
 	@Inject
 	public MyBot( @Named("twitch.irc.channel") String twitchChannelName,
 				  @Named("twitch.username") String twitchUsername,
@@ -89,8 +87,12 @@ public class MyBot extends PircBot {
         log.info("Starting bot for channel {} on server {}", twitchChannelName, ircServer);
         Objects.requireNonNull(bitlyDecorator);
         this.bitlyDecorator = bitlyDecorator;
-		this.setName(twitchUsername);
-		this.setMessageDelay(50);
+		channelManager = new ChannelManager();
+		this.blockedMessage = new HashSet<>();
+		this.blockedWords	= new HashSet<>();
+
+		setName(twitchUsername);
+		setMessageDelay(50);
 		log.info("Connecting to twitch irc servers at {}@{}:{}", twitchUsername, ircServer, ircPort);
 		try {
 			super.connect(ircServer, 6667, oAuthToken);
@@ -119,18 +121,28 @@ public class MyBot extends PircBot {
 	 */
 	public void onMessage(String channel, String sender, String login,
 			String hostname, String message) {
-		addMsgToLog(sender, message.toLowerCase());
-		messageLog.info("{} : {}", sender, message.toLowerCase()); //Stores the message in the chat log.
-		if(message.startsWith("!")){//Checks if the message is a command
-			userCommands(sender, message.substring(1)); //Checks if the message contains keywords for the bot.
+		TwitchUser twitchUser = channelManager.getTwitchUserManager().getUser(hostname);
+		TwitchMessage twitchMessage = new TwitchMessage(message, twitchUser, DateTime.now(), channel, hostname);
+
+		addMsgToLog(sender, twitchMessage.getMessagePayload().toLowerCase());
+
+		messageLog.info( "{} : {}", twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload().toLowerCase() ); //Stores the message in the chat log.
+		if(twitchMessage.getMessagePayload().startsWith("!")){//Checks if the message is a command
+			userCommands(sender, twitchMessage.getMessagePayload().substring(1)); //Checks if the message contains keywords for the bot.
 		}
-		if(tier0.contains(sender)) hostCommands(sender, message);
-		if(tier1.contains(sender) && message.startsWith("!bot")) sendMessageP(botCommand(message));
-		if(tier2.contains(sender)) operatorCommands(sender, message);
-		message = message.toLowerCase();
-		if(!tier3.contains(sender)){
-			messageChecker(sender, message); //Checks if the message is allowed.
-			spamDetector(sender, message);
+
+		if( twitchUser.getUserPermission().checkPermission( UserPermission.ChannelOwner ) )
+			hostCommands( twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload() );
+
+		if( twitchUser.getUserPermission().checkPermission( UserPermission.BotAdmin ) && message.startsWith("!bot") )
+			sendMessageP( botCommand( twitchMessage.getMessagePayload() ) );
+
+		if( twitchUser.getUserPermission().checkPermission( UserPermission.BotModerator ) )
+			operatorCommands( twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload() );
+
+		if( !twitchUser.getUserPermission().checkPermission( UserPermission.ChannelModerator ) ) {
+			messageChecker( sender, twitchMessage.getMessagePayload().toLowerCase() ); //Checks if the message is allowed.
+			spamDetector( sender, twitchMessage.getMessagePayload().toLowerCase() );
 		}
 	}
 	
@@ -142,7 +154,7 @@ public class MyBot extends PircBot {
 	private void addMsgToLog(String sender, String message){
 		LinkedList<String[]> messagelist;
 		if(!messageHistory.containsKey(sender)){
-			messagelist = new LinkedList<String[]>();
+			messagelist = new LinkedList<>();
 		} else {
 			messagelist = messageHistory.get(sender);
 		}
@@ -301,30 +313,32 @@ public class MyBot extends PircBot {
 	private String bLWord(String word){
 		word = word.toLowerCase();
 		if(word.length()<3) return "Word not long enough.";
-		if(wordBlacklist.contains(word))
+		if(blockedWords.contains(word))
 			return word + " already on blacklist.";
-		wordBlacklist.add(word);
+		blockedWords.add(word);
 		int historyCheck = mainMessageHistory.size();
 		if (historyCheck > 200) historyCheck = 200;
-		String message, sender;
+		String message, messageSender;
+		TwitchUser twitchUser;
 		for(int idx1 = 0; idx1 < historyCheck; idx1++){
 			message = mainMessageHistory.get(idx1)[1];
-			sender = mainMessageHistory.get(idx1)[2];
-			if (message.contains(word) && !tier3.contains(sender)) {
-				ban(sender, message, 45, "Blacklisted word: " + word, "");
+			messageSender = mainMessageHistory.get(idx1)[2];
+			twitchUser = channelManager.getTwitchUserManager().getUser(messageSender);
+			if (message.contains(word) && !twitchUser.getUserPermission().checkPermission(UserPermission.ChannelModerator)) {
+				ban(messageSender, message, 45, "Blacklisted word: " + word, "");
 			}
 		}
-		addSetting("-w " + word);
 		return word + " added to blacklist. Previous messages breaching rule this will be banned.";
 	}
+
 	/**
 	 * Removes a word from the blacklist if possible. If not possible it is ignored.
 	 * @param word word to remove.
 	 * @return response message.
 	 */
 	private String removeBLWord(String word){
-		if(wordBlacklist.contains(word)){
-			wordBlacklist.remove(word);
+		if(blockedWords.contains(word)){
+			blockedWords.remove(word);
 			return word + " removed from the blacklist.";
 		}
 		return word + " not found on the blacklist";
@@ -337,20 +351,21 @@ public class MyBot extends PircBot {
 	 */
 	private String bLMsg(String word){
 		word = word.toLowerCase();
-		if(messageBlacklist.contains(word))
+		if(blockedMessage.contains(word))
 			return word + " already on blacklist.";
-		messageBlacklist.add(word);
+		blockedMessage.add(word);
 		int historyCheck = mainMessageHistory.size();
 		if (historyCheck > 100) historyCheck = 100;
-		String message, sender;
+		String message, messageSender;
+		TwitchUser twitchUser;
 		for(int idx1 = 0; idx1 < historyCheck; idx1++){
 			message = mainMessageHistory.get(idx1)[1];
-			sender = mainMessageHistory.get(idx1)[2];
-			if (message.equals(word) && !tier3.contains(sender)) {
-				ban(sender, message, 45, "Blacklisted message: " + word, "");
+			messageSender = mainMessageHistory.get(idx1)[2];
+			twitchUser = channelManager.getTwitchUserManager().getUser(messageSender);
+			if (message.equals(word) && !twitchUser.getUserPermission().checkPermission(UserPermission.ChannelModerator)) {
+				ban(messageSender, message, 45, "Blacklisted message: " + word, "");
 			}
 		}
-		addSetting("-m" + word);
 		return word + " added to message blacklist. Previous messages breaching this rule will be banned.";
 	}
 	/**
@@ -359,56 +374,31 @@ public class MyBot extends PircBot {
 	 * @return response word.
 	 */
 	private String removeBLMsg(String word){
-		if(wordBlacklist.contains(word)){
-			wordBlacklist.remove(word);
+		if(blockedWords.contains(word)){
+			blockedWords.remove(word);
 			return word + " removed from the blacklist.";
 		}
 		return word + " not found on the blacklist";
 	}
 
 	private String addOperator(String command){
-		int tier;
 		String[] splitCommand = command.split(" ");
 		if (splitCommand.length != 2) return "Syntax Error.";
 		try{
-			tier = Integer.parseInt(splitCommand[0]);
-			switch(tier){
-			case 0:
-				if(!tier0.contains(splitCommand[1])) tier0.add(splitCommand[1]);
-				if(!tier1.contains(splitCommand[1])) tier1.add(splitCommand[1]);
-				if(!tier2.contains(splitCommand[1])) tier2.add(splitCommand[1]);
-				if(!tier3.contains(splitCommand[1])) tier3.add(splitCommand[1]);
-				addSetting("-o 0 " + splitCommand[1]);
-				return splitCommand[1] + " added to tier0";
-			case 1:
-				if(!tier1.contains(splitCommand[1])) tier1.add(splitCommand[1]);
-				if(!tier2.contains(splitCommand[1])) tier2.add(splitCommand[1]);
-				if(!tier3.contains(splitCommand[1])) tier3.add(splitCommand[1]);
-				addSetting("-o 1 " + splitCommand[1]);
-				return splitCommand[1] + " added to tier1";
-			case 2:
-				if(!tier2.contains(splitCommand[1])) tier2.add(splitCommand[1]);
-				if(!tier3.contains(splitCommand[1])) tier3.add(splitCommand[1]);
-				addSetting("-o 2 " + splitCommand[1]);
-				return splitCommand[1] + " added to tier2";
-			case 3:
-				if(!tier3.contains(splitCommand[1])) tier3.add(splitCommand[1]);
-				addSetting("-o 3 " + splitCommand[1]);
-				return splitCommand[1] + " added to tier3";
-			default:
-				return "Error: tier" + splitCommand[0] + " does not exist.";
-			}
-		}catch(Exception e){
+			String tier = splitCommand[0];
+			String username = splitCommand[1];
+			UserPermission userPermission = UserPermission.valueOf(tier);
+			TwitchUser twitchUser = new TwitchUser(username, userPermission);
+			channelManager.getTwitchUserManager().addUser(twitchUser);
+			return String.format("Added %s to %s", twitchUser.getUsername(), twitchUser.getUserPermission().toString());
+		} catch(Exception e){
 			return "Syntax Error.";
 		}
 	}
 	
 	private String rmOperator(String name){
-		if(tier0.contains(name) && tier0.size() == 1) return "You cannot remove the last tier0 operator";
-		tier3.remove(name);
-		tier2.remove(name);
-		tier1.remove(name);
-		tier0.remove(name);
+		TwitchUser twitchUser = new TwitchUser(name, UserPermission.ChannelUser);
+		channelManager.getTwitchUserManager().addUser(twitchUser);
 		return name + " is no longer an operator.";
 	}
 	
@@ -567,7 +557,7 @@ public class MyBot extends PircBot {
 	}
 
 	/**
-	 * Sends a command list to the users
+	 * Sends a command list to the channel.users
 	 */
 	private void sendHelpMessage() {
 		if ((System.currentTimeMillis() / 1000) > (timeLastHelp + 30)) {
@@ -583,51 +573,26 @@ public class MyBot extends PircBot {
 	 * @param message
 	 */
 	private void messageChecker(String sender, String message) {
-		for (int x = 0; x < this.wordBlacklist.size(); x++) {
-			if (message.contains(wordBlacklist.get(x))) {
-				ban(sender, message, 45, "Blacklisted word: " + wordBlacklist.get(x), "Timeout - Blacklisted word");
-			}
-		}
-		for (int x = 0; x < this.messageBlacklist.size(); x++) {
-			if (message.equals(messageBlacklist.get(x))) {
-				ban(sender, message, 45, "Blacklisted message: " + messageBlacklist.get(x), "Timeout - Blacklisted Message");
-			}
-		}
+		if( blockedWords.stream().anyMatch(message::contains) )
+			ban(sender, message, 45, "Matched blacklisted word", "Timeout - Blacklisted word");
+		if( blockedMessage.stream().anyMatch(message::equalsIgnoreCase) )
+			ban(sender, message, 45, "Matched blacklisted message", "Timeout - Blacklisted Message");
 	}
 
 	/**
 	 * Generates the blacklist
 	 */
 	private void loadSettings() {
-        String[] wordBlacklistPrimitive = {"nigger", "nigga", "nazi", "strawpoll.me"};
-		wordBlacklist = Arrays.stream(wordBlacklistPrimitive).collect(Collectors.toList());
-		messageBlacklist = new ArrayList<>();
-		String[] streamerArray = {"slick_pc", "linustech", "luke_lafr"};
-        tier0 = Arrays.stream(streamerArray).collect(Collectors.toList());
-        String[] opArray = {"nicklmg", "lttghost"};
-		tier1 = Arrays.stream(opArray).collect(Collectors.toList());
-		tier2 = new ArrayList<>();
-        String[] modArray = {"airdeano", "alpenwasser", "antvenom", "blade_of_grass", "colonel_mortis", "daveholla", "dezeltheintern", "dvoulcaris", "ecs_community", "ericlee30", "foxhound590", "glenwing", "ixi_your_face", "linusbottips", "looneyschnitzel", "ltt_bot", "mg2r", "prolemur", "rizenfrmtheashes",  "str_mape", "wh1skers", "whaler_99", "windspeed36", "woodenmarker", "wrefur"};
-		tier3 = Arrays.stream(modArray).collect(Collectors.toList());
-	}
-	
-	private void addSetting(String setting){
-		try{
-            InputStream inputStream;
-            if((inputStream = getClass().getResourceAsStream(blacklistFileName)) == null)
-                throw new FileNotFoundException();
-            Scanner scanner = new Scanner(inputStream);
-			while(scanner.hasNextLine()){
-				if(scanner.nextLine().equals(setting))
-					scanner.close();
-					return;
-			}
-			scanner.close();
-			outSettings.write(setting + "\r\n");
-			outSettings.flush();
-		} catch (IOException e) {
-			System.err.println("Failed to add setting to file.");
-		}
+		blockedWords.addAll( Stream.of( "nigger", "nigga", "nazi", "strawpoll.me" ).collect(Collectors.toList()) );
+        Stream.of( "slick_pc", "linustech", "luke_lafr")
+			.map(username -> new TwitchUser(username, UserPermission.ChannelOwner))
+			.forEach(user -> channelManager.getTwitchUserManager().addUser(user));
+		Stream.of( "nicklmg", "lttghost" )
+			.map(username -> new TwitchUser(username, UserPermission.BotAdmin))
+			.forEach(user -> channelManager.getTwitchUserManager().addUser(user));
+		Stream.of( "airdeano", "alpenwasser", "antvenom", "blade_of_grass", "colonel_mortis", "daveholla", "dezeltheintern", "dvoulcaris", "ecs_community", "ericlee30", "foxhound590", "glenwing", "ixi_your_face", "linusbottips", "looneyschnitzel", "ltt_bot", "mg2r", "prolemur", "rizenfrmtheashes",  "str_mape", "wh1skers", "whaler_99", "windspeed36", "woodenmarker", "wrefur" )
+			.map(username -> new TwitchUser(username, UserPermission.ChannelModerator))
+			.forEach(user -> channelManager.getTwitchUserManager().addUser(user));
 	}
 
 	/**
