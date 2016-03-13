@@ -7,17 +7,17 @@
 \section{Host Commands}
 Hosts (Tier0) have no special commands. Links posted by hosts will can be used by the !lll command and if a host's post contains "http://" or "https://" the link will be repeated by the bot. 
 \section{Bot Operator Commands}
-Commands for Tier1 users and above.
+Commands for Tier1 channel.users and above.
 \subsection{Blacklisting Words}
 To black list a word use the syntax \emph{"!bot blw word"} where "word" would be blacklisted. The bot will inform you if the word is already on the blacklist and if it has been added successfully.
 \subsection{Removing BlackListed Words}
 To remove a blacklisted word use the command \emph{"!bot rmblw word"} where "word" would be removed from the blacklist. The bot will inform you if the word was actually on the blacklist or if the the word was not found on the blacklist.
-\subsection{Making users an Operator}
+\subsection{Making channel.users an Operator}
 There are 3 tiers of operators.
 \begin{itemize}
 \item {Tier0 - Used for the channel hosts}
 \item {Tier1 - Used for bot operators}
-\item {Tier2 - Gives users bot functionality}
+\item {Tier2 - Gives channel.users bot functionality}
 \item {Tier3 - Used for IRC chat moderators, gives them immunity from bot bans}
 \end{itemize}
 To make someone an operator use the command \emph{"!bot addop tier\# username"}. The tier must be 0 - 3 and the username must be lowercase.
@@ -40,10 +40,10 @@ longestSubStringAllowed & Longest common substring allowed in messages.\\ \hline
 repetitionSearch & How many messages are checked for common substrings.\\ \hline
 \end{tabular}
 \section{Bot Moderator Commands}
-Commands for Tier2 users and above
+Commands for Tier2 channel.users and above
 \subsection{Repeating Links}
-Tier0 users only need to post a link (a message containing "http://" or "https://"\\
-Other users need to use the command \emph{"!link url"}.
+Tier0 channel.users only need to post a link (a message containing "http://" or "https://"\\
+Other channel.users need to use the command \emph{"!link url"}.
 \section{User Commands}
 Commands for any user.
 \subsection{Last Linus Link}
