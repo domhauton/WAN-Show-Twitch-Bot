@@ -7,10 +7,10 @@ public class MessageSender implements Runnable {
 
 	private LinkedList<String> messageList;
 	private LinkedList<Integer> timeList;
-	private MyBot bot;
+	private BotController bot;
 	private String channel;
 
-	public MessageSender(MyBot bot, String channel) {
+	public MessageSender(BotController bot, String channel) {
 		this.bot = bot;
 		this.channel = channel;
 		messageList = new LinkedList<>();
