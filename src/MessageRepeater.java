@@ -1,18 +1,22 @@
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
-public class MessageRepeater implements Runnable {
+public class MessageRepeater {
     private Logger log = LogManager.getLogger();
     private Random randomNumberGenerator = new Random();
     private MessageSender messageSender;
     private ImmutableList<String> messages;
     private int timeSec = 210;
     private boolean on = true;
-
 
     public MessageRepeater(MessageSender messageSender) {
         this.messageSender = messageSender;
@@ -25,11 +29,13 @@ public class MessageRepeater implements Runnable {
                 .build();
     }
 
-    @Override
-    public void run() {
+    public void start() {
         log.info("Running repeater scheduler");
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(this::sendRandomMessage, 0L, timeSec, TimeUnit.SECONDS);
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("message-repeater-thread-%d")
+                .build();
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
+        scheduledExecutorService.scheduleAtFixedRate(this::sendRandomMessage, 60L, timeSec, TimeUnit.SECONDS);
     }
 
     private void sendRandomMessage() {

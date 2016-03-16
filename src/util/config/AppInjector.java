@@ -1,11 +1,15 @@
+package util.config;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import util.DateTimeUtil;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -16,14 +20,26 @@ import java.util.Properties;
  */
 public class AppInjector extends AbstractModule{
 
-    private static final String propertiesFileName = "bot.properties";
-    private static final Logger log = LogManager.getLogger();
+    private Environment environment;
+    private Logger log = LogManager.getLogger();
+
+    public AppInjector(Environment environment) {
+        this.environment = environment;
+    }
 
     @Override
     protected void configure() {
-        URL propertyResource = AppInjector.class.getResource(propertiesFileName);
+        Properties loadedProperties = loadProperties(environment.getConfigFileName());
+        Names.bindProperties(binder(), loadedProperties);
+
+        bind(DateTimeUtil.class).asEagerSingleton();
+    }
+
+    private Properties loadProperties(String filename) {
+
+        URL propertyResource = AppInjector.class.getClassLoader().getResource(filename);
         if(propertyResource == null) {
-            log.fatal("Failed to load properties file: {}", propertiesFileName);
+            log.fatal("Failed to find resource for properties file: {}", filename);
             System.exit(1);
         }
         String fullFileName = propertyResource.getFile();
@@ -31,14 +47,14 @@ public class AppInjector extends AbstractModule{
         try( InputStream propertyInputStream = propertyResource.openStream() ) {
             Properties properties = new Properties();
             properties.load(propertyInputStream);
-            Names.bindProperties(binder(), properties);
+            log.info("Success loading: {}", fullFileName);
+            return properties;
         } catch (FileNotFoundException e) {
             log.error("Missing properties file in: {}", fullFileName);
-            System.exit(1);
+            throw new UncheckedIOException(e);
         } catch (IOException e) {
-            log.error("IOException {} while opening properties file {}", e.getCause(), propertiesFileName);
-            System.exit(1);
+            log.error("IOException {} while opening properties file {}", e.getCause(), filename);
+            throw new UncheckedIOException(e);
         }
-        log.info("Success loading: {}", fullFileName);
     }
 }
