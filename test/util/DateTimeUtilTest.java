@@ -11,8 +11,6 @@ import util.config.Environment;
 
 /**
  * Created by Dominic Hauton on 16/03/2016.
- *
- * Test for Date Time Util libraries
  */
 public class DateTimeUtilTest {
 

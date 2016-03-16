@@ -1,10 +1,7 @@
 package util.config;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
-import irc.util.EventBuffer;
-import irc.util.EventBufferFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.DateTimeUtil;
@@ -36,8 +33,6 @@ public class AppInjector extends AbstractModule{
         Names.bindProperties(binder(), loadedProperties);
 
         bind(DateTimeUtil.class).asEagerSingleton();
-        install(new FactoryModuleBuilder()
-                .build(EventBufferFactory.class));
     }
 
     private Properties loadProperties(String filename) {
