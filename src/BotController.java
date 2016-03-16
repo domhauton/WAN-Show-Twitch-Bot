@@ -13,12 +13,10 @@ import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.PircBot;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Interval;
 import org.joda.time.Period;
 import org.joda.time.format.ISODateTimeFormat;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 import util.BitlyDecorator;
+import util.DateTimeUtil;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,21 +25,20 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class MyBot extends PircBot {
+public class BotController extends PircBot {
+    private String twitchUsername;
+    private String twitchChannelName;
+    private String oAuthToken;
+    private String ircServer;
+    private Integer ircPort;
+
+
 	private Logger log = LogManager.getLogger();
 	private Logger messageLog = LogManager.getLogger("Message Log");
 	private Logger actionLog = LogManager.getLogger("Action Log");
 
-    PeriodFormatter periodFormatter = new PeriodFormatterBuilder()
-            .printZeroNever()
-            .appendDays()
-            .appendSuffix(" day, ", " days, ")
-            .appendHours()
-            .appendSuffix(" hour ", " hours ")
-            .appendSeparatorIfFieldsBefore( "and " )
-            .appendMinutes()
-            .appendSuffix(" minute.", " minutes.")
-            .toFormatter();
+    private DateTimeUtil dateTimeUtil;
+    private MessageRepeater messageRepeater;
 
 	private ChannelManager channelManager;
 	private Set<String> blockedWords;
@@ -60,58 +57,67 @@ public class MyBot extends PircBot {
 	private int repetitionSearch = 4;
 	
 	private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
-	private long timeLastTTLsent, timeLastLinusLink, timeLastHelp; //Saves the last time each help message was sent.
+    private DateTime commandTimeTTL, commandTimeLLL, commandTimeHelp, streamStartTime;
 	private ImmutableSet<Character> permittedChars;
 	private HashMap<String, Integer> banHistory = new HashMap<>();
-
-	private long startOfShow;
 
     private List<String> commandWords = new ArrayList<>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
 	
 	private MessageSender msgSender;
-    private MessageRepeater msgRep;
 
     private BitlyDecorator bitlyDecorator;
 
 	@Inject
-	public MyBot( @Named("twitch.irc.channel") String twitchChannelName,
-				  @Named("twitch.username") String twitchUsername,
-				  @Named("twitch.oauth.token") String oAuthToken,
-				  @Named("twitch.irc.server") String ircServer,
-				  @Named("twitch.irc.port") Integer ircPort,
-				  BitlyDecorator bitlyDecorator) {
+	public BotController(@Named("twitch.irc.channel") String twitchChannelName,
+                         @Named("twitch.username") String twitchUsername,
+                         @Named("twitch.oauth.token") String oAuthToken,
+                         @Named("twitch.irc.server") String ircServer,
+                         @Named("twitch.irc.port") Integer ircPort,
+                         BitlyDecorator bitlyDecorator,
+                         DateTimeUtil dateTimeUtil) {
         log.info("Starting bot for channel {} on server {}", twitchChannelName, ircServer);
-        Objects.requireNonNull(bitlyDecorator);
-        this.bitlyDecorator = bitlyDecorator;
 		channelManager = new ChannelManager();
         permittedChars = ImmutableSet.copyOf("abcdefghijklmnopqrstuvwxyz.!@$%123454567890".chars().mapToObj(a -> (char) a).collect(Collectors.toList()));
 		this.blockedMessage = new HashSet<>();
 		this.blockedWords	= new HashSet<>();
 
+        this.bitlyDecorator = bitlyDecorator;
+        this.dateTimeUtil = dateTimeUtil;
+
+
+        this.twitchChannelName = twitchChannelName;
+        this.twitchUsername = twitchUsername;
+        this.oAuthToken = oAuthToken;
+        this.ircServer = ircServer;
+        this.ircPort = ircPort;
+
 		setName(twitchUsername);
 		setMessageDelay(50);
-		log.info("Connecting to twitch irc servers at {}@{}:{}", twitchUsername, ircServer, ircPort);
-		try {
-			super.connect(ircServer, 6667, oAuthToken);
-			super.joinChannel(twitchChannelName);
-		} catch (IOException e) {
-			log.fatal("Failed to connect to twitch due to IOException: {}", e.getMessage());
-			throw new UncheckedIOException(e);
-		} catch (IrcException e) {
-			log.fatal("Failed to connect to twitch due to IRCException: {}", e.getMessage());
-			throw new UncheckedExecutionException(e);
-		}
-        log.info("Connected successfully to {}@{}:{}", twitchUsername, ircServer, ircPort);
-		this.timeLastTTLsent = this.timeLastLinusLink = this.timeLastHelp = 0;
-		startOfShow = System.currentTimeMillis()/1000;
+
+        streamStartTime = commandTimeTTL = commandTimeLLL = commandTimeHelp = DateTime.now();
+
 		loadSettings();
 		msgSender = new MessageSender(this, twitchChannelName);
         Thread msgSenderThread = new Thread(msgSender);
 		msgSenderThread.start();
-		msgRep = new MessageRepeater(msgSender);
-        Thread msgRepThread = new Thread(msgRep);
-		msgRepThread.start();
+        this.messageRepeater = new MessageRepeater(msgSender);
 	}
+
+    public void connect(){
+        log.info("Connecting to twitch irc servers at {}@{}:{}", twitchUsername, ircServer, ircPort);
+        try {
+            super.connect(ircServer, 6667, oAuthToken);
+            super.joinChannel(twitchChannelName);
+        } catch (IOException e) {
+            log.fatal("Failed to connect to twitch due to IOException: {}", e.getMessage());
+            throw new UncheckedIOException(e);
+        } catch (IrcException e) {
+            log.fatal("Failed to connect to twitch due to IRCException: {}", e.getMessage());
+            throw new UncheckedExecutionException(e);
+        }
+        log.info("Connected successfully to {}@{}:{}", twitchUsername, ircServer, ircPort);
+        this.messageRepeater.start();
+    }
 
 	/**
 	 * How the bot will react to messages received.
@@ -249,13 +255,13 @@ public class MyBot extends PircBot {
 				}
 			} else if(sCommand[0].equalsIgnoreCase("messageFrequency")){
                 if(newVal > 60){
-                	msgRep.setFrequency((int) newVal);
+                	messageRepeater.setFrequency((int) newVal);
 					return "messageFrequency set to " + (int) newVal;
 				} else {
 					return "messageFrequency must be more than 60";
 				}
 			} else if(sCommand[0].equalsIgnoreCase("messageRepToggle")){
-                msgRep.toggleState();
+                messageRepeater.toggleState();
                 return "messageRepetition Toggled.";
 			} else if(sCommand[0].equalsIgnoreCase("addStartTime")){
                     showStartTime = showStartTime.plusSeconds((int) newVal);
@@ -355,7 +361,7 @@ public class MyBot extends PircBot {
 	}
 	
 	private String setStartTime(){
-		startOfShow = System.currentTimeMillis()/1000;
+		streamStartTime = DateTime.now();
 		return "Show Start time has been set.";
 	}
 
@@ -389,61 +395,42 @@ public class MyBot extends PircBot {
 	}
 
 	private void uptime(){
-		if ((System.currentTimeMillis() / 1000) < (timeLastTTLsent + 40))
-			return;
-		timeLastTTLsent = ((System.currentTimeMillis()/1000));
-		String message = "Linus last went live: ";
-		long seconds = (System.currentTimeMillis()/1000) - startOfShow;
-		if(seconds < 60){
-			sendMessageP("Linus last went live in the last minute.");
-			timeLastTTLsent = System.currentTimeMillis() / 1000;
-			return;
-		}
-		if(seconds > 60*60*72)return;
-		long days = seconds / (60 * 60 * 24);
-		if (days == 6)
-			return;
-		else if (days == 1)
-			message += "1 day ";
-		else if (days != 0)
-			message += Integer.toString((int) days) + " days ";
-		seconds -= (days * 60 * 60 * 24);
-		long hours = seconds / (60 * 60);
-		if (hours == 1)
-			message += "1 hour ";
-		else if (hours != 0)
-			message += Integer.toString((int) hours) + " hours ";
-		seconds -= (hours * 60 * 60);
-		long minutes = seconds / (60);
-		if (hours > 1 && minutes > 1)
-			message += "and ";
-		if (minutes == 1)
-			message += "1 minute";
-		else if (minutes != 0)
-			message += Integer.toString((int) minutes) + " minutes ";
-		sendMessageP(message + " ago.");
-		timeLastTTLsent = System.currentTimeMillis() / 1000;
-	}
+        if( new Period(commandTimeTTL, DateTime.now()).toStandardSeconds().getSeconds() < 40 ){
+            return;
+        }
+
+        Period periodSinceStreamStart = new Period(streamStartTime, DateTime.now());
+
+        if (periodSinceStreamStart.toStandardSeconds().getSeconds() < 60){
+            sendMessageP("Linus last went live in the last minute.");
+        } else {
+            sendMessageP("Linus last went live: " + dateTimeUtil.periodToString(periodSinceStreamStart) + " ago.");
+        }
+
+        commandTimeTTL = DateTime.now();
+    }
 	
 	/**
 	 * Sends a Message to chat displaying how long till the show begins.
 	 */
 	private String getTimeTillLive() {
-		if ((System.currentTimeMillis() / 1000) < (timeLastTTLsent + 40))
-			return null;
-		while (showStartTime.getMillis() < System.currentTimeMillis() ) {
+        if( new Period(commandTimeTTL, DateTime.now()).toStandardSeconds().getSeconds() < 40 ) {
+            return null;
+        }
+
+        commandTimeTTL = DateTime.now();
+        //TODO Tacky Solution - Could crash
+		while (showStartTime.isBeforeNow()) {
 			showStartTime = showStartTime.plusDays(7);
 		}
-        Interval intervalToShow = new Interval(DateTime.now(), showStartTime);
-        Period periodTillShow = new Period(intervalToShow);
-		timeLastTTLsent = System.currentTimeMillis() / 1000;
-		if(periodTillShow.toStandardDays().getDays() > 5){
-			return null;
-		}
-		if(periodTillShow.toStandardSeconds().getSeconds() < 60){
+        Period periodTillShow = new Period(DateTime.now(), showStartTime);
+
+        if(periodTillShow.toStandardDays().getDays() > 5){
+            return null;
+        } else if(periodTillShow.toStandardSeconds().getSeconds() < 60){
 			return "The next WAN Show should begin soon.";
 		} else {
-            return "The next WAN Show should begin in: " + periodTillShow.toString(periodFormatter);
+            return "The next WAN Show should begin in: " + dateTimeUtil.periodToString(periodTillShow);
         }
 	}
 
@@ -465,9 +452,9 @@ public class MyBot extends PircBot {
 	
 	private void operatorCommands(String sender, String message){
 		if(message.startsWith("!link")) linkRepeater(sender, message.substring(6));
-		else if(message.startsWith("!loop add")) msgRep.addMessage(message.substring(10));
-		else if(message.startsWith("!loop removeLast")) msgRep.clearLast();
-		else if(message.startsWith("!loop removeAll")) msgRep.clearAll();
+		else if(message.startsWith("!loop add")) messageRepeater.addMessage(message.substring(10));
+		else if(message.startsWith("!loop removeLast")) messageRepeater.clearLast();
+		else if(message.startsWith("!loop removeAll")) messageRepeater.clearAll();
 	}
 	
 	/**
@@ -483,7 +470,7 @@ public class MyBot extends PircBot {
 			try {
 				message = bitlyDecorator.shortenURL(message);
 			} catch (Exception e) {
-				//Do Nothing (BAD)
+				log.warn("Failed to convert bitly link: {}", message);
 			}
 		}
 		String newMessage = sender + " : " + message;
@@ -496,26 +483,25 @@ public class MyBot extends PircBot {
 	 * Sends the last link Linus sent out;
 	 */
 	private void lastLinusLink() {
-		if ((System.currentTimeMillis() / 1000) > (timeLastLinusLink + 30)) {
-
+        if( new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40 ){
 			if (lastHostLink != null) {
 				sendMessageP("Linus' Last Link: " + lastHostLink);
 			} else {
 				sendMessageP("Linus has not posted a link recently.");
 			}
+            commandTimeLLL = DateTime.now();
 		}
-		timeLastLinusLink = System.currentTimeMillis() / 1000;
 	}
 
 	/**
 	 * Sends a command list to the channel.users
 	 */
 	private void sendHelpMessage() {
-		if ((System.currentTimeMillis() / 1000) > (timeLastHelp + 30)) {
+        if( new Period(commandTimeHelp, DateTime.now()).toStandardSeconds().getSeconds() > 30 ){
             String helpMessage = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
             sendMessageP(helpMessage);
+            commandTimeHelp = DateTime.now();
 		}
-		timeLastHelp = System.currentTimeMillis() / 1000;
 	}
 
 	/**
