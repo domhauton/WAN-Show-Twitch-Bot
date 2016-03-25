@@ -1,7 +1,7 @@
 package irc.sender;
 
 import com.google.inject.name.Named;
-import irc.util.EventBufferFactory;
+import irc.util.AsyncEventBuffer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,9 +20,14 @@ public class PrivateMessageSender extends IRCConnection {
     /**
      * @return return false if message could not be sent due to full queue
      */
-    public boolean sendWhisper(String recipient, String payload){
+    public boolean trySendWhisper(String recipient, String payload){
         String formattedMessage = String.format(".w %s %s", recipient, payload);
         return trySendMessage(whisperChannel, formattedMessage);
+    }
+
+    public void sendWhisperAsync(String recipient, String payload){
+        String formattedMessage = String.format(".w %s %s", recipient, payload);
+        sendMessageAsync(whisperChannel, formattedMessage);
     }
 
     @Inject
@@ -33,9 +38,8 @@ public class PrivateMessageSender extends IRCConnection {
             @Named("twitch.irc.whisper.server") String ircServer,
             @Named("twitch.irc.whisper.port") Integer ircPort,
             @Named("twitch.irc.whisper.eventCountPerWindow") Integer maxEventCountPerWindow,
-            @Named("twitch.irc.whisper.eventCountWindowSize") Integer windowSizeSeconds,
-            EventBufferFactory eventBufferFactory) {
-        super(twitchUsername, oAuthToken, eventBufferFactory.create(maxEventCountPerWindow, windowSizeSeconds));
+            @Named("twitch.irc.whisper.eventCountWindowSize") Integer windowSizeSeconds) {
+        super(twitchUsername, oAuthToken, new AsyncEventBuffer(maxEventCountPerWindow, windowSizeSeconds));
         connect(twitchChannelName, ircServer, ircPort);
         log.debug("Created PrivateMessageSender");
         whisperChannel = twitchChannelName;

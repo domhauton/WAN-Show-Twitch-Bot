@@ -1,10 +1,7 @@
 package util.config;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
-import irc.util.EventBuffer;
-import irc.util.EventBufferFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.DateTimeUtil;
@@ -32,20 +29,26 @@ public class AppInjector extends AbstractModule{
 
     @Override
     protected void configure() {
+        // Load in properties
         Properties loadedProperties = loadProperties(environment.getConfigFileName());
         Names.bindProperties(binder(), loadedProperties);
-
+        // Register Singletons
         bind(DateTimeUtil.class).asEagerSingleton();
-        install(new FactoryModuleBuilder()
-                .build(EventBufferFactory.class));
+        // Register AssistedInjection Factories
     }
 
+    /**
+     * Loads properties from the given filename as Properties
+     * @param filename filename to load in the project root.
+     * @return Loaded Properties
+     * @throws UncheckedIOException If properties file cannot be opened
+     */
     private Properties loadProperties(String filename) {
 
         URL propertyResource = AppInjector.class.getClassLoader().getResource(filename);
         if(propertyResource == null) {
             log.fatal("Failed to find resource for properties file: {}", filename);
-            System.exit(1);
+            throw new UncheckedIOException( new IOException( "Cannot find properties file: " + filename ) );
         }
         String fullFileName = propertyResource.getFile();
         log.info("Loading log from {}", fullFileName);

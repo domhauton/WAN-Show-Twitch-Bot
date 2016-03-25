@@ -10,7 +10,7 @@ import java.util.Arrays;
  *
  * Fast event buffer for counting events.
  */
-public class EventBuffer {
+public class AsyncEventBuffer {
 
     private long[] messageQueue;
     private int maxEventCount;
@@ -18,10 +18,9 @@ public class EventBuffer {
 
     private int iteratorIndex = 0;
 
-    @AssistedInject
-    public EventBuffer(
-            @Assisted("maxEventCount") Integer maxEventCount,
-            @Assisted("eventLifeTimeSeconds") Integer eventLifeTimeSeconds) {
+    public AsyncEventBuffer(
+            int maxEventCount,
+            int eventLifeTimeSeconds) {
         messageQueue = new long[maxEventCount];
         this.maxEventCount = maxEventCount;
         eventLifeTimeMillis = eventLifeTimeSeconds * 1000;
