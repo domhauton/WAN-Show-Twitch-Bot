@@ -20,9 +20,15 @@ public class BitlyDecorator {
     private Bitly.Provider bitlyProvider;
 
     @Inject
-    public BitlyDecorator(@Named("bitly.username") String bitlyUsername, @Named("bitly.token") String bitlyToken) {
+    public BitlyDecorator(
+            @Named("bitly.username") String bitlyUsername,
+            @Named("bitly.token") String bitlyToken) {
         log.info("Logging into bitly as user {}", bitlyUsername);
         bitlyProvider = Bitly.as(bitlyUsername, bitlyToken);
+    }
+
+    public BitlyDecorator(Bitly.Provider bitlyProvider) {
+        this.bitlyProvider = bitlyProvider;
     }
 
     public String shortenURL(String longURL) {

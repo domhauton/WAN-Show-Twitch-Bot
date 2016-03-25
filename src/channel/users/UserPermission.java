@@ -2,6 +2,8 @@ package channel.users;
 
 /**
  * Created by Dominic Hauton on 11/03/2016.
+ *
+ * Controls user permissions
  */
 public enum UserPermission {
     ChannelOwner(0),
@@ -20,7 +22,11 @@ public enum UserPermission {
         return permissionLevel;
     }
 
-    public boolean checkPermission(UserPermission requiredPermissionLevel) {
-        return requiredPermissionLevel.getPermissionLevel() <= getPermissionLevel();
+    public static UserPermission getDefaultPermission() {
+        return UserPermission.ChannelUser;
+    }
+
+    public boolean hasRequiredPermissions(UserPermission requiredPermissionLevel) {
+        return requiredPermissionLevel.getPermissionLevel() >= getPermissionLevel();
     }
 }

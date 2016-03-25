@@ -1,7 +1,7 @@
 package irc.sender;
 
 import com.google.inject.name.Named;
-import irc.util.EventBufferFactory;
+import irc.util.AsyncEventBuffer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,14 +23,17 @@ public class PublicMessageSender extends IRCConnection {
             @Named("twitch.irc.public.server") String ircServer,
             @Named("twitch.irc.public.port") Integer ircPort,
             @Named("twitch.irc.public.eventCountPerWindow") Integer maxEventCountPerWindow,
-            @Named("twitch.irc.public.eventCountWindowSize") Integer windowSizeSeconds,
-            EventBufferFactory eventBufferFactory) {
-        super(twitchUsername, oAuthToken, eventBufferFactory.create(maxEventCountPerWindow, windowSizeSeconds));
+            @Named("twitch.irc.public.eventCountWindowSize") Integer windowSizeSeconds) {
+        super(twitchUsername, oAuthToken, new AsyncEventBuffer(maxEventCountPerWindow, windowSizeSeconds));
         connect(twitchChannelName, ircServer, ircPort);
         log.debug("Created PublicMessageSender");
     }
 
     public boolean trySendAction(String recipient, String payload){
         return trySendMessage(recipient, ".me " + payload);
+    }
+
+    public void sendActionAsync(String recipient, String payload){
+        sendMessageAsync(recipient, ".me " + payload);
     }
 }

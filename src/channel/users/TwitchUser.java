@@ -4,6 +4,8 @@ import java.util.Objects;
 
 /**
  * Created by Dominic Hauton on 11/03/2016.
+ *
+ * Data class for Twitch Users
  */
 public class TwitchUser {
     private String username;
@@ -15,6 +17,14 @@ public class TwitchUser {
         this.userPermission = userPermission;
     }
 
+    /**
+     * Constructor that defaults the user permission to ChannelUser
+     * @param username
+     */
+    public TwitchUser(String username) {
+        this(username, UserPermission.ChannelUser);
+    }
+
     public String getUsername() {
         return username;
     }
@@ -23,16 +33,32 @@ public class TwitchUser {
         return userPermission;
     }
 
+    public boolean hasRequiredPermission(UserPermission requiredPermission) {
+        return getUserPermission().hasRequiredPermissions(requiredPermission);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof TwitchUser)) return false;
+
         TwitchUser that = (TwitchUser) o;
-        return username != null ? username.equals(that.username) : that.username == null;
+
+        if (getUsername() != null ? !getUsername().equals(that.getUsername()) : that.getUsername() != null)
+            return false;
+        return getUserPermission() == that.getUserPermission();
+
     }
 
     @Override
     public int hashCode() {
-        return username != null ? username.hashCode() : 0;
+        int result = getUsername() != null ? getUsername().hashCode() : 0;
+        result = 31 * result + (getUserPermission() != null ? getUserPermission().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s(%s)", username, getUserPermission());
     }
 }
