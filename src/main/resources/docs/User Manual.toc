@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}Host Commands}{1}
+\contentsline {section}{\numberline {2}Bot Operator Commands}{1}
+\contentsline {subsection}{\numberline {2.1}Blacklisting Words}{2}
+\contentsline {subsection}{\numberline {2.2}Removing BlackListed Words}{2}
+\contentsline {subsection}{\numberline {2.3}Making users an Operator}{2}
+\contentsline {subsection}{\numberline {2.4}Removing Operators}{2}
+\contentsline {subsection}{\numberline {2.5}Set the show start time}{2}
+\contentsline {subsection}{\numberline {2.6}Setting bot variables}{2}
+\contentsline {section}{\numberline {3}Bot Moderator Commands}{3}
+\contentsline {subsection}{\numberline {3.1}Repeating Links}{3}
+\contentsline {section}{\numberline {4}User Commands}{3}
+\contentsline {subsection}{\numberline {4.1}Last Linus Link}{3}
+\contentsline {subsection}{\numberline {4.2}Time Till Live}{3}
+\contentsline {subsection}{\numberline {4.3}Help Command}{3}
+\contentsline {subsection}{\numberline {4.4}Report}{3}
+\contentsline {subsection}{\numberline {4.5}Timestamps}{3}
