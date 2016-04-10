@@ -1,4 +1,4 @@
-package irc;
+package twitchchat;
 
 import channel.data.TwitchMessage;
 import channel.data.TwitchUser;
@@ -87,7 +87,7 @@ public class TwitchChannelListener extends PircBot implements TwitchMessageSuppl
      */
     @Override
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
-        final TwitchMessage twitchMessage = new TwitchMessage(message, new TwitchUser(sender), DateTime.now());
+        TwitchMessage twitchMessage = new TwitchMessage(message, new TwitchUser(sender), DateTime.now(), channel);
         messageConsumers.parallelStream().forEach(messageConsumers -> messageConsumers.accept(twitchMessage));
     }
 }

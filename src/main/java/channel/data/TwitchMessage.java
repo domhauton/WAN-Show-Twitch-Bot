@@ -1,5 +1,6 @@
 package channel.data;
 
+import com.google.common.base.Objects;
 import org.joda.time.DateTime;
 
 import java.util.Collection;
@@ -14,23 +15,17 @@ public class TwitchMessage {
     private String simpleMessagePayload;
     private TwitchUser sender;
     private DateTime messageDateTime;
+    private String sourceChannel;
 
     public TwitchMessage(
             String messagePayload,
             TwitchUser sender,
-            DateTime messageDateTime) {
+            DateTime messageDateTime,
+            String sourceChannel) {
         this.messagePayload = messagePayload;
         this.sender = sender;
         this.messageDateTime = messageDateTime;
-    }
-
-    public TwitchMessage(
-            String messagePayload,
-            String sender,
-            DateTime messageDateTime) {
-        this.messagePayload = messagePayload;
-        this.sender = new TwitchUser(sender);
-        this.messageDateTime = messageDateTime;
+        this.sourceChannel = sourceChannel;
     }
 
     public String getMessagePayload() {
@@ -49,6 +44,14 @@ public class TwitchMessage {
 
     public TwitchUser getSender() {
         return sender;
+    }
+
+    public String getSenderUsername() {
+        return sender.getUsername();
+    }
+
+    public String getSourceChannel() {
+        return sourceChannel;
     }
 
     public DateTime getMessageDateTime() {
@@ -74,7 +77,7 @@ public class TwitchMessage {
      * @return true if exactly the same.
      */
     public boolean equalsSimplePayload(String messagePayload) {
-        final String simpleMessagePayload = simplifyMessage(messagePayload);
+        String simpleMessagePayload = simplifyMessage(messagePayload);
         return getSimpleMessagePayload().equals(simpleMessagePayload);
     }
 
@@ -92,22 +95,21 @@ public class TwitchMessage {
         return String.format("TwitchMessage{[%s] %s: %s}", messageDateTime, sender, messagePayload);
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TwitchMessage)) return false;
-
         TwitchMessage that = (TwitchMessage) o;
-
-        return getMessagePayload() != null ? getMessagePayload().equals(that.getMessagePayload()) : that.getMessagePayload() == null && (getSender() != null ? getSender().equals(that.getSender()) : that.getSender() == null && (getMessageDateTime() != null ? getMessageDateTime().equals(that.getMessageDateTime()) : that.getMessageDateTime() == null));
+        return Objects.equal(getMessagePayload(), that.getMessagePayload()) &&
+                Objects.equal(getSimpleMessagePayload(), that.getSimpleMessagePayload()) &&
+                Objects.equal(sender, that.sender) &&
+                Objects.equal(getMessageDateTime(), that.getMessageDateTime());
     }
 
     @Override
     public int hashCode() {
-        int result = getMessagePayload() != null ? getMessagePayload().hashCode() : 0;
-        result = 31 * result + (getSender() != null ? getSender().hashCode() : 0);
-        result = 31 * result + (getMessageDateTime() != null ? getMessageDateTime().hashCode() : 0);
-        return result;
+        return Objects.hashCode(getMessagePayload(), getSimpleMessagePayload(), sender, getMessageDateTime());
     }
 
     /**

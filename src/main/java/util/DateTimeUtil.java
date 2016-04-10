@@ -10,12 +10,11 @@ import javax.inject.Singleton;
 /**
  * Created by Dominic Hauton on 15/03/2016.
  *
- * Eager singleton that provides Datetime utility functions
+ * Static Utility class for DateTimes.
  */
-@Singleton
-public class DateTimeUtil {
+public final class DateTimeUtil {
 
-    private final PeriodFormatter periodFormatter = new PeriodFormatterBuilder()
+    private static final PeriodFormatter periodFormatter = new PeriodFormatterBuilder()
             .printZeroNever()
             .appendDays()
             .appendSuffix(" day", " days")
@@ -27,7 +26,7 @@ public class DateTimeUtil {
             .appendSuffix(" minute", " minutes")
             .toFormatter();
 
-    public String periodToString(Period period) {
+    public static String convertPeriodToHumanReadableString(Period period) {
         if( period.toStandardSeconds().getSeconds() < 60 ){
             return "shortly";
         } else {

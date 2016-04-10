@@ -3,11 +3,11 @@ import channel.message.ImmutableTwitchMessageList;
 import channel.data.TwitchMessage;
 import channel.data.TwitchUser;
 import channel.permissions.UserPermission;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import irc.sender.PrivateMessageSender;
-import irc.sender.PublicMessageSender;
+import twitchchat.TwitchMessageRouter;
+import twitchchat.util.OutboundMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -22,38 +22,24 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class BotController {
-    private String twitchUsername;
-    private String twitchChannelName;
-    private String oAuthToken;
-    private String ircServer;
-    private Integer ircPort;
-
-
+class BotController {
 	private Logger log = LogManager.getLogger();
 	private Logger messageLog = LogManager.getLogger("Message Log");
 	private Logger actionLog = LogManager.getLogger("Action Log");
-
-    private DateTimeUtil dateTimeUtil;
     private MessageRepeater messageRepeater;
-	private PrivateMessageSender privateMessageSender;
-	private PublicMessageSender publicMessageSender;
+    private TwitchMessageRouter twitchMessageRouter;
 
 	private ChannelManager channelManager;
 	private Set<String> blockedWords;
-	private Set<String> blockedMessage;
+	private Set<String> blockedMessages;
 
 	private String lastHostLink;
 
 	private int maxMsg = 20;
 	private int linkRepeatCountHost = 7;
 	private int linkRepeatCountMod = 5;
-	private int voteBanMax = 2;
-	private int messageCap = 8;
-	private int rPostVal = 8;
-	private float msgpersec = 2.5f;
-	private int longestSubStringAllowed = 13;
-	private int repetitionSearch = 4;
+    private float messagesPerSecond = 2.5f;
+    private int repetitionSearch = 4;
 	
 	private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
     private DateTime commandTimeTTL, commandTimeLLL, commandTimeHelp, streamStartTime;
@@ -67,34 +53,15 @@ public class BotController {
     private BitlyDecorator bitlyDecorator;
 
 	@Inject
-	public BotController(@Named("twitch.irc.public.channel") String twitchChannelName,
-						 @Named("twitch.username") String twitchUsername,
-						 @Named("twitch.oauth.token") String oAuthToken,
-						 @Named("twitch.irc.public.server") String ircServer,
-						 @Named("twitch.irc.public.port") Integer ircPort,
-						 BitlyDecorator bitlyDecorator,
-						 DateTimeUtil dateTimeUtil,
-						 PrivateMessageSender privateMessageSender,
-						 PublicMessageSender publicMessageSender,
+	public BotController(BitlyDecorator bitlyDecorator,
+						 TwitchMessageRouter twitchMessageRouter,
                          MessageRepeater messageRepeater) {
-		log.info("Starting bot for channel {} on server {}", twitchChannelName, ircServer);
 		channelManager = new ChannelManager();
 		permittedChars = ImmutableSet.copyOf("abcdefghijklmnopqrstuvwxyz.!@$%123454567890".chars().mapToObj(a -> (char) a).collect(Collectors.toList()));
-		this.blockedMessage = new HashSet<>();
+		this.blockedMessages = new HashSet<>();
 		this.blockedWords = new HashSet<>();
-
 		this.bitlyDecorator = bitlyDecorator;
-		this.dateTimeUtil = dateTimeUtil;
-
-
-		this.twitchChannelName = twitchChannelName;
-		this.twitchUsername = twitchUsername;
-		this.oAuthToken = oAuthToken;
-		this.ircServer = ircServer;
-		this.ircPort = ircPort;
-
-		this.privateMessageSender = privateMessageSender;
-		this.publicMessageSender = publicMessageSender;
+        this.twitchMessageRouter = twitchMessageRouter;
 
 		commandTimeTTL = commandTimeLLL = commandTimeHelp = DateTime.now().minusSeconds(60);
 		streamStartTime = new DateTime(2016, 3, 25, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver")));
@@ -108,28 +75,33 @@ public class BotController {
      * Processes the given twitchMessage as required for the channel.
      * @param twitchMessage TwitchMessage to process.
      */
-	public void processMessage(TwitchMessage twitchMessage) {
+    void processMessage(TwitchMessage twitchMessage) {
 		channelManager.addChannelMessage(twitchMessage);
 
 		messageLog.info(twitchMessage::toString); //Stores the message in the chat log.
 
-        if(twitchMessage.getMessagePayload().startsWith("!")){//Checks if the message is a command
-			userCommands(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload().substring(1)); //Checks if the message contains keywords for the bot.
+        boolean isMessageCommand = twitchMessage.getMessagePayload().startsWith("!");
+        if( isMessageCommand ){
+			userCommands(twitchMessage);
 		}
 
-		if( channelManager.checkPermission(twitchMessage.getSender(), UserPermission.ChannelOwner ) )
-			hostCommands( twitchMessage );
-
-		if( channelManager.checkPermission(twitchMessage.getSender(), UserPermission.BotAdmin ) && twitchMessage.getSimpleMessagePayload().startsWith("!bot") )
-			sendMessageP( botCommand( twitchMessage.getMessagePayload() ) );
-
-		if( channelManager.checkPermission(twitchMessage.getSender(), UserPermission.BotModerator ) )
-			operatorCommands( twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload() );
-
-		if( !channelManager.checkPermission(twitchMessage.getSender(), UserPermission.ChannelModerator ) ) {
-			messageChecker( twitchMessage ); //Checks if the message is allowed.
-			spamDetector(twitchMessage);
-		}
+        UserPermission userPermissionOnChannel = channelManager.getPermission(twitchMessage.getSender());
+        switch (userPermissionOnChannel) {
+            case ChannelOwner:
+                hostCommands(twitchMessage);
+            case BotAdmin:
+                boolean isBotCommand = twitchMessage.getSimpleMessagePayload().startsWith("!bot");
+                if(isBotCommand) {
+                    sendMessageP( botCommand( twitchMessage.getMessagePayload() ) );
+                }
+            case BotModerator:
+                operatorCommands( twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload() );
+            case ChannelModerator:
+                break;
+            default:
+                isMessagePermitted( twitchMessage );
+                spamDetector(twitchMessage);
+        }
 	}
 
 	/**
@@ -160,12 +132,12 @@ public class BotController {
 		}
 		return "Unknown Command Entered.";
 	}
-	
+
 	private String resetBans(){
 		banHistory = new HashMap<>();
 		return "Ban History reset";
 	}
-	
+
 	private String setVariables(String command){
 		float newVal;
 		String[] sCommand = command.split(" ");
@@ -194,69 +166,64 @@ public class BotController {
 				} else {
 					return "linkRepeatCountMod must be between 0 and 40";
 				}
-			} else if(sCommand[0].equalsIgnoreCase("voteBanMax")){
-				if(newVal > 0 && newVal <= 50){
-					voteBanMax = (int) newVal;
-					return "voteBanMax set to " + voteBanMax;
-				} else {
-					return "voteBanMax must be between 0 and 50";
-				}
 			} else if(sCommand[0].equalsIgnoreCase("messageCap")){
 				if(newVal > 0 && newVal <= 50){
-					messageCap = (int) newVal;
+                    int messageCap = (int) newVal;
 					return "messageCap set to " + messageCap;
 				} else {
 					return "messageCap must be between 0 and 50";
 				}
 			} else if(sCommand[0].equalsIgnoreCase("rPostVal")){
 				if(newVal > 0 && newVal <= 50){
-					rPostVal = (int) newVal;
+                    int rPostVal = (int) newVal;
 					return "rPostVal set to " + rPostVal;
 				} else {
 					return "rPostVal must be between 0 and 50";
 				}
-			} else if(sCommand[0].equalsIgnoreCase("msgpersec")){
+			} else if(sCommand[0].equalsIgnoreCase("messagesPerSecond")){
 				if(newVal > 0 && newVal <= 50){
-					msgpersec = newVal;
-					return "secpermsg set to " + msgpersec;
+					messagesPerSecond = newVal;
+					return "secpermsg set to " + messagesPerSecond;
 				} else {
 					return "secpermsg must be between 0 and 50";
 				}
-			} else if(sCommand[0].equalsIgnoreCase("longestSubStringAllowed")){
-				if(newVal > 3 && newVal <= 50){
-					longestSubStringAllowed = (int) newVal;
-					return "longestSubStringAllowed set to " + longestSubStringAllowed;
-				} else {
-					return "longestSubStringAllowed must be between 3 and 50";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("repetitionSearch")){
-				if(newVal > 1 && newVal <= maxMsg-1){
-					repetitionSearch = (int) newVal;
-					return "repetitionSearch set to " + repetitionSearch;
-				} else {
-					return "repetitionSearch must be between 1 and maxMsg";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("messageFrequency")){
-                if(newVal > 60){
-                	messageRepeater.setFrequency((int) newVal);
-					return "messageFrequency set to " + (int) newVal;
-				} else {
-					return "messageFrequency must be more than 60";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("messageRepToggle")){
-                messageRepeater.toggleState();
-                return "messageRepetition Toggled.";
-			} else if(sCommand[0].equalsIgnoreCase("addStartTime")){
+			} else {
+                if (sCommand[0].equalsIgnoreCase("longestSubStringAllowed")) {
+                    if (newVal > 3 && newVal <= 50) {
+                        int longestSubStringAllowed = (int) newVal;
+                        return "longestSubStringAllowed set to " + longestSubStringAllowed;
+                    } else {
+                        return "longestSubStringAllowed must be between 3 and 50";
+                    }
+                } else if (sCommand[0].equalsIgnoreCase("repetitionSearch")) {
+                    if (newVal > 1 && newVal <= maxMsg - 1) {
+                        repetitionSearch = (int) newVal;
+                        return "repetitionSearch set to " + repetitionSearch;
+                    } else {
+                        return "repetitionSearch must be between 1 and maxMsg";
+                    }
+                } else if (sCommand[0].equalsIgnoreCase("messageFrequency")) {
+                    if (newVal > 60) {
+                        messageRepeater.setFrequency((int) newVal);
+                        return "messageFrequency set to " + (int) newVal;
+                    } else {
+                        return "messageFrequency must be more than 60";
+                    }
+                } else if (sCommand[0].equalsIgnoreCase("messageRepToggle")) {
+                    messageRepeater.toggleState();
+                    return "messageRepetition Toggled.";
+                } else if (sCommand[0].equalsIgnoreCase("addStartTime")) {
                     showStartTime = showStartTime.plusSeconds((int) newVal);
                     return "Show start time set to: " + showStartTime.toString(ISODateTimeFormat.basicOrdinalDateTimeNoMillis());
-            } else{
-				return "Variable name not found";
-			}
+                } else {
+                    return "Variable name not found";
+                }
+            }
 		}catch(Exception e){
 			return "Syntax Error.";
 		}
 	}
-	
+
 	/**
 	 * Adds a word to the blacklist.
 	 * @param word Word to add to blacklist
@@ -272,7 +239,7 @@ public class BotController {
                 .stream()
                 .filter(message -> !channelManager.checkPermission(message.getSender(), UserPermission.ChannelModerator))
                 .filter(message -> message.getMessagePayload().toLowerCase().contains(lowerCaseWord))
-                .forEach(message -> ban(message.getSender().getUsername(), message.getMessagePayload(), 45, "Blacklisted word: " + word, ""));
+                .forEach(message -> ban(message.getSenderUsername(), message.getMessagePayload(), 45, "Blacklisted word: " + word, ""));
 		return lowerCaseWord + " added to blacklist. Previous messages breaching rule this will be banned.";
 	}
 
@@ -288,7 +255,7 @@ public class BotController {
 		}
 		return word + " not found on the blacklist";
 	}
-	
+
 	/**
 	 * Adds a word to the blacklist.
 	 * @param word Word to add to blacklist
@@ -296,14 +263,14 @@ public class BotController {
 	 */
 	private String bLMsg(final String word){
         final String lowerCaseMessage = word.toLowerCase();
-		if(blockedMessage.contains(lowerCaseMessage))
+		if(blockedMessages.contains(lowerCaseMessage))
 			return lowerCaseMessage + " already on blacklist.";
-		blockedMessage.add(lowerCaseMessage);
+		blockedMessages.add(lowerCaseMessage);
         channelManager.getMessageSnapshot()
                 .stream()
                 .filter(message -> !channelManager.checkPermission(message.getSender(), UserPermission.ChannelModerator))
                 .filter(message -> message.getMessagePayload().equalsIgnoreCase(lowerCaseMessage))
-                .forEach(message -> ban(message.getSender().getUsername(), message.getMessagePayload(), 45, "Blacklisted message: " + word, ""));
+                .forEach(message -> ban(message.getSenderUsername(), message.getMessagePayload(), 45, "Blacklisted message: " + word, ""));
 		return lowerCaseMessage + " added to message blacklist. Previous messages breaching this rule will be banned.";
 	}
 	/**
@@ -332,64 +299,57 @@ public class BotController {
 			return "Syntax Error.";
 		}
 	}
-	
+
 	private String rmOperator(String name){
 		channelManager.setPermission(new TwitchUser(name), UserPermission.getDefaultPermission());
 		return name + " is no longer an operator.";
 	}
-	
+
 	private String setStartTime(){
 		streamStartTime = DateTime.now();
 		return "Show Start time has been set.";
 	}
 
 	/**
-	 * You should send messages using this. It saves all the files to a log.
-	 * @param message
-	 *            Message being sent.
-	 */
-    private void sendMessageP(String message) {
-		messageLog.info("Sending message: {}", message);
-		publicMessageSender.sendMessageAsync(twitchChannelName, message);
-	}
-
-	/**
 	 * Checks if the message sent is a current request
-	 *
-	 * @param message
-	 *            Message sent.
 	 */
-	private void userCommands(String sender, String message) {
+	private void userCommands(TwitchMessage twitchMessage) {
+        String message = twitchMessage.getMessagePayload().substring(1);
 		if (message.equalsIgnoreCase("TTL") || message.equalsIgnoreCase("TTT")) {
-			String timeTillLive = getTimeTillLive(sender);
-			if( !Objects.isNull(timeTillLive) ){
-                sendMessageP( timeTillLive );
-                privateMessageSender.sendWhisperAsync(sender, timeTillLive);
+            String senderUsername = twitchMessage.getSenderUsername();
+			String timeTillLive = getTimeTillLive(senderUsername);
+			if( !Strings.isNullOrEmpty(timeTillLive) ){
+                OutboundMessage outboundChannelMessage = new OutboundMessage(timeTillLive, twitchMessage.getSourceChannel());
+                twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
+                OutboundMessage outboundWhisper = new OutboundMessage(timeTillLive, senderUsername);
+                twitchMessageRouter.sendUserWhisper(outboundWhisper);
             }
 		} else if (message.equalsIgnoreCase("LLL"))
-			lastLinusLink(sender);
+			lastLinusLink(twitchMessage.getSenderUsername(), twitchMessage.getSourceChannel());
 		else if (message.equalsIgnoreCase("HELP"))
-			sendHelpMessage();
+			sendHelpMessage(twitchMessage.getSenderUsername(), twitchMessage.getSourceChannel());
 		else if (message.startsWith("uptime"))
-			uptime();
+			uptime(twitchMessage.getSenderUsername(), twitchMessage.getSourceChannel());
 	}
 
-	private void uptime(){
-        if( new Period(commandTimeTTL, DateTime.now()).toStandardSeconds().getSeconds() < 40 ){
-            return;
-        }
-
+	private void uptime(String senderUserName, String twitchChannelName){
         Period periodSinceStreamStart = new Period(streamStartTime, DateTime.now());
+        boolean liveWithinLastMin = periodSinceStreamStart.toStandardSeconds().getSeconds() < 60;
+        String outboundMessagePayload = liveWithinLastMin ? "Linus last went live in the last minute." : "Linus last went live: " + DateTimeUtil.convertPeriodToHumanReadableString(periodSinceStreamStart) + " ago.";
 
-        if (periodSinceStreamStart.toStandardSeconds().getSeconds() < 60){
-            sendMessageP("Linus last went live in the last minute.");
+        boolean sendToChannel = new Period(commandTimeTTL, DateTime.now()).toStandardSeconds().getSeconds() >= 40;
+
+        if(sendToChannel){
+            OutboundMessage outboundChannelMessage = new OutboundMessage(outboundMessagePayload, twitchChannelName);
+            twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
+            commandTimeTTL = DateTime.now();
         } else {
-            sendMessageP("Linus last went live: " + dateTimeUtil.periodToString(periodSinceStreamStart) + " ago.");
+            OutboundMessage outboundUserWhisper = new OutboundMessage(outboundMessagePayload, senderUserName);
+            twitchMessageRouter.sendUserWhisper(outboundUserWhisper);
         }
 
-        commandTimeTTL = DateTime.now();
     }
-	
+
 	/**
 	 * Sends a Message to chat displaying how long till the show begins.
 	 */
@@ -410,7 +370,7 @@ public class BotController {
         } else if(periodTillShow.toStandardSeconds().getSeconds() < 60){
 			return "The next WAN Show should begin soon.";
 		} else {
-            return "The next WAN Show should begin in: " + dateTimeUtil.periodToString(periodTillShow);
+            return "The next WAN Show should begin in: " + DateTimeUtil.convertPeriodToHumanReadableString(periodTillShow);
         }
 	}
 
@@ -427,19 +387,19 @@ public class BotController {
                 IntStream.range(0, linkRepeatCountHost).forEach(ignore -> sendMessageP(message));
 			}
 
-		}	
+		}
 	}
-	
+
 	private void operatorCommands(String sender, String message){
 		if(message.startsWith("!link")) linkRepeater(sender, message.substring(6));
 		else if(message.startsWith("!loop add")) messageRepeater.addMessage(message.substring(10));
 		else if(message.startsWith("!loop removeLast")) messageRepeater.clearLast();
 		else if(message.startsWith("!loop removeAll")) messageRepeater.clearAll();
 	}
-	
+
 	/**
 	 * Used to spam links by bot operators.
-	 * 
+	 *
 	 * @param sender
 	 *            The sender of the message
 	 * @param message
@@ -462,53 +422,49 @@ public class BotController {
 	/**
 	 * Sends the last link Linus sent out;
 	 */
-	private void lastLinusLink(String sender) {
-        if( new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40 ){
-			if (lastHostLink != null) {
-				sendMessageP("Linus' Last Link: " + lastHostLink);
-                privateMessageSender.sendWhisperAsync(sender, "Linus' Last Link: " + lastHostLink);
-			} else {
-				sendMessageP("Linus has not posted a link recently.");
-			}
+	private void lastLinusLink(String sourceUserUsername, String sourceChannel) {
+        boolean lastLinkExists = !Strings.isNullOrEmpty(lastHostLink);
+        String outboundMessagePayload = lastLinkExists ? "Linus' Last Link: " + lastHostLink : "Linus has not posted a link recently.";
+        OutboundMessage outboundWhisper = new OutboundMessage(outboundMessagePayload, sourceUserUsername);
+        twitchMessageRouter.sendUserWhisper(outboundWhisper);
+
+        boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40;
+        if( sendToChannel ){
+            OutboundMessage outboundMessage = new OutboundMessage(outboundMessagePayload, sourceChannel);
+            twitchMessageRouter.sendChannelMessage(outboundMessage);
             commandTimeLLL = DateTime.now();
-		} else {
-            if (lastHostLink != null) {
-                privateMessageSender.sendWhisperAsync(sender, "Linus' Last Link: " + lastHostLink);
-            } else {
-                privateMessageSender.sendWhisperAsync(sender, "Linus has not posted a link recently.");
-            }
-        }
+		}
 	}
 
 	/**
 	 * Sends a command list to the users
 	 */
-	private void sendHelpMessage() {
-        if( new Period(commandTimeHelp, DateTime.now()).toStandardSeconds().getSeconds() > 30 ){
-            String helpMessage = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
-            sendMessageP(helpMessage);
+	private void sendHelpMessage(String sourceUserUsername, String sourceChannel) {
+        String outboundMessagePayload = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
+        OutboundMessage outboundWhisper = new OutboundMessage(outboundMessagePayload, sourceUserUsername);
+        twitchMessageRouter.sendUserWhisper(outboundWhisper);
+
+        boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 30;
+        if( sendToChannel ){
+            OutboundMessage outboundMessage = new OutboundMessage(outboundMessagePayload, sourceChannel);
+            twitchMessageRouter.sendChannelMessage(outboundMessage);
             commandTimeHelp = DateTime.now();
-		}
+        }
 	}
 
 	/**
 	 * Checks if a message is in the blacklist
 	 */
-	private void messageChecker(TwitchMessage twitchMessage) {
-        if(blockedWords.stream().anyMatch(twitchMessage::containsString)){
+	private void isMessagePermitted(TwitchMessage twitchMessage, Collection<String> blockedWords, Collection<String> blockedMessages) {
+        boolean containsBlacklistedWord = blockedWords.stream().anyMatch(twitchMessage::containsString);
+        boolean isBlacklistedMessage = blockedMessages.stream().anyMatch(twitchMessage::equalsSimplePayload);
+        boolean messagePermitted = containsBlacklistedWord || isBlacklistedMessage;
+        if( messagePermitted ){
+            TwitchMessageRouter.
             ban(
-                    twitchMessage.getSender().getUsername(),
-                    twitchMessage.getMessagePayload(),
+                    twitchMessage.getSenderUsername(),
                     45,
                     "Matched blacklisted word", "Timeout - Blacklisted word"
-            );
-        }
-		if( blockedMessage.stream().anyMatch(twitchMessage::equalsSimplePayload) ){
-            ban(
-                    twitchMessage.getSender().getUsername(),
-                    twitchMessage.getMessagePayload(),
-                    45,
-                    "Matched blacklisted message", "Timeout - Blacklisted Message"
             );
         }
     }
@@ -537,18 +493,18 @@ public class BotController {
 				.getMessageSnapshot(twitchMessage.getSender());
 
 		if(twitchMessage.getMessagePayload().length() > 5 && twitchMessage.getLegalCharRatio(permittedChars) < 0.1)
-			ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "ASCII art ban", "You have been timed out for posting ASCII art.");
+			ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "ASCII art ban", "You have been timed out for posting ASCII art.");
 
-		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > msgpersec){
-			ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "More than " + msgpersec + " messages/second", "You have been timed out for posting messages to quickly.");
+		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > messagesPerSecond){
+			ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "More than " + messagesPerSecond + " messages/second", "You have been timed out for posting messages to quickly.");
 			return;
 		}
-		
+
 		if(commandWords.contains(twitchMessage.getMessagePayload())) return;
 		if(channelManager.getMessageSnapshot().containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= repetitionSearch)
-			ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "You have been timed out. Your message has been posted in the chat recently.");
+			ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "You have been timed out. Your message has been posted in the chat recently.");
         else if (userMessages.containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= 2) {
-            ban(twitchMessage.getSender().getUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "You have been timed out for repeating the same message.");
+            ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "You have been timed out for repeating the same message.");
         }
 	}
     
@@ -570,7 +526,10 @@ public class BotController {
 		if(previousBanTotal == null) previousBanTotal = 0;
 		banLength += previousBanTotal;
 		if(banLength > 60) banLength += 120;
-		if(officialReason.length() != 0) privateMessageSender.sendWhisperAsync(sender, officialReason);
+		if(!Strings.isNullOrEmpty(officialReason)){
+            OutboundMessage outboundMessage = new OutboundMessage(officialReason, sender);
+            privateMessageSender.sendWhisperAsync(outboundMessage);
+        }
 		publicMessageSender.sendMessage(twitchChannelName, ".timeout " + sender + " " + banLength);
 		banHistory.put(sender, banLength);
 		actionLog.info("Timeout {} for {}s. Reason: {}. Message: {}", sender, banLength, reason, message);

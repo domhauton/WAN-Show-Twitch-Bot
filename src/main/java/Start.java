@@ -1,6 +1,6 @@
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import irc.TwitchChannelListener;
+import twitchchat.TwitchChannelListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.config.AppInjector;

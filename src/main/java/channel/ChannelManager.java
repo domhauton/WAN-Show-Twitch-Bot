@@ -9,6 +9,8 @@ import channel.permissions.UserPermission;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
+ *
+ * Stores information about the user channel.
  */
 public class ChannelManager {
     private PermissionsManager permissionsManager;
@@ -27,8 +29,12 @@ public class ChannelManager {
         return permissionsManager.getUser(user).hasRequiredPermissions(requiredPermission);
     }
 
-    public UserPermission setPermission(TwitchUser username, UserPermission newPermission) {
-        return permissionsManager.addUser(username, newPermission);
+    public UserPermission getPermission(TwitchUser twitchUser) {
+        return permissionsManager.getUser(twitchUser);
+    }
+
+    public UserPermission setPermission(TwitchUser twitchUser, UserPermission newPermission) {
+        return permissionsManager.addUser(twitchUser, newPermission);
     }
 
     public ImmutableTwitchMessageList getMessageSnapshot() {

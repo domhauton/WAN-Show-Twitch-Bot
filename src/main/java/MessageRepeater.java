@@ -2,7 +2,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import irc.sender.PublicMessageSender;
+import twitchchat.util.OutboundMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-public class MessageRepeater {
+class MessageRepeater {
     private Logger log = LogManager.getLogger();
     private Random randomNumberGenerator = new Random();
     private ImmutableList<String> messages;
@@ -37,7 +37,7 @@ public class MessageRepeater {
                 .build();
     }
 
-    public void start() {
+    void start() {
         log.info("Running repeater scheduler");
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("message-repeater-thread-%d")
@@ -48,48 +48,47 @@ public class MessageRepeater {
 
     private void sendRandomMessage() {
         if(on){
-            final ImmutableList<String> messageCopy = ImmutableList.copyOf(messages);
+            ImmutableList<String> messageCopy = ImmutableList.copyOf(messages);
             Integer indexOfMessage = randomNumberGenerator.nextInt(messageCopy.size());
             String messageToSend = messageCopy.get(indexOfMessage);
             log.info("Sending repeated message: {}", messageToSend);
-            publicMessageSender.sendMessageAsync(twitchChannelName, messageToSend);
+            OutboundMessage outboundMessage = new OutboundMessage(messageToSend, twitchChannelName);
+            publicMessageSender.sendMessageAsync(outboundMessage);
         } else {
             log.info("Not sending message as repeater is off.");
         }
     }
 
-    public void setFrequency(int freq) {
+    void setFrequency(int freq) {
         this.timeSec = freq;
     }
 
-    public void toggleState() {
-        if (on) {
-            on = false;
-        } else {
-            on = true;
-        }
+    void toggleState() {
+        on = !on;
     }
 
-    public void clearAll() {
+    void clearAll() {
         log.info("Removing all {} messages.", messages.size());
         messages = new ImmutableList.Builder<String>().build();
-        publicMessageSender.sendMessageAsync(twitchChannelName, "All messages removed.");
+        OutboundMessage outboundMessage = new OutboundMessage("All messages removed.", twitchChannelName);
+        publicMessageSender.sendMessageAsync(outboundMessage);
         log.debug("Removed all messages successfully.", messages.size());
     }
 
-    public void clearLast() {
+    void clearLast() {
         log.info("Removing last message.");
         if (messages.size() == 0) {
                 clearAll();
         } else {
             messages = messages.subList(0, messages.size()-1);
-            publicMessageSender.sendMessageAsync(twitchChannelName, "Last Message Removed");
+            OutboundMessage outboundMessage = new OutboundMessage("Most recent message removed.", twitchChannelName);
+            publicMessageSender.sendMessageAsync(outboundMessage);
         }
     }
 
-    public void addMessage(String newMessage) {
+    void addMessage(String newMessage) {
         messages = new ImmutableList.Builder<String>().addAll(messages).add(newMessage).build();
-        publicMessageSender.sendMessageAsync(twitchChannelName, "Example of Message:");
-        publicMessageSender.sendMessageAsync(twitchChannelName, newMessage);
+        OutboundMessage outboundMessage = new OutboundMessage("Message added successfully.", twitchChannelName);
+        publicMessageSender.sendMessageAsync(outboundMessage);
     }
 }

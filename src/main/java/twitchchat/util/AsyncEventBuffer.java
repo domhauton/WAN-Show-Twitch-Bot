@@ -1,4 +1,4 @@
-package irc.util;
+package twitchchat.util;
 
 import java.util.Arrays;
 
