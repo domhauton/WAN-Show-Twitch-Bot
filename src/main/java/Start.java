@@ -1,12 +1,12 @@
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import twitchchat.TwitchChannelListener;
+import twitch.chat.listener.TwitchChannelListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.config.AppInjector;
 import util.config.Environment;
 
-public class Start {
+public final class Start {
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {

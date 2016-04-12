@@ -1,11 +1,11 @@
-package channel;
+package twitch.channel;
 
-import channel.data.TwitchMessage;
-import channel.data.TwitchUser;
-import channel.message.ImmutableTwitchMessageList;
-import channel.message.MessageManager;
-import channel.permissions.PermissionsManager;
-import channel.permissions.UserPermission;
+import twitch.channel.data.TwitchMessage;
+import twitch.channel.data.TwitchUser;
+import twitch.channel.message.ImmutableTwitchMessageList;
+import twitch.channel.message.MessageManager;
+import twitch.channel.permissions.PermissionsManager;
+import twitch.channel.permissions.UserPermission;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.

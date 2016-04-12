@@ -1,4 +1,4 @@
-package twitchchat.util;
+package twitch.chat.exceptions;
 
 import java.io.IOException;
 

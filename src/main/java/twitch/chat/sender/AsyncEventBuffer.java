@@ -1,4 +1,4 @@
-package twitchchat.util;
+package twitch.chat.sender;
 
 import java.util.Arrays;
 
@@ -7,7 +7,7 @@ import java.util.Arrays;
  *
  * Fast event buffer for counting events.
  */
-public class AsyncEventBuffer {
+class AsyncEventBuffer {
 
     private long[] messageQueue;
     private int maxEventCount;
@@ -15,7 +15,7 @@ public class AsyncEventBuffer {
 
     private int iteratorIndex = 0;
 
-    public AsyncEventBuffer(
+    AsyncEventBuffer(
             int maxEventCount,
             int eventLifeTimeSeconds) {
         messageQueue = new long[maxEventCount];
@@ -28,7 +28,7 @@ public class AsyncEventBuffer {
      * Add a message to the event Buffer
      * @return true if event added. False if addition failed.
      */
-    public synchronized boolean addMessage() {
+    synchronized boolean addMessage() {
         if (messageQueue[iteratorIndex] < System.currentTimeMillis()) {
             messageQueue[iteratorIndex++] = System.currentTimeMillis() + eventLifeTimeMillis;
             if(iteratorIndex == maxEventCount) iteratorIndex = 0;

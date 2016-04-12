@@ -1,7 +1,8 @@
-package channel.data;
+package twitch.channel.data;
 
 import com.google.common.base.Objects;
 import org.joda.time.DateTime;
+import twitch.chat.data.InboundTwitchMessage;
 
 import java.util.Collection;
 
@@ -10,26 +11,19 @@ import java.util.Collection;
  *
  * Holds required data for a TwitchMessage
  */
-public class TwitchMessage {
-    private String messagePayload;
+public class TwitchMessage extends InboundTwitchMessage{
     private String simpleMessagePayload;
-    private TwitchUser sender;
     private DateTime messageDateTime;
-    private String sourceChannel;
+    private TwitchUser twitchUser;
 
     public TwitchMessage(
-            String messagePayload,
-            TwitchUser sender,
+            String message,
+            TwitchUser twitchUser,
             DateTime messageDateTime,
-            String sourceChannel) {
-        this.messagePayload = messagePayload;
-        this.sender = sender;
+            String channel) {
+        super(channel, twitchUser.getUsername(), message);
+        this.twitchUser = twitchUser;
         this.messageDateTime = messageDateTime;
-        this.sourceChannel = sourceChannel;
-    }
-
-    public String getMessagePayload() {
-        return messagePayload;
     }
 
     /**
@@ -37,21 +31,18 @@ public class TwitchMessage {
      */
     public String getSimpleMessagePayload() {
         if(simpleMessagePayload == null){
-            simpleMessagePayload = simplifyMessage(messagePayload);
+            simpleMessagePayload = simplifyMessage(super.getMessage());
         }
         return simpleMessagePayload;
     }
 
-    public TwitchUser getSender() {
-        return sender;
+    @Override
+    public String getUsername() {
+        return getTwitchUser().getUsername();
     }
 
-    public String getSenderUsername() {
-        return sender.getUsername();
-    }
-
-    public String getSourceChannel() {
-        return sourceChannel;
+    public TwitchUser getTwitchUser() {
+        return twitchUser;
     }
 
     public DateTime getMessageDateTime() {
@@ -92,24 +83,23 @@ public class TwitchMessage {
 
     @Override
     public String toString() {
-        return String.format("TwitchMessage{[%s] %s: %s}", messageDateTime, sender, messagePayload);
+        return String.format("TwitchMessage{[%s] %s: %s}", messageDateTime, getUsername(), getMessage());
     }
 
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TwitchMessage)) return false;
+        if (this == o) { return true; }
+        if (!(o instanceof TwitchMessage)) { return false; }
         TwitchMessage that = (TwitchMessage) o;
-        return Objects.equal(getMessagePayload(), that.getMessagePayload()) &&
-                Objects.equal(getSimpleMessagePayload(), that.getSimpleMessagePayload()) &&
-                Objects.equal(sender, that.sender) &&
-                Objects.equal(getMessageDateTime(), that.getMessageDateTime());
+        return Objects.equal(getSimpleMessagePayload(), that.getSimpleMessagePayload()) &&
+               Objects.equal(getMessageDateTime(), that.getMessageDateTime()) &&
+               Objects.equal(getTwitchUser(), that.getTwitchUser());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getMessagePayload(), getSimpleMessagePayload(), sender, getMessageDateTime());
+        return Objects.hashCode(getSimpleMessagePayload(), getMessageDateTime(), getTwitchUser());
     }
 
     /**

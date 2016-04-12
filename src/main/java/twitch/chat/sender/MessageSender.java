@@ -1,43 +1,42 @@
-package twitchchat.sender;
+package twitch.chat.sender;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import irc.ChatHandshake;
 import org.joda.time.Period;
-import twitchchat.util.AsyncEventBuffer;
-import twitchchat.util.OutboundMessage;
-import twitchchat.irc.TwitchChatConnector;
+import twitch.chat.data.OutboundTwitchMessage;
+import irc.TwitchChatAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import twitchchat.util.TwitchChatException;
+import twitch.chat.exceptions.TwitchChatException;
 
 import java.util.concurrent.*;
 
 /**
  * Created by Dominic on 04/07/2015.
  *
- * A class for sending messages to twitch functionality to connect to twitch.
+ * A class for sending messages to twitch functionality to WhisperSender to twitch.
  */
-class IRCConnection{
+abstract class MessageSender {
 
     private Logger log = LogManager.getLogger();
     private String oAuthToken;
     private ExecutorService threadPool;
-
-    protected TwitchChatConnector twitchChatConnector;
+    private TwitchChatAdapter twitchChatAdapter;
 
     private AsyncEventBuffer asyncEventBuffer;
 
-    IRCConnection(
+    MessageSender(
             String twitchUsername,
             String oAuthToken,
             AsyncEventBuffer asyncEventBuffer){
 
-        log.debug("Creating IRCConnection Instance.");
+        log.debug("Creating MessageSender Instance.");
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("irc-sender-%d").build();
         threadPool = Executors.newCachedThreadPool(threadFactory);
 
-        twitchChatConnector = new TwitchChatConnector(twitchUsername);
-        twitchChatConnector.setMessageDelay(Period.ZERO);
+        twitchChatAdapter = new TwitchChatAdapter(twitchUsername);
+        setMessageDelay(Period.ZERO);
 
         this.asyncEventBuffer = asyncEventBuffer;
         this.oAuthToken = oAuthToken;
@@ -47,20 +46,20 @@ class IRCConnection{
      * Connects to twitch IRC servers
      */
     void connect(String twitchChannelName, String ircServer, Integer ircPort) throws TwitchChatException{
-        twitchChatConnector.connectToTwitchServer(ircServer, ircPort, oAuthToken);
+        twitchChatAdapter.connectToTwitchServer(ircServer, ircPort, oAuthToken);
         log.info("Connected to channel {} on {}:{}", twitchChannelName, ircServer, ircPort);
         if(!Strings.isNullOrEmpty(twitchChannelName)) {
-            twitchChatConnector.joinTwitchChannel(twitchChannelName);
+            twitchChatAdapter.joinTwitchChannel(twitchChannelName);
             log.debug("Joined channel " + twitchChannelName);
         } else {
             log.error("Could not join empty twitch channel.");
         }
     }
 
-    private boolean trySendMessage(OutboundMessage outboundMessage){
+    private boolean trySendMessage(OutboundTwitchMessage outboundTwitchMessage){
         if(asyncEventBuffer.addMessage()) {
-            twitchChatConnector.sendMessage(outboundMessage.getTarget(), outboundMessage.getPayload());
-            log.info("Sent Message:\t{}", outboundMessage);
+            twitchChatAdapter.sendMessage(outboundTwitchMessage.getTarget(), outboundTwitchMessage.getPayload());
+            log.info("Sent Message:\t{}", outboundTwitchMessage);
             return true;
         } else {
             log.trace("Event Buffer rejected message:\t{}\t{}");
@@ -68,9 +67,10 @@ class IRCConnection{
         }
     }
 
-    void sendMessageAsync(OutboundMessage outboundMessage) {
+    void sendMessageAsync(OutboundTwitchMessage outboundTwitchMessage) {
         CompletableFuture.runAsync(() -> {
-            while(!trySendMessage(outboundMessage)){
+            //FIXME Loop may not exit
+            while(!trySendMessage(outboundTwitchMessage)){
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -78,5 +78,13 @@ class IRCConnection{
                 }
             }
         }, threadPool);
+    }
+
+    void sendChatHandshake(ChatHandshake chatHandshake) {
+        twitchChatAdapter.sendChatHandshake(chatHandshake);
+    }
+
+    void setMessageDelay(Period delay) {
+        twitchChatAdapter.setMessageDelay(delay);
     }
 }

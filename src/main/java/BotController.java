@@ -1,13 +1,13 @@
-import channel.ChannelManager;
-import channel.message.ImmutableTwitchMessageList;
-import channel.data.TwitchMessage;
-import channel.data.TwitchUser;
-import channel.permissions.UserPermission;
+import twitch.channel.ChannelManager;
+import twitch.channel.message.ImmutableTwitchMessageList;
+import twitch.channel.data.TwitchMessage;
+import twitch.channel.data.TwitchUser;
+import twitch.channel.permissions.UserPermission;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import twitchchat.TwitchMessageRouter;
-import twitchchat.util.OutboundMessage;
+import twitch.chat.data.OutboundTwitchMessage;
+import twitch.chat.routing.TwitchMessageRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -80,22 +80,22 @@ class BotController {
 
 		messageLog.info(twitchMessage::toString); //Stores the message in the chat log.
 
-        boolean isMessageCommand = twitchMessage.getMessagePayload().startsWith("!");
+        boolean isMessageCommand = twitchMessage.getMessage().startsWith("!");
         if( isMessageCommand ){
 			userCommands(twitchMessage);
 		}
 
-        UserPermission userPermissionOnChannel = channelManager.getPermission(twitchMessage.getSender());
+        UserPermission userPermissionOnChannel = channelManager.getPermission(twitchMessage.getUsername());
         switch (userPermissionOnChannel) {
             case ChannelOwner:
                 hostCommands(twitchMessage);
             case BotAdmin:
                 boolean isBotCommand = twitchMessage.getSimpleMessagePayload().startsWith("!bot");
                 if(isBotCommand) {
-                    sendMessageP( botCommand( twitchMessage.getMessagePayload() ) );
+                    sendMessageP( botCommand( twitchMessage.getMessage()));
                 }
             case BotModerator:
-                operatorCommands( twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload() );
+                operatorCommands( twitchMessage.getUsername(), twitchMessage.getMessage());
             case ChannelModerator:
                 break;
             default:
@@ -237,9 +237,9 @@ class BotController {
 		blockedWords.add(lowerCaseWord);
         channelManager.getMessageSnapshot()
                 .stream()
-                .filter(message -> !channelManager.checkPermission(message.getSender(), UserPermission.ChannelModerator))
-                .filter(message -> message.getMessagePayload().toLowerCase().contains(lowerCaseWord))
-                .forEach(message -> ban(message.getSenderUsername(), message.getMessagePayload(), 45, "Blacklisted word: " + word, ""));
+                .filter(message -> !channelManager.checkPermission(message.getUsername(), UserPermission.ChannelModerator))
+                .filter(message -> message.getMessage().toLowerCase().contains(lowerCaseWord))
+                .forEach(message -> ban(message.getUsername(), message.getMessage(), 45, "Blacklisted word: " + word, ""));
 		return lowerCaseWord + " added to blacklist. Previous messages breaching rule this will be banned.";
 	}
 
@@ -268,9 +268,9 @@ class BotController {
 		blockedMessages.add(lowerCaseMessage);
         channelManager.getMessageSnapshot()
                 .stream()
-                .filter(message -> !channelManager.checkPermission(message.getSender(), UserPermission.ChannelModerator))
-                .filter(message -> message.getMessagePayload().equalsIgnoreCase(lowerCaseMessage))
-                .forEach(message -> ban(message.getSenderUsername(), message.getMessagePayload(), 45, "Blacklisted message: " + word, ""));
+                .filter(message -> !channelManager.checkPermission(message.getUsername(), UserPermission.ChannelModerator))
+                .filter(message -> message.getMessage().equalsIgnoreCase(lowerCaseMessage))
+                .forEach(message -> ban(message.getUsername(), message.getMessage(), 45, "Blacklisted message: " + word, ""));
 		return lowerCaseMessage + " added to message blacklist. Previous messages breaching this rule will be banned.";
 	}
 	/**
@@ -314,22 +314,22 @@ class BotController {
 	 * Checks if the message sent is a current request
 	 */
 	private void userCommands(TwitchMessage twitchMessage) {
-        String message = twitchMessage.getMessagePayload().substring(1);
+        String message = twitchMessage.getMessage().substring(1);
 		if (message.equalsIgnoreCase("TTL") || message.equalsIgnoreCase("TTT")) {
-            String senderUsername = twitchMessage.getSenderUsername();
+            String senderUsername = twitchMessage.getUsername();
 			String timeTillLive = getTimeTillLive(senderUsername);
 			if( !Strings.isNullOrEmpty(timeTillLive) ){
-                OutboundMessage outboundChannelMessage = new OutboundMessage(timeTillLive, twitchMessage.getSourceChannel());
+                OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(timeTillLive, twitchMessage.getTwitchChannel());
                 twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
-                OutboundMessage outboundWhisper = new OutboundMessage(timeTillLive, senderUsername);
+                OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(timeTillLive, senderUsername);
                 twitchMessageRouter.sendUserWhisper(outboundWhisper);
             }
 		} else if (message.equalsIgnoreCase("LLL"))
-			lastLinusLink(twitchMessage.getSenderUsername(), twitchMessage.getSourceChannel());
+			lastLinusLink(twitchMessage.getUsername(), twitchMessage.getTwitchChannel());
 		else if (message.equalsIgnoreCase("HELP"))
-			sendHelpMessage(twitchMessage.getSenderUsername(), twitchMessage.getSourceChannel());
+			sendHelpMessage(twitchMessage.getUsername(), twitchMessage.getTwitchChannel());
 		else if (message.startsWith("uptime"))
-			uptime(twitchMessage.getSenderUsername(), twitchMessage.getSourceChannel());
+			uptime(twitchMessage.getUsername(), twitchMessage.getTwitchChannel());
 	}
 
 	private void uptime(String senderUserName, String twitchChannelName){
@@ -340,11 +340,11 @@ class BotController {
         boolean sendToChannel = new Period(commandTimeTTL, DateTime.now()).toStandardSeconds().getSeconds() >= 40;
 
         if(sendToChannel){
-            OutboundMessage outboundChannelMessage = new OutboundMessage(outboundMessagePayload, twitchChannelName);
+            OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(outboundMessagePayload, twitchChannelName);
             twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
             commandTimeTTL = DateTime.now();
         } else {
-            OutboundMessage outboundUserWhisper = new OutboundMessage(outboundMessagePayload, senderUserName);
+            OutboundTwitchMessage outboundUserWhisper = new OutboundTwitchMessage(outboundMessagePayload, senderUserName);
             twitchMessageRouter.sendUserWhisper(outboundUserWhisper);
         }
 
@@ -375,7 +375,7 @@ class BotController {
 	}
 
 	private void hostCommands(TwitchMessage twitchMessage){
-        final String message = twitchMessage.getMessagePayload();
+        final String message = twitchMessage.getMessage();
 		//Repeats messages starting with HTTP:// & HTTPS://
 		if(message.startsWith("http://") || message.startsWith("https://")){
 			try{
@@ -425,13 +425,13 @@ class BotController {
 	private void lastLinusLink(String sourceUserUsername, String sourceChannel) {
         boolean lastLinkExists = !Strings.isNullOrEmpty(lastHostLink);
         String outboundMessagePayload = lastLinkExists ? "Linus' Last Link: " + lastHostLink : "Linus has not posted a link recently.";
-        OutboundMessage outboundWhisper = new OutboundMessage(outboundMessagePayload, sourceUserUsername);
+        OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(outboundMessagePayload, sourceUserUsername);
         twitchMessageRouter.sendUserWhisper(outboundWhisper);
 
         boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40;
         if( sendToChannel ){
-            OutboundMessage outboundMessage = new OutboundMessage(outboundMessagePayload, sourceChannel);
-            twitchMessageRouter.sendChannelMessage(outboundMessage);
+            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
+            twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
             commandTimeLLL = DateTime.now();
 		}
 	}
@@ -441,13 +441,13 @@ class BotController {
 	 */
 	private void sendHelpMessage(String sourceUserUsername, String sourceChannel) {
         String outboundMessagePayload = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
-        OutboundMessage outboundWhisper = new OutboundMessage(outboundMessagePayload, sourceUserUsername);
+        OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(outboundMessagePayload, sourceUserUsername);
         twitchMessageRouter.sendUserWhisper(outboundWhisper);
 
         boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 30;
         if( sendToChannel ){
-            OutboundMessage outboundMessage = new OutboundMessage(outboundMessagePayload, sourceChannel);
-            twitchMessageRouter.sendChannelMessage(outboundMessage);
+            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
+            twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
             commandTimeHelp = DateTime.now();
         }
 	}
@@ -462,7 +462,7 @@ class BotController {
         if( messagePermitted ){
             TwitchMessageRouter.
             ban(
-                    twitchMessage.getSenderUsername(),
+                    twitchMessage.getUsername(),
                     45,
                     "Matched blacklisted word", "Timeout - Blacklisted word"
             );
@@ -490,21 +490,21 @@ class BotController {
 	 */
 	private void spamDetector(TwitchMessage twitchMessage) {
         ImmutableTwitchMessageList userMessages = channelManager
-				.getMessageSnapshot(twitchMessage.getSender());
+				.getMessageSnapshot(twitchMessage.getUsername());
 
-		if(twitchMessage.getMessagePayload().length() > 5 && twitchMessage.getLegalCharRatio(permittedChars) < 0.1)
-			ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "ASCII art ban", "You have been timed out for posting ASCII art.");
+		if(twitchMessage.getMessage().length() > 5 && twitchMessage.getLegalCharRatio(permittedChars) < 0.1)
+			ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "ASCII art ban", "You have been timed out for posting ASCII art.");
 
 		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > messagesPerSecond){
-			ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "More than " + messagesPerSecond + " messages/second", "You have been timed out for posting messages to quickly.");
+			ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "More than " + messagesPerSecond + " messages/second", "You have been timed out for posting messages to quickly.");
 			return;
 		}
 
-		if(commandWords.contains(twitchMessage.getMessagePayload())) return;
+		if(commandWords.contains(twitchMessage.getMessage())) return;
 		if(channelManager.getMessageSnapshot().containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= repetitionSearch)
-			ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "You have been timed out. Your message has been posted in the chat recently.");
+			ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "Repeated Message Found", "You have been timed out. Your message has been posted in the chat recently.");
         else if (userMessages.containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= 2) {
-            ban(twitchMessage.getSenderUsername(), twitchMessage.getMessagePayload(), 20, "Repeated Message Found", "You have been timed out for repeating the same message.");
+            ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "Repeated Message Found", "You have been timed out for repeating the same message.");
         }
 	}
     
@@ -527,8 +527,8 @@ class BotController {
 		banLength += previousBanTotal;
 		if(banLength > 60) banLength += 120;
 		if(!Strings.isNullOrEmpty(officialReason)){
-            OutboundMessage outboundMessage = new OutboundMessage(officialReason, sender);
-            privateMessageSender.sendWhisperAsync(outboundMessage);
+            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(officialReason, sender);
+            privateMessageSender.sendWhisperAsync(outboundTwitchMessage);
         }
 		publicMessageSender.sendMessage(twitchChannelName, ".timeout " + sender + " " + banLength);
 		banHistory.put(sender, banLength);

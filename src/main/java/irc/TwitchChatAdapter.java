@@ -1,24 +1,26 @@
-package twitchchat.irc;
+package irc;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jibble.pircbot.IrcException;
 import org.joda.time.Period;
-import twitchchat.util.TwitchChatException;
+import twitch.chat.data.InboundTwitchMessage;
+import twitch.chat.exceptions.TwitchChatException;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 /**
  * Created by Dominic Hauton on 10/04/2016.
- * <p>
- * A wrapper for PircBot that only exposes required methods.
+ *
+ * An adapter PircBot that only exposes required methods.
  */
-public class TwitchChatConnector {
+final public class TwitchChatAdapter {
     private Logger log = LogManager.getLogger();
 
     private PircBotImpl pircBot;
 
-    public TwitchChatConnector(String twitchUsername) {
+    public TwitchChatAdapter(String twitchUsername) {
         pircBot = new PircBotImpl(twitchUsername);
         pircBot.changeNick(twitchUsername);
     }
@@ -51,7 +53,20 @@ public class TwitchChatConnector {
         pircBot.sendMessage(targetChannel, messagePayload);
     }
 
-    public void sendRawMessage(String messagePayload) {
-        pircBot.sendRawLine(messagePayload);
+    public void sendChatHandshake(ChatHandshake chatHandshake) {
+        pircBot.sendRawLine(chatHandshake.getHandshake());
+    }
+
+    public void setMessageListener(Consumer<InboundTwitchMessage> twitchMessageConsumer) {
+        Consumer<InboundIRCMessage> ircMessageConsumer =
+                (InboundIRCMessage ircMessage) -> twitchMessageConsumer.accept(convertIRCToTwitchMessage(ircMessage));
+        pircBot.setTwitchMessageConsumer(ircMessageConsumer);
+    }
+
+    /**
+     * Maps an InboundIRCMessage onto an Inbound Twitch Message
+     */
+    private InboundTwitchMessage convertIRCToTwitchMessage(InboundIRCMessage ircMessage) {
+        return new InboundTwitchMessage(ircMessage.getChannel(), ircMessage.getSender(), ircMessage.getMessage());
     }
 }
