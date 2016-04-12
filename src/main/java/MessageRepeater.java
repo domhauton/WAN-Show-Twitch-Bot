@@ -2,7 +2,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import twitchchat.util.OutboundMessage;
+import twitch.chat.data.OutboundTwitchMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,8 +52,8 @@ class MessageRepeater {
             Integer indexOfMessage = randomNumberGenerator.nextInt(messageCopy.size());
             String messageToSend = messageCopy.get(indexOfMessage);
             log.info("Sending repeated message: {}", messageToSend);
-            OutboundMessage outboundMessage = new OutboundMessage(messageToSend, twitchChannelName);
-            publicMessageSender.sendMessageAsync(outboundMessage);
+            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(messageToSend, twitchChannelName);
+            publicMessageSender.sendMessageAsync(outboundTwitchMessage);
         } else {
             log.info("Not sending message as repeater is off.");
         }
@@ -70,8 +70,8 @@ class MessageRepeater {
     void clearAll() {
         log.info("Removing all {} messages.", messages.size());
         messages = new ImmutableList.Builder<String>().build();
-        OutboundMessage outboundMessage = new OutboundMessage("All messages removed.", twitchChannelName);
-        publicMessageSender.sendMessageAsync(outboundMessage);
+        OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage("All messages removed.", twitchChannelName);
+        publicMessageSender.sendMessageAsync(outboundTwitchMessage);
         log.debug("Removed all messages successfully.", messages.size());
     }
 
@@ -81,14 +81,14 @@ class MessageRepeater {
                 clearAll();
         } else {
             messages = messages.subList(0, messages.size()-1);
-            OutboundMessage outboundMessage = new OutboundMessage("Most recent message removed.", twitchChannelName);
-            publicMessageSender.sendMessageAsync(outboundMessage);
+            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage("Most recent message removed.", twitchChannelName);
+            publicMessageSender.sendMessageAsync(outboundTwitchMessage);
         }
     }
 
     void addMessage(String newMessage) {
         messages = new ImmutableList.Builder<String>().addAll(messages).add(newMessage).build();
-        OutboundMessage outboundMessage = new OutboundMessage("Message added successfully.", twitchChannelName);
-        publicMessageSender.sendMessageAsync(outboundMessage);
+        OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage("Message added successfully.", twitchChannelName);
+        publicMessageSender.sendMessageAsync(outboundTwitchMessage);
     }
 }
