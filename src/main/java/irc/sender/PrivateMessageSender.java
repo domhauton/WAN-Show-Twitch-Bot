@@ -34,7 +34,7 @@ public class PrivateMessageSender extends IRCConnection {
     public PrivateMessageSender(
             @Named("twitch.username") String twitchUsername,
             @Named("twitch.oauth.token") String oAuthToken,
-            @Named("twitch.irc.whisper.channel") String twitchChannelName,
+            @Named("twitch.irc.whisper.twitchChannel") String twitchChannelName,
             @Named("twitch.irc.whisper.server") String ircServer,
             @Named("twitch.irc.whisper.port") Integer ircPort,
             @Named("twitch.irc.whisper.eventCountPerWindow") Integer maxEventCountPerWindow,

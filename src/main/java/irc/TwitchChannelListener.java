@@ -38,7 +38,7 @@ public class TwitchChannelListener extends PircBot implements TwitchMessageSuppl
 
     @Inject
     public TwitchChannelListener(
-            @Named("twitch.irc.public.channel") String twitchChannelName,
+            @Named("twitch.irc.public.twitchChannel") String twitchChannelName,
             @Named("twitch.username") String twitchUsername,
             @Named("twitch.oauth.token") String oAuthToken,
             @Named("twitch.irc.public.server") String ircServer,

@@ -19,7 +19,7 @@ public class PublicMessageSender extends IRCConnection {
     public PublicMessageSender(
             @Named("twitch.username") String twitchUsername,
             @Named("twitch.oauth.token") String oAuthToken,
-            @Named("twitch.irc.public.channel") String twitchChannelName,
+            @Named("twitch.irc.public.twitchChannel") String twitchChannelName,
             @Named("twitch.irc.public.server") String ircServer,
             @Named("twitch.irc.public.port") Integer ircPort,
             @Named("twitch.irc.public.eventCountPerWindow") Integer maxEventCountPerWindow,

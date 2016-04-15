@@ -24,7 +24,7 @@ public class MessageRepeater {
 
     @Inject
     public MessageRepeater(
-            @Named("twitch.irc.public.channel") String twitchChannelName,
+            @Named("twitch.irc.public.twitchChannel") String twitchChannelName,
             PublicMessageSender messageSender) {
         publicMessageSender = messageSender;
         this.twitchChannelName = twitchChannelName;
