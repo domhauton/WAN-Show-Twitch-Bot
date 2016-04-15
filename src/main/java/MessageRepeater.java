@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import twitch.chat.data.OutboundTwitchMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import twitch.chat.routing.TwitchMessageRouter;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -19,14 +20,14 @@ class MessageRepeater {
     private int timeSec = 210;
     private boolean on = true;
 
-    private PublicMessageSender publicMessageSender;
+    private TwitchMessageRouter twitchMessageRouter;
     private String twitchChannelName;
 
     @Inject
     public MessageRepeater(
-            @Named("twitch.irc.public.channel") String twitchChannelName,
-            PublicMessageSender messageSender) {
-        publicMessageSender = messageSender;
+            @Named("twitch.irc.public.twitchChannel") String twitchChannelName,
+            TwitchMessageRouter twitchMessageRouter) {
+        this.twitchMessageRouter = twitchMessageRouter;
         this.twitchChannelName = twitchChannelName;
         this.messages = new ImmutableList.Builder<String>()
                 .add("Want to support Luke?  http://teespring.com/stores/linusmediagroup")
@@ -53,7 +54,7 @@ class MessageRepeater {
             String messageToSend = messageCopy.get(indexOfMessage);
             log.info("Sending repeated message: {}", messageToSend);
             OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(messageToSend, twitchChannelName);
-            publicMessageSender.sendMessageAsync(outboundTwitchMessage);
+            twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
         } else {
             log.info("Not sending message as repeater is off.");
         }
@@ -67,28 +68,25 @@ class MessageRepeater {
         on = !on;
     }
 
-    void clearAll() {
+    OutboundTwitchMessage clearAll() {
         log.info("Removing all {} messages.", messages.size());
         messages = new ImmutableList.Builder<String>().build();
-        OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage("All messages removed.", twitchChannelName);
-        publicMessageSender.sendMessageAsync(outboundTwitchMessage);
         log.debug("Removed all messages successfully.", messages.size());
+        return new OutboundTwitchMessage("All messages removed.", twitchChannelName);
     }
 
-    void clearLast() {
+    OutboundTwitchMessage clearLast() {
         log.info("Removing last message.");
         if (messages.size() == 0) {
-                clearAll();
+                return clearAll();
         } else {
             messages = messages.subList(0, messages.size()-1);
-            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage("Most recent message removed.", twitchChannelName);
-            publicMessageSender.sendMessageAsync(outboundTwitchMessage);
+            return new OutboundTwitchMessage("Most recent message removed.", twitchChannelName);
         }
     }
 
-    void addMessage(String newMessage) {
+    OutboundTwitchMessage addMessage(String newMessage) {
         messages = new ImmutableList.Builder<String>().addAll(messages).add(newMessage).build();
-        OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage("Message added successfully.", twitchChannelName);
-        publicMessageSender.sendMessageAsync(outboundTwitchMessage);
+        return new OutboundTwitchMessage("Message added successfully.", twitchChannelName);
     }
 }

@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class ImmutableTwitchMessageList {
     private ImmutableList<TwitchMessage> twitchMessages;
 
-    public ImmutableTwitchMessageList(Collection<TwitchMessage> twitchMessages) {
+    ImmutableTwitchMessageList(Collection<TwitchMessage> twitchMessages) {
         if(twitchMessages==null) {
             this.twitchMessages = new ImmutableList.Builder<TwitchMessage>().build();
         } else {
@@ -31,9 +31,9 @@ public class ImmutableTwitchMessageList {
         return twitchMessages.stream();
     }
 
-    public ImmutableTwitchMessageList filterUser(TwitchUser twitchUser) {
+    ImmutableTwitchMessageList filterUser(TwitchUser twitchUser) {
         return new ImmutableTwitchMessageList( twitchMessages.stream()
-                .filter( twitchMessage -> twitchMessage.getUsername().equals(twitchUser))
+                .filter( twitchMessage -> twitchMessage.getTwitchUser().equals(twitchUser))
                 .collect(Collectors.toList()));
     }
 
