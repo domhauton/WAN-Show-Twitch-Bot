@@ -6,7 +6,9 @@ import twitch.channel.permissions.UserPermission;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import twitch.chat.data.InboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchMessage;
+import twitch.chat.data.OutboundTwitchTimeout;
 import twitch.chat.routing.TwitchMessageRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,11 +46,8 @@ class BotController {
 	private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
     private DateTime commandTimeTTL, commandTimeLLL, commandTimeHelp, streamStartTime;
 	private ImmutableSet<Character> permittedChars;
-	private HashMap<String, Integer> banHistory = new HashMap<>();
 
     private List<String> commandWords = new ArrayList<>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
-	
-	//private MessageSender msgSender;
 
     private BitlyDecorator bitlyDecorator;
 
@@ -73,9 +72,9 @@ class BotController {
 
     /**
      * Processes the given twitchMessage as required for the channel.
-     * @param twitchMessage TwitchMessage to process.
      */
-    void processMessage(TwitchMessage twitchMessage) {
+    void processMessage(InboundTwitchMessage inboundTwitchMessage) {
+        TwitchMessage twitchMessage = (TwitchMessage) inboundTwitchMessage;
 		channelManager.addChannelMessage(twitchMessage);
 
 		messageLog.info(twitchMessage::toString); //Stores the message in the chat log.
@@ -85,37 +84,43 @@ class BotController {
 			userCommands(twitchMessage);
 		}
 
-        UserPermission userPermissionOnChannel = channelManager.getPermission(twitchMessage.getUsername());
+		Collection<OutboundTwitchMessage> responses = new LinkedList<>();
+
+        UserPermission userPermissionOnChannel = channelManager.getPermission(twitchMessage.getTwitchUser());
+
         switch (userPermissionOnChannel) {
             case ChannelOwner:
                 hostCommands(twitchMessage);
             case BotAdmin:
                 boolean isBotCommand = twitchMessage.getSimpleMessagePayload().startsWith("!bot");
                 if(isBotCommand) {
-                    sendMessageP( botCommand( twitchMessage.getMessage()));
+					String responsePayload = botCommand(twitchMessage.getMessage(), twitchMessage.getTwitchChannel());
+					responses.add(new OutboundTwitchMessage(responsePayload, twitchMessage.getTwitchChannel()));
                 }
             case BotModerator:
-                operatorCommands( twitchMessage.getUsername(), twitchMessage.getMessage());
+                responses.addAll( operatorCommands( twitchMessage) );
             case ChannelModerator:
                 break;
             default:
-                isMessagePermitted( twitchMessage );
+                isMessagePermitted( twitchMessage, blockedWords, blockedMessages );
                 spamDetector(twitchMessage);
         }
+
+		responses.stream().forEach(twitchMessageRouter::sendChannelMessage);
 	}
 
 	/**
 	 * Used to add a word to the blacklist
 	 */
-    private String botCommand(String word) {
+    private String botCommand(String word, String channel) {
 		if(word.startsWith("!bot")){
 			word = word.substring(5); //remove the !bot section.
 			if(word.startsWith("blw")){
-				return bLWord(word.substring(4));
+				return bLWord(word.substring(4), channel);
 			} else if(word.startsWith("rmblw")){
 				return removeBLWord(word.substring(6));
 			} else if(word.startsWith("blm")){
-				return bLMsg(word.substring(4));
+				return bLMsg(word.substring(4), channel);
 			} else if(word.startsWith("rmblm")){
 				return removeBLMsg(word.substring(6));
 			} else if(word.startsWith("addop")){
@@ -126,16 +131,9 @@ class BotController {
 				return setStartTime();
 			} else if(word.startsWith("set")){
 				return setVariables(word.substring(4));
-			} else if(word.startsWith("resetbans")){
-				return resetBans();
 			}
 		}
 		return "Unknown Command Entered.";
-	}
-
-	private String resetBans(){
-		banHistory = new HashMap<>();
-		return "Ban History reset";
 	}
 
 	private String setVariables(String command){
@@ -229,17 +227,20 @@ class BotController {
 	 * @param word Word to add to blacklist
 	 * @return response message
 	 */
-	private String bLWord(final String word){
-        final String lowerCaseWord = word.toLowerCase();
+	private String bLWord(String word, String channel){
+        String lowerCaseWord = word.toLowerCase();
 		if(lowerCaseWord.length()<3) return "Word not long enough.";
 		if(blockedWords.contains(lowerCaseWord))
 			return lowerCaseWord + " already on blacklist.";
 		blockedWords.add(lowerCaseWord);
         channelManager.getMessageSnapshot()
                 .stream()
-                .filter(message -> !channelManager.checkPermission(message.getUsername(), UserPermission.ChannelModerator))
+                .filter(message -> !channelManager.checkPermission(message.getTwitchUser(), UserPermission.ChannelModerator))
                 .filter(message -> message.getMessage().toLowerCase().contains(lowerCaseWord))
-                .forEach(message -> ban(message.getUsername(), message.getMessage(), 45, "Blacklisted word: " + word, ""));
+                .forEach(message -> timeoutUser(message.getTwitchUser(),
+                        channel,
+                        Period.seconds(45),
+                        "A word you have recently used has been blacklisted"));
 		return lowerCaseWord + " added to blacklist. Previous messages breaching rule this will be banned.";
 	}
 
@@ -261,16 +262,19 @@ class BotController {
 	 * @param word Word to add to blacklist
 	 * @return response word
 	 */
-	private String bLMsg(final String word){
-        final String lowerCaseMessage = word.toLowerCase();
+	private String bLMsg(String word, String channel){
+        String lowerCaseMessage = word.toLowerCase();
 		if(blockedMessages.contains(lowerCaseMessage))
 			return lowerCaseMessage + " already on blacklist.";
 		blockedMessages.add(lowerCaseMessage);
         channelManager.getMessageSnapshot()
                 .stream()
-                .filter(message -> !channelManager.checkPermission(message.getUsername(), UserPermission.ChannelModerator))
+                .filter(message -> !channelManager.checkPermission(message.getTwitchUser(), UserPermission.ChannelModerator))
                 .filter(message -> message.getMessage().equalsIgnoreCase(lowerCaseMessage))
-                .forEach(message -> ban(message.getUsername(), message.getMessage(), 45, "Blacklisted message: " + word, ""));
+                .forEach(message -> timeoutUser(message.getTwitchUser(),
+                        channel,
+                        Period.seconds(45),
+                        "A message you recently sent has been blacklisted"));
 		return lowerCaseMessage + " added to message blacklist. Previous messages breaching this rule will be banned.";
 	}
 	/**
@@ -317,7 +321,7 @@ class BotController {
         String message = twitchMessage.getMessage().substring(1);
 		if (message.equalsIgnoreCase("TTL") || message.equalsIgnoreCase("TTT")) {
             String senderUsername = twitchMessage.getUsername();
-			String timeTillLive = getTimeTillLive(senderUsername);
+			String timeTillLive = getTimeTillLive();
 			if( !Strings.isNullOrEmpty(timeTillLive) ){
                 OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(timeTillLive, twitchMessage.getTwitchChannel());
                 twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
@@ -353,7 +357,7 @@ class BotController {
 	/**
 	 * Sends a Message to chat displaying how long till the show begins.
 	 */
-	private String getTimeTillLive(String sender) {
+	private String getTimeTillLive() {
         if( new Period(commandTimeTTL, DateTime.now()).toStandardSeconds().getSeconds() < 40 ) {
             return null;
         }
@@ -374,49 +378,60 @@ class BotController {
         }
 	}
 
-	private void hostCommands(TwitchMessage twitchMessage){
-        final String message = twitchMessage.getMessage();
-		//Repeats messages starting with HTTP:// & HTTPS://
+	private Collection<OutboundTwitchMessage> hostCommands(TwitchMessage twitchMessage){
+        String message = twitchMessage.getMessage();
 		if(message.startsWith("http://") || message.startsWith("https://")){
-			try{
-				final String shortenedURL = bitlyDecorator.shortenURL(message);
-                lastHostLink = shortenedURL;
-                IntStream.range(0, linkRepeatCountHost).forEach(ignore -> sendMessageP(shortenedURL));
-			} catch (Exception e){
-                // Send un-shortened anyway.
-                IntStream.range(0, linkRepeatCountHost).forEach(ignore -> sendMessageP(message));
-			}
-
+			return linkRepeater(
+                    message,
+                    twitchMessage.getTwitchChannel(),
+                    twitchMessage.getUsername(),
+                    linkRepeatCountHost);
 		}
+		return new LinkedList<>();
 	}
 
-	private void operatorCommands(String sender, String message){
-		if(message.startsWith("!link")) linkRepeater(sender, message.substring(6));
-		else if(message.startsWith("!loop add")) messageRepeater.addMessage(message.substring(10));
-		else if(message.startsWith("!loop removeLast")) messageRepeater.clearLast();
-		else if(message.startsWith("!loop removeAll")) messageRepeater.clearAll();
+	private Collection<OutboundTwitchMessage> operatorCommands(TwitchMessage twitchMessage){
+		String message = twitchMessage.getMessage();
+		Collection<OutboundTwitchMessage> outboundTwitchMessages = new LinkedList<>();
+		if(message.startsWith("!link")){
+			Collection<OutboundTwitchMessage> repeatedLinks = linkRepeater(
+					message.substring(6),
+					twitchMessage.getTwitchChannel(),
+					twitchMessage.getUsername(),
+					linkRepeatCountMod);
+			outboundTwitchMessages.addAll(repeatedLinks);
+		}
+		else if(message.startsWith("!loop add")){
+			outboundTwitchMessages.add(messageRepeater.addMessage(message.substring(10)));
+		}
+		else if(message.startsWith("!loop removeLast")){
+			outboundTwitchMessages.add(messageRepeater.clearLast());
+		}
+		else if(message.startsWith("!loop removeAll")){
+			outboundTwitchMessages.add(messageRepeater.clearAll());
+		}
+		return outboundTwitchMessages;
 	}
 
 	/**
-	 * Used to spam links by bot operators.
-	 *
-	 * @param sender
-	 *            The sender of the message
-	 * @param message
-	 *            The link sent
+	 * Used to repeat links by bot operators.
 	 */
-	private void linkRepeater(String sender, String message) {
-		if (message.startsWith("http://") || message.startsWith("https://")) {
+	private Collection<OutboundTwitchMessage> linkRepeater(
+			String url,
+			String twitchChannel,
+			String sender,
+			Integer repeatCount) {
+		if (url.startsWith("http://") || url.startsWith("https://")) {
 			try {
-				message = bitlyDecorator.shortenURL(message);
+				url = bitlyDecorator.shortenURL(url);
 			} catch (Exception e) {
-				log.warn("Failed to convert bitly link: {}", message);
+				log.warn("Failed to convert bitly link: {}", url);
 			}
 		}
-		String newMessage = sender + " : " + message;
-		for (int x = 0; x < linkRepeatCountMod; x++) {
-			sendMessageP(newMessage);
-		}
+		final String newMessage = sender + " : " + url;
+		return IntStream.range(0, repeatCount)
+				.mapToObj(ignore -> new OutboundTwitchMessage(newMessage, twitchChannel))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -444,7 +459,7 @@ class BotController {
         OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(outboundMessagePayload, sourceUserUsername);
         twitchMessageRouter.sendUserWhisper(outboundWhisper);
 
-        boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 30;
+        boolean sendToChannel = new Period(commandTimeHelp, DateTime.now()).toStandardSeconds().getSeconds() > 30;
         if( sendToChannel ){
             OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
             twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
@@ -455,17 +470,18 @@ class BotController {
 	/**
 	 * Checks if a message is in the blacklist
 	 */
-	private void isMessagePermitted(TwitchMessage twitchMessage, Collection<String> blockedWords, Collection<String> blockedMessages) {
+	private void isMessagePermitted(
+            TwitchMessage twitchMessage,
+            Collection<String> blockedWords,
+            Collection<String> blockedMessages) {
         boolean containsBlacklistedWord = blockedWords.stream().anyMatch(twitchMessage::containsString);
         boolean isBlacklistedMessage = blockedMessages.stream().anyMatch(twitchMessage::equalsSimplePayload);
         boolean messagePermitted = containsBlacklistedWord || isBlacklistedMessage;
         if( messagePermitted ){
-            TwitchMessageRouter.
-            ban(
-                    twitchMessage.getUsername(),
-                    45,
-                    "Matched blacklisted word", "Timeout - Blacklisted word"
-            );
+            timeoutUser(twitchMessage.getTwitchUser(),
+                    twitchMessage.getTwitchChannel(),
+                    Period.minutes(45),
+                    "You posted a blacklisted word.");
         }
     }
 
@@ -490,48 +506,58 @@ class BotController {
 	 */
 	private void spamDetector(TwitchMessage twitchMessage) {
         ImmutableTwitchMessageList userMessages = channelManager
-				.getMessageSnapshot(twitchMessage.getUsername());
+				.getMessageSnapshot(twitchMessage.getTwitchUser());
 
 		if(twitchMessage.getMessage().length() > 5 && twitchMessage.getLegalCharRatio(permittedChars) < 0.1)
-			ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "ASCII art ban", "You have been timed out for posting ASCII art.");
+			timeoutUser(twitchMessage.getTwitchUser(),
+                    twitchMessage.getTwitchChannel(),
+                    Period.seconds(20),
+                    "You have been timed out for posting ASCII art.");
 
 		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > messagesPerSecond){
-			ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "More than " + messagesPerSecond + " messages/second", "You have been timed out for posting messages to quickly.");
+			timeoutUser(twitchMessage.getTwitchUser(),
+                    twitchMessage.getTwitchChannel(),
+                    Period.seconds(20),
+                    "You have been timed out for posting messages to quickly.");
 			return;
 		}
 
 		if(commandWords.contains(twitchMessage.getMessage())) return;
 		if(channelManager.getMessageSnapshot().containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= repetitionSearch)
-			ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "Repeated Message Found", "You have been timed out. Your message has been posted in the chat recently.");
+			timeoutUser(twitchMessage.getTwitchUser(),
+                    twitchMessage.getTwitchChannel(),
+                    Period.seconds(20),
+                    "You have been timed out. Your message has been posted in the chat recently.");
         else if (userMessages.containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= 2) {
-            ban(twitchMessage.getUsername(), twitchMessage.getMessage(), 20, "Repeated Message Found", "You have been timed out for repeating the same message.");
+            timeoutUser(twitchMessage.getTwitchUser(),
+                    twitchMessage.getTwitchChannel(),
+                    Period.seconds(20),
+                    "You have been timed out for repeating the same message.");
         }
 	}
     
 	/**
-	 * This message to the ban log file.
-	 * 
-	 * @param sender
-	 *            Sender of the offending message.
-	 * @param message
-	 *            Offending message.
+	 * This message to the timeoutUser log file.
+	 *
 	 * @param banLength
 	 *            Length of Ban resulting from message.
 	 * @param reason
-	 *            Reason for ban.
+	 *            Reason for timeoutUser.
 	 */
-	private void ban(String sender, String message, int banLength,
-			String reason, String officialReason) {
-		Integer previousBanTotal = banHistory.get(sender);
-		if(previousBanTotal == null) previousBanTotal = 0;
-		banLength += previousBanTotal;
-		if(banLength > 60) banLength += 120;
-		if(!Strings.isNullOrEmpty(officialReason)){
-            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(officialReason, sender);
-            privateMessageSender.sendWhisperAsync(outboundTwitchMessage);
+	private void timeoutUser(
+            TwitchUser twitchUser,
+            String channel,
+            Period banLength,
+			String reason) {
+		Period previousBans = channelManager.getUserTimeout(twitchUser);
+		banLength = banLength.plus(previousBans);
+		if(banLength.toStandardMinutes().getMinutes() > 1) banLength = banLength.plusMinutes(2);
+		if(!Strings.isNullOrEmpty(reason)){
+            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(reason, twitchUser.getUsername());
+            twitchMessageRouter.sendUserWhisper(outboundTwitchMessage);
         }
-		publicMessageSender.sendMessage(twitchChannelName, ".timeout " + sender + " " + banLength);
-		banHistory.put(sender, banLength);
-		actionLog.info("Timeout {} for {}s. Reason: {}. Message: {}", sender, banLength, reason, message);
+        OutboundTwitchMessage twitchTimeout = new OutboundTwitchTimeout(channel, twitchUser.getUsername(), banLength);
+		twitchMessageRouter.sendChannelMessage(twitchTimeout);
+		actionLog.info("Timeout {} for {}s. Reason: {}. Message: {}", twitchUser, banLength, reason, reason);
 	}
 }

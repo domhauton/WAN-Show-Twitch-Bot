@@ -1,6 +1,7 @@
 package twitch.chat.routing;
 
 import twitch.chat.data.OutboundTwitchMessage;
+import twitch.chat.exceptions.TwitchChatException;
 import twitch.chat.sender.ChannelSender;
 
 import javax.inject.Inject;
@@ -16,6 +17,12 @@ class ChannelSenderPool {
     @Inject
     ChannelSenderPool(ChannelSender channelSender) {
         this.channelSender = channelSender;
+        try {
+            channelSender.connect();
+        } catch (TwitchChatException e) {
+            //TODO FIXME
+            System.err.println("Could not connect");
+        }
     }
 
     void sendChannelMessage(OutboundTwitchMessage outboundTwitchMessage) {

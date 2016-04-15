@@ -27,8 +27,8 @@ public class ChannelSender extends MessageSender{
             @Named("twitch.username") String twitchUsername,
             @Named("twitch.oauth.token") String oAuthToken,
             @Named("twitch.irc.public.twitchChannel") String channelName,
-            @Named("twitch.irc.public.server.server") String twitchChatServerName,
-            @Named("twitch.irc.port") Integer twitchChatServerPort,
+            @Named("twitch.irc.public.server") String twitchChatServerName,
+            @Named("twitch.irc.public.port") Integer twitchChatServerPort,
             @Named("twitch.irc.public.eventCountPerWindow") Integer maxEventCountPerWindow,
             @Named("twitch.irc.public.eventCountWindowSize") Integer windowSizeSeconds) {
         super(twitchUsername, oAuthToken, new AsyncEventBuffer(maxEventCountPerWindow, windowSizeSeconds));
@@ -37,7 +37,7 @@ public class ChannelSender extends MessageSender{
         this.twitchChatServerPort = twitchChatServerPort;
     }
 
-    void connect() throws TwitchChatException {
+    public void connect() throws TwitchChatException {
         super.connect(channelName, twitchChatServerName, twitchChatServerPort);
         sendChatHandshake(ChatHandshake.COMMANDS);
         setMessageDelay(messageDelay);

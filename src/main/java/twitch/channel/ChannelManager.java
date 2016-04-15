@@ -1,11 +1,13 @@
 package twitch.channel;
 
+import org.joda.time.Period;
 import twitch.channel.data.TwitchMessage;
 import twitch.channel.data.TwitchUser;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.MessageManager;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
+import twitch.channel.timeouts.TimeoutManager;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -15,10 +17,12 @@ import twitch.channel.permissions.UserPermission;
 public class ChannelManager {
     private PermissionsManager permissionsManager;
     private MessageManager     messageManager;
+    private TimeoutManager     timeoutManager;
 
     public ChannelManager() {
-        permissionsManager =     new PermissionsManager();
-        messageManager =         new MessageManager();
+        permissionsManager = new PermissionsManager();
+        messageManager = new MessageManager();
+        timeoutManager = new TimeoutManager();
     }
 
     /**
@@ -43,6 +47,14 @@ public class ChannelManager {
 
     public ImmutableTwitchMessageList getMessageSnapshot(TwitchUser username) {
         return messageManager.getUserSnapshot(username);
+    }
+
+    public Period getUserTimeout(TwitchUser twitchUser) {
+        return timeoutManager.getUserTimeout(twitchUser);
+    }
+
+    public void addUserTimeout(TwitchUser twitchUser, Period timeoutPeriod){
+        timeoutManager.addUserTimeout(twitchUser, timeoutPeriod);
     }
 
     public boolean addChannelMessage(TwitchMessage message) {

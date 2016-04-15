@@ -26,7 +26,7 @@ public class WhisperSender extends MessageSender {
     public WhisperSender(
             @Named("twitch.username") String twitchUsername,
             @Named("twitch.oauth.token") String oAuthToken,
-            @Named("twitch.irc.whisper.channel") String whisperChannelName,
+            @Named("twitch.irc.whisper.twitchChannel") String whisperChannelName,
             @Named("twitch.irc.whisper.server") String twitchGroupServerName,
             @Named("twitch.irc.whisper.port") Integer twitchGroupServerPort,
             @Named("twitch.irc.whisper.eventCountPerWindow") Integer maxEventCountPerWindow,
@@ -37,7 +37,7 @@ public class WhisperSender extends MessageSender {
         this.twitchGroupServerPort = twitchGroupServerPort;
     }
 
-    void connect() throws TwitchChatException {
+    public void connect() throws TwitchChatException {
         super.connect(whisperChannelName, twitchGroupServerName, twitchGroupServerPort);
         sendChatHandshake(ChatHandshake.COMMANDS);
         setMessageDelay(messageDelay);

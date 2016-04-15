@@ -1,4 +1,4 @@
-package twitch.channel.message;
+package twitch.channel.data;
 
 import twitch.channel.data.TwitchMessage;
 import twitch.channel.data.TwitchUser;
@@ -54,8 +54,8 @@ public class TwitchMessageTest {
 
     @Test
     public void getSender() throws Exception {
-        Assert.assertEquals(twitchUsername, twitchMessagePayload1User1_1.getUsername().getUsername());
-        Assert.assertEquals(new TwitchUser(twitchUsername), twitchMessagePayload1User1_1.getUsername());
+        Assert.assertEquals(twitchUsername, twitchMessagePayload1User1_1.getUsername());
+        Assert.assertEquals(new TwitchUser(twitchUsername), twitchMessagePayload1User1_1.getTwitchUser());
     }
 
     @Test

@@ -2,6 +2,7 @@ package twitch.chat.routing;
 
 import com.google.inject.Inject;
 import twitch.chat.data.OutboundTwitchMessage;
+import twitch.chat.exceptions.TwitchChatException;
 import twitch.chat.sender.WhisperSender;
 import org.joda.time.Period;
 
@@ -22,6 +23,12 @@ public class TwitchMessageRouter {
             WhisperSender whisperSender,
             ChannelSenderPool channelSenderPool) {
         this.whisperSender = whisperSender;
+        try {
+            whisperSender.connect();
+        } catch (TwitchChatException e) {
+            // FIXME: 16/04/2016
+            System.err.println("Could not connect to whisper chat");
+        }
         this.channelSenderPool = channelSenderPool;
     }
 
