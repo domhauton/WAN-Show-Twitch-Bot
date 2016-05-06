@@ -1,10 +1,10 @@
-package util.config;
+package bot.util.config;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import util.DateTimeUtil;
+import bot.util.DateTimeUtil;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

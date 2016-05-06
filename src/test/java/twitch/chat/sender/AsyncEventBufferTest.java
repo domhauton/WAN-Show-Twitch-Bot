@@ -28,7 +28,7 @@ public class AsyncEventBufferTest {
     }
 
     @Test
-    public void TestEventRate() throws InterruptedException{
+    public void testEventRate() throws InterruptedException{
         IntStream.range(0, 10).forEachOrdered(value -> {
             Assert.assertTrue("Adding message " + value, asyncEventBuffer.addMessage());
             log.info("Adding message " + value + ". Expect Accept.");
@@ -50,7 +50,7 @@ public class AsyncEventBufferTest {
      * Fails if method is not synchronized
      */
     @Test
-    public void TestEventRateMultiThread() throws InterruptedException{
+    public void testEventRateMultiThread() throws InterruptedException{
         Semaphore semaphore = new Semaphore(0);
 
         Supplier<Boolean> callEventBuffer = () -> {

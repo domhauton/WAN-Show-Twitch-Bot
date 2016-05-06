@@ -1,11 +1,9 @@
-package util;
+package bot.util;
 
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
-
-import javax.inject.Singleton;
 
 /**
  * Created by Dominic Hauton on 15/03/2016.

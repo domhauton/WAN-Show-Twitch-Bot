@@ -8,8 +8,8 @@ import org.apache.logging.log4j.util.Supplier;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import util.config.AppInjector;
-import util.config.Environment;
+import bot.util.config.AppInjector;
+import bot.util.config.Environment;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;

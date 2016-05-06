@@ -1,4 +1,4 @@
-package util.config;
+package bot.util.config;
 
 /**
  * Created by Dominic Hauton on 16/03/2016.

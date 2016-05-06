@@ -1,4 +1,4 @@
-package util;
+package bot.util;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -25,10 +25,6 @@ public class BitlyDecorator {
             @Named("bitly.token") String bitlyToken) {
         log.info("Logging into bitly as user {}", bitlyUsername);
         bitlyProvider = Bitly.as(bitlyUsername, bitlyToken);
-    }
-
-    public BitlyDecorator(Bitly.Provider bitlyProvider) {
-        this.bitlyProvider = bitlyProvider;
     }
 
     public String shortenURL(String longURL) {

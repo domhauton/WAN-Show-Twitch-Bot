@@ -11,7 +11,7 @@ import java.util.function.Consumer;
  */
 interface TwitchMessageSupplier {
     /**
-     * Start the supplier. May start a connection or start message generation.
+     * bot.Start the supplier. May start a connection or start message generation.
      */
     void listen();
 
