@@ -1,10 +1,12 @@
+package bot;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import twitch.chat.listener.TwitchChannelListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import util.config.AppInjector;
-import util.config.Environment;
+import bot.util.config.AppInjector;
+import bot.util.config.Environment;
 
 public final class Start {
 	private static final Logger log = LogManager.getLogger();

@@ -1,3 +1,5 @@
+package bot;
+
 import twitch.channel.ChannelManager;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.data.TwitchMessage;
@@ -16,8 +18,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.format.ISODateTimeFormat;
-import util.BitlyDecorator;
-import util.DateTimeUtil;
+import bot.util.BitlyDecorator;
+import bot.util.DateTimeUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,11 +39,11 @@ class BotController {
 
 	private String lastHostLink;
 
-	private int maxMsg = 20;
-	private int linkRepeatCountHost = 7;
-	private int linkRepeatCountMod = 5;
-    private float messagesPerSecond = 2.5f;
-    private int repetitionSearch = 4;
+	private int m_maximumMessagesToAverageTime = 20;
+	private int m_linkRepeatCountHost = 7;
+	private int m_linkRepeatCountMod = 5;
+    private float m_messagesPerSecond = 2.5f;
+    private int m_repetitionSearch = 4;
 	
 	private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
     private DateTime commandTimeTTL, commandTimeLLL, commandTimeHelp, streamStartTime;
@@ -73,7 +75,7 @@ class BotController {
     /**
      * Processes the given twitchMessage as required for the channel.
      */
-    void processMessage(InboundTwitchMessage inboundTwitchMessage) {
+    Collection<OutboundTwitchMessage> processMessage(InboundTwitchMessage inboundTwitchMessage) {
         TwitchMessage twitchMessage = (TwitchMessage) inboundTwitchMessage;
 		channelManager.addChannelMessage(twitchMessage);
 
@@ -90,13 +92,9 @@ class BotController {
 
         switch (userPermissionOnChannel) {
             case ChannelOwner:
-                hostCommands(twitchMessage);
+                responses.addAll(hostCommands(twitchMessage));
             case BotAdmin:
-                boolean isBotCommand = twitchMessage.getSimpleMessagePayload().startsWith("!bot");
-                if(isBotCommand) {
-					String responsePayload = botCommand(twitchMessage.getMessage(), twitchMessage.getTwitchChannel());
-					responses.add(new OutboundTwitchMessage(responsePayload, twitchMessage.getTwitchChannel()));
-                }
+
             case BotModerator:
                 responses.addAll( operatorCommands( twitchMessage) );
             case ChannelModerator:
@@ -106,213 +104,10 @@ class BotController {
                 spamDetector(twitchMessage);
         }
 
-		responses.stream().forEach(twitchMessageRouter::sendChannelMessage);
+        return responses;
 	}
 
-	/**
-	 * Used to add a word to the blacklist
-	 */
-    private String botCommand(String word, String channel) {
-		if(word.startsWith("!bot")){
-			word = word.substring(5); //remove the !bot section.
-			if(word.startsWith("blw")){
-				return bLWord(word.substring(4), channel);
-			} else if(word.startsWith("rmblw")){
-				return removeBLWord(word.substring(6));
-			} else if(word.startsWith("blm")){
-				return bLMsg(word.substring(4), channel);
-			} else if(word.startsWith("rmblm")){
-				return removeBLMsg(word.substring(6));
-			} else if(word.startsWith("addop")){
-				return addOperator(word.substring(6));
-			} else if(word.startsWith("rmop")){
-				return rmOperator(word.substring(5));
-			} else if(word.startsWith("sstart")){
-				return setStartTime();
-			} else if(word.startsWith("set")){
-				return setVariables(word.substring(4));
-			}
-		}
-		return "Unknown Command Entered.";
-	}
 
-	private String setVariables(String command){
-		float newVal;
-		String[] sCommand = command.split(" ");
-		if (sCommand.length != 2) return "Syntax Error.";
-		try{
-			newVal = Float.parseFloat(sCommand[1]);
-			if(sCommand[0].equalsIgnoreCase("maxmsg")){
-				if(newVal > 0 && newVal <= 200){
-					maxMsg = (int) newVal;
-					if(maxMsg>repetitionSearch-1)repetitionSearch= maxMsg-1;
-					return "maxMsg set to " + maxMsg;
-				} else {
-					return "maxMsg must be between 0 and 200";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("linkRepeatCountHost")){
-				if(newVal > 0 && newVal <= 40){
-					linkRepeatCountHost = (int) newVal;
-					return "linkRepeatCountHost set to " + linkRepeatCountHost;
-				} else {
-					return "linkRepeatCountHost must be between 0 and 40";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("linkRepeatCountMod")){
-				if(newVal > 0 && newVal <= 40){
-					linkRepeatCountMod = (int) newVal;
-					return "linkRepeatCountMod set to " + linkRepeatCountMod;
-				} else {
-					return "linkRepeatCountMod must be between 0 and 40";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("messageCap")){
-				if(newVal > 0 && newVal <= 50){
-                    int messageCap = (int) newVal;
-					return "messageCap set to " + messageCap;
-				} else {
-					return "messageCap must be between 0 and 50";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("rPostVal")){
-				if(newVal > 0 && newVal <= 50){
-                    int rPostVal = (int) newVal;
-					return "rPostVal set to " + rPostVal;
-				} else {
-					return "rPostVal must be between 0 and 50";
-				}
-			} else if(sCommand[0].equalsIgnoreCase("messagesPerSecond")){
-				if(newVal > 0 && newVal <= 50){
-					messagesPerSecond = newVal;
-					return "secpermsg set to " + messagesPerSecond;
-				} else {
-					return "secpermsg must be between 0 and 50";
-				}
-			} else {
-                if (sCommand[0].equalsIgnoreCase("longestSubStringAllowed")) {
-                    if (newVal > 3 && newVal <= 50) {
-                        int longestSubStringAllowed = (int) newVal;
-                        return "longestSubStringAllowed set to " + longestSubStringAllowed;
-                    } else {
-                        return "longestSubStringAllowed must be between 3 and 50";
-                    }
-                } else if (sCommand[0].equalsIgnoreCase("repetitionSearch")) {
-                    if (newVal > 1 && newVal <= maxMsg - 1) {
-                        repetitionSearch = (int) newVal;
-                        return "repetitionSearch set to " + repetitionSearch;
-                    } else {
-                        return "repetitionSearch must be between 1 and maxMsg";
-                    }
-                } else if (sCommand[0].equalsIgnoreCase("messageFrequency")) {
-                    if (newVal > 60) {
-                        messageRepeater.setFrequency((int) newVal);
-                        return "messageFrequency set to " + (int) newVal;
-                    } else {
-                        return "messageFrequency must be more than 60";
-                    }
-                } else if (sCommand[0].equalsIgnoreCase("messageRepToggle")) {
-                    messageRepeater.toggleState();
-                    return "messageRepetition Toggled.";
-                } else if (sCommand[0].equalsIgnoreCase("addStartTime")) {
-                    showStartTime = showStartTime.plusSeconds((int) newVal);
-                    return "Show start time set to: " + showStartTime.toString(ISODateTimeFormat.basicOrdinalDateTimeNoMillis());
-                } else {
-                    return "Variable name not found";
-                }
-            }
-		}catch(Exception e){
-			return "Syntax Error.";
-		}
-	}
-
-	/**
-	 * Adds a word to the blacklist.
-	 * @param word Word to add to blacklist
-	 * @return response message
-	 */
-	private String bLWord(String word, String channel){
-        String lowerCaseWord = word.toLowerCase();
-		if(lowerCaseWord.length()<3) return "Word not long enough.";
-		if(blockedWords.contains(lowerCaseWord))
-			return lowerCaseWord + " already on blacklist.";
-		blockedWords.add(lowerCaseWord);
-        channelManager.getMessageSnapshot()
-                .stream()
-                .filter(message -> !channelManager.checkPermission(message.getTwitchUser(), UserPermission.ChannelModerator))
-                .filter(message -> message.getMessage().toLowerCase().contains(lowerCaseWord))
-                .forEach(message -> timeoutUser(message.getTwitchUser(),
-                        channel,
-                        Period.seconds(45),
-                        "A word you have recently used has been blacklisted"));
-		return lowerCaseWord + " added to blacklist. Previous messages breaching rule this will be banned.";
-	}
-
-	/**
-	 * Removes a word from the blacklist if possible. If not possible it is ignored.
-	 * @param word word to remove.
-	 * @return response message.
-	 */
-	private String removeBLWord(String word){
-		if(blockedWords.contains(word)){
-			blockedWords.remove(word);
-			return word + " removed from the blacklist.";
-		}
-		return word + " not found on the blacklist";
-	}
-
-	/**
-	 * Adds a word to the blacklist.
-	 * @param word Word to add to blacklist
-	 * @return response word
-	 */
-	private String bLMsg(String word, String channel){
-        String lowerCaseMessage = word.toLowerCase();
-		if(blockedMessages.contains(lowerCaseMessage))
-			return lowerCaseMessage + " already on blacklist.";
-		blockedMessages.add(lowerCaseMessage);
-        channelManager.getMessageSnapshot()
-                .stream()
-                .filter(message -> !channelManager.checkPermission(message.getTwitchUser(), UserPermission.ChannelModerator))
-                .filter(message -> message.getMessage().equalsIgnoreCase(lowerCaseMessage))
-                .forEach(message -> timeoutUser(message.getTwitchUser(),
-                        channel,
-                        Period.seconds(45),
-                        "A message you recently sent has been blacklisted"));
-		return lowerCaseMessage + " added to message blacklist. Previous messages breaching this rule will be banned.";
-	}
-	/**
-	 * Removes a word from the blacklist if possible. If not possible it is ignored.
-	 * @param word word to remove.
-	 * @return response word.
-	 */
-	private String removeBLMsg(String word){
-		if(blockedWords.contains(word)){
-			blockedWords.remove(word);
-			return word + " removed from the blacklist.";
-		}
-		return word + " not found on the blacklist";
-	}
-
-	private String addOperator(String command){
-		String[] splitCommand = command.split(" ");
-		if (splitCommand.length != 2) return "Syntax Error.";
-		try{
-			String tier = splitCommand[0];
-			String username = splitCommand[1];
-			UserPermission userPermission = UserPermission.valueOf(tier);
-			channelManager.setPermission(new TwitchUser(username), userPermission);
-			return String.format("Added %s to %s", username, userPermission);
-		} catch(Exception e){
-			return "Syntax Error.";
-		}
-	}
-
-	private String rmOperator(String name){
-		channelManager.setPermission(new TwitchUser(name), UserPermission.getDefaultPermission());
-		return name + " is no longer an operator.";
-	}
-
-	private String setStartTime(){
-		streamStartTime = DateTime.now();
-		return "Show Start time has been set.";
-	}
 
 	/**
 	 * Checks if the message sent is a current request
@@ -381,13 +176,13 @@ class BotController {
 	private Collection<OutboundTwitchMessage> hostCommands(TwitchMessage twitchMessage){
         String message = twitchMessage.getMessage();
 		if(message.startsWith("http://") || message.startsWith("https://")){
+			lastHostLink = twitchMessage.getMessage();
 			return linkRepeater(
                     message,
                     twitchMessage.getTwitchChannel(),
-                    twitchMessage.getUsername(),
-                    linkRepeatCountHost);
+                    twitchMessage.getUsername(), m_linkRepeatCountHost);
 		}
-		return new LinkedList<>();
+        return Collections.emptyList();
 	}
 
 	private Collection<OutboundTwitchMessage> operatorCommands(TwitchMessage twitchMessage){
@@ -397,8 +192,7 @@ class BotController {
 			Collection<OutboundTwitchMessage> repeatedLinks = linkRepeater(
 					message.substring(6),
 					twitchMessage.getTwitchChannel(),
-					twitchMessage.getUsername(),
-					linkRepeatCountMod);
+					twitchMessage.getUsername(), m_linkRepeatCountMod);
 			outboundTwitchMessages.addAll(repeatedLinks);
 		}
 		else if(message.startsWith("!loop add")){
@@ -428,7 +222,7 @@ class BotController {
 				log.warn("Failed to convert bitly link: {}", url);
 			}
 		}
-		final String newMessage = sender + " : " + url;
+		String newMessage = sender + " : " + url;
 		return IntStream.range(0, repeatCount)
 				.mapToObj(ignore -> new OutboundTwitchMessage(newMessage, twitchChannel))
 				.collect(Collectors.toList());
@@ -514,7 +308,7 @@ class BotController {
                     Period.seconds(20),
                     "You have been timed out for posting ASCII art.");
 
-		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > messagesPerSecond){
+		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > m_messagesPerSecond){
 			timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
                     Period.seconds(20),
@@ -523,7 +317,7 @@ class BotController {
 		}
 
 		if(commandWords.contains(twitchMessage.getMessage())) return;
-		if(channelManager.getMessageSnapshot().containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= repetitionSearch)
+		if(channelManager.getMessageSnapshot().containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= m_repetitionSearch)
 			timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
                     Period.seconds(20),
