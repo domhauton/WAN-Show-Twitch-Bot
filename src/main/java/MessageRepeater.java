@@ -48,7 +48,7 @@ public class MessageRepeater {
 
     private void sendRandomMessage() {
         if(on){
-            final ImmutableList<String> messageCopy = ImmutableList.copyOf(messages);
+            ImmutableList<String> messageCopy = ImmutableList.copyOf(messages);
             Integer indexOfMessage = randomNumberGenerator.nextInt(messageCopy.size());
             String messageToSend = messageCopy.get(indexOfMessage);
             log.info("Sending repeated message: {}", messageToSend);
@@ -63,11 +63,7 @@ public class MessageRepeater {
     }
 
     public void toggleState() {
-        if (on) {
-            on = false;
-        } else {
-            on = true;
-        }
+        on = !on;
     }
 
     public void clearAll() {

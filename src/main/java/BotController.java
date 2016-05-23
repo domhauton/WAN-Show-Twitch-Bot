@@ -264,7 +264,7 @@ public class BotController {
 	 */
 	private String bLWord(final String word){
         final String lowerCaseWord = word.toLowerCase();
-		if(lowerCaseWord.length()<3) return "Word not long enough.";
+		if(lowerCaseWord.length()<1) return "Word not long enough.";
 		if(blockedWords.contains(lowerCaseWord))
 			return lowerCaseWord + " already on blacklist.";
 		blockedWords.add(lowerCaseWord);
@@ -521,7 +521,7 @@ public class BotController {
         Stream.of( "slick_pc", "linustech", "luke_lafr")
                 .map(TwitchUser::new)
                 .forEach(user -> channelManager.setPermission(user, UserPermission.ChannelOwner));
-		Stream.of( "nicklmg", "lttghost", "antvenom" )
+		Stream.of( "nicklmg", "lttghost", "antvenom", "caltane" )
                 .map(TwitchUser::new)
                 .forEach(user -> channelManager.setPermission(user, UserPermission.BotAdmin));
 		Stream.of( "airdeano", "alpenwasser", "blade_of_grass", "colonel_mortis", "daveholla", "dezeltheintern", "dvoulcaris", "ecs_community", "ericlee30", "foxhound590", "glenwing", "ixi_your_face", "linusbottips", "looneyschnitzel", "ltt_bot", "mg2r", "prolemur", "rizenfrmtheashes",  "str_mape", "wh1skers", "whaler_99", "windspeed36", "woodenmarker", "wrefur" )
