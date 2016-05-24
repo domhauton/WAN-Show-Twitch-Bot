@@ -2,6 +2,7 @@ package twitch.channel;
 
 import org.joda.time.Period;
 import twitch.channel.blacklist.BlacklistManager;
+import twitch.channel.blacklist.BlacklistType;
 import twitch.channel.data.TwitchMessage;
 import twitch.channel.data.TwitchUser;
 import twitch.channel.message.ImmutableTwitchMessageList;
@@ -9,6 +10,10 @@ import twitch.channel.message.MessageManager;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
 import twitch.channel.timeouts.TimeoutManager;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -64,15 +69,24 @@ public class ChannelManager {
         return m_messageManager.addMessage(message);
     }
 
-    public void blacklistMessage(String message){
-        m_blacklistManager.blacklistMessage(message);
-    }
+    public Collection<TwitchMessage> blacklistItem(
+            String input,
+            BlacklistType blacklistType,
+            int messageLookBehind) throws ChannelOperationException {
+        ImmutableTwitchMessageList messageList = getMessageSnapshot();
+        if ( messageLookBehind == 0 ) {
+            m_blacklistManager.addToBlacklist(input, blacklistType);
+            return Collections.emptyList();
+        } else if ( messageLookBehind > 0 && messageLookBehind <= messageList.size() ) {
+            Collection<TwitchMessage> trimmedMessageList = messageList
+                    .stream()
+                    .limit(messageLookBehind)
+                    .collect(Collectors.toList());
+            return m_blacklistManager.addToBlacklist(input, blacklistType, trimmedMessageList);
+        } else {
+            throw new ChannelOperationException("Blacklist look-behind must be 0-" + messageList.size()
+                                                + ". Value:" + messageLookBehind);
+        }
 
-    public void blacklistWord(String word){
-        m_blacklistManager.addBlackListWord(word);
-    }
-
-    public void getBlacklist(){
-        m_blacklistManager.getBlacklist();
     }
 }
