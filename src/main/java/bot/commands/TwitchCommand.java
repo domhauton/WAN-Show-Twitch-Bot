@@ -3,33 +3,32 @@ package bot.commands;
 import twitch.channel.data.TwitchMessage;
 import twitch.chat.data.OutboundTwitchMessage;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Created by Dominic Hauton on 23/05/2016.
+ *
+ *
  */
 public enum TwitchCommand {
-    blacklist,
-    bl;
+    blacklist("blacklist", "bl");
 
-    private Function<BotCommandMessage, Collection<TwitchMessage>> commandAction;
+    private Collection<String> aliases;
 
-    TwitchCommand(Function<BotCommandMessage, Collection<OutboundTwitchMessage>> commandAction) {
-        this.commandAction = commandAction;
+    TwitchCommand(String... aliases) {
+        this.aliases = new HashSet<>(Arrays.asList(aliases));
     }
 
-    public Collection<OutboundTwitchMessage> runCommand(BotCommandMessage botCommandMessage) {
-        return commandAction.apply(botCommandMessage);
+    public static TwitchCommand getCommand(String commandName) throws BotCommandException {
+        return Stream.of(TwitchCommand.values())
+                .filter(x -> x.aliasMatches(commandName))
+                .findAny()
+                .orElseThrow(() -> new BotCommandException("Could not find matching command for: " + commandName));
     }
 
-    public char[] getValidFlagList() {
-        return new char[0]; //FIXME Complete
+    public boolean aliasMatches(String alias) {
+        return aliases.contains(alias);
     }
-
-    public String getManualPage() {
-        return ""; //FIXME Complete
-    }
-
-    public String
 }

@@ -1,6 +1,10 @@
 package bot.commands;
 
+import bot.commands.executors.BotCommandUtil;
+import twitch.chat.data.OutboundTwitchMessage;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,7 +15,7 @@ import java.util.stream.Stream;
  *
  * Converts an input String into a command.
  */
-public class BotCommandMessage {
+public class BotCommand {
     private final static String s_commandPrefix = "!bot ";
     private final static char s_escapeChar = '"';
     private final static char s_chunkSeparator = ' ';
@@ -21,7 +25,7 @@ public class BotCommandMessage {
     private Set<Character> m_flags;
     private List<String> m_args;
 
-    public BotCommandMessage(String inputMessage) {
+    public BotCommand(String inputMessage) {
         boolean isValidCommand = inputMessage.startsWith(s_commandPrefix);
         if(isValidCommand){
             String command = inputMessage.replaceFirst(s_commandPrefix, "");
@@ -52,15 +56,9 @@ public class BotCommandMessage {
                            "]*" + s_escapeChar + ")*[^" + s_escapeChar + "]*$)");
     }
 
-    public String getCommandName() {
-        return m_commandName;
-    }
+    public Collection<OutboundTwitchMessage> runCommand() throws BotCommandException {
+        TwitchCommand twitchCommand = TwitchCommand.getCommand(m_commandName);
 
-    public boolean containsFlag(Character flag) {
-        return m_flags.contains(flag);
-    }
-
-    public List<String> getArgs() {
-        return m_args;
+        return BotCommandUtil.parseCommand(twitchCommand, m_flags, m_args);
     }
 }
