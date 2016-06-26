@@ -1,6 +1,6 @@
 package twitch.channel.permissions;
 
-import twitch.channel.data.TwitchUser;
+import twitch.channel.TwitchUser;
 
 import java.util.HashMap;
 

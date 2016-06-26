@@ -1,10 +1,6 @@
 package bot.commands;
 
-import twitch.channel.data.TwitchMessage;
-import twitch.chat.data.OutboundTwitchMessage;
-
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**

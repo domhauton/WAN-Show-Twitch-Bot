@@ -1,6 +1,5 @@
 package twitch.channel.message;
 
-import twitch.channel.data.TwitchMessage;
 import com.google.common.collect.EvictingQueue;
 
 /**

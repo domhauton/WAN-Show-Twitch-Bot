@@ -1,11 +1,11 @@
 package twitch.channel.data;
 
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.message.TwitchMessage;
 import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import twitch.channel.TwitchUser;
 
 import java.util.Set;
 import java.util.stream.Collectors;

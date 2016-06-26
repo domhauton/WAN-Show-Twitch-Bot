@@ -1,6 +1,6 @@
 package irc;
 
-import twitch.channel.data.TwitchMessage;
+import twitch.channel.message.TwitchMessage;
 import org.jibble.pircbot.PircBot;
 
 import java.util.function.Consumer;
