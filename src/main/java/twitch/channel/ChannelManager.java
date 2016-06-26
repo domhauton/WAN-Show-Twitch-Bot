@@ -3,10 +3,9 @@ package twitch.channel;
 import org.joda.time.Period;
 import twitch.channel.blacklist.BlacklistManager;
 import twitch.channel.blacklist.BlacklistType;
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.MessageManager;
+import twitch.channel.message.TwitchMessage;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
 import twitch.channel.timeouts.TimeoutManager;
@@ -67,6 +66,10 @@ public class ChannelManager {
 
     public boolean addChannelMessage(TwitchMessage message) {
         return m_messageManager.addMessage(message);
+    }
+
+    public Collection<TwitchMessage> blacklistItem(String input, BlacklistType blacklistType) {
+        blacklistItem(input, blacklistType, )
     }
 
     public Collection<TwitchMessage> blacklistItem(

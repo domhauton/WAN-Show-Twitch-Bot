@@ -2,7 +2,7 @@ package twitch.channel.blacklist;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import twitch.channel.data.TwitchMessage;
+import twitch.channel.message.TwitchMessage;
 
 import java.util.Collection;
 import java.util.HashSet;

@@ -1,7 +1,6 @@
 package twitch.channel.message;
 
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.TwitchUser;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

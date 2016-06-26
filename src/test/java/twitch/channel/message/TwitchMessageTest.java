@@ -1,7 +1,6 @@
 package twitch.channel.message;
 
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.TwitchUser;
 import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;

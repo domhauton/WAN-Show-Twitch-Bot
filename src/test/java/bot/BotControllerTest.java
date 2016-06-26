@@ -5,8 +5,8 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.message.TwitchMessage;
+import twitch.channel.TwitchUser;
 import twitch.chat.routing.TwitchMessageRouter;
 
 /**

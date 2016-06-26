@@ -1,7 +1,6 @@
 package twitch.channel.message;
 
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.TwitchUser;
 import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeComparator;

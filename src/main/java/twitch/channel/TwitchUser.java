@@ -1,4 +1,4 @@
-package twitch.channel.data;
+package twitch.channel;
 
 import java.util.Objects;
 

@@ -1,7 +1,7 @@
 package twitch.channel.timeouts;
 
 import org.joda.time.Period;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.TwitchUser;
 
 import java.util.HashMap;
 

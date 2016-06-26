@@ -1,6 +1,6 @@
 package bot.parsers;
 
-import twitch.channel.data.TwitchMessage;
+import twitch.channel.message.TwitchMessage;
 import twitch.channel.permissions.UserPermission;
 import twitch.chat.data.OutboundTwitchMessage;
 

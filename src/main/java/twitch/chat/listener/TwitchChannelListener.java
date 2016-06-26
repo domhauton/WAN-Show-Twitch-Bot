@@ -1,13 +1,10 @@
 package twitch.chat.listener;
 
 import irc.ChatHandshake;
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 import org.joda.time.Period;
 import irc.TwitchChatAdapter;
 import twitch.chat.data.InboundTwitchMessage;

@@ -1,7 +1,8 @@
-package twitch.channel.data;
+package twitch.channel.message;
 
 import com.google.common.base.Objects;
 import org.joda.time.DateTime;
+import twitch.channel.TwitchUser;
 import twitch.chat.data.InboundTwitchMessage;
 
 import java.util.Collection;

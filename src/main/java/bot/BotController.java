@@ -2,8 +2,8 @@ package bot;
 
 import twitch.channel.ChannelManager;
 import twitch.channel.message.ImmutableTwitchMessageList;
-import twitch.channel.data.TwitchMessage;
-import twitch.channel.data.TwitchUser;
+import twitch.channel.message.TwitchMessage;
+import twitch.channel.TwitchUser;
 import twitch.channel.permissions.UserPermission;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -17,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.joda.time.format.ISODateTimeFormat;
 import bot.util.BitlyDecorator;
 import bot.util.DateTimeUtil;
 
