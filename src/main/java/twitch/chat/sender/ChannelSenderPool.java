@@ -1,4 +1,4 @@
-package twitch.chat.routing;
+package twitch.chat.sender;
 
 import twitch.chat.data.OutboundTwitchMessage;
 import twitch.chat.exceptions.TwitchChatException;
@@ -27,9 +27,5 @@ class ChannelSenderPool {
 
     void sendChannelMessage(OutboundTwitchMessage outboundTwitchMessage) {
         channelSender.sendChannelMessage(outboundTwitchMessage);
-    }
-
-    void sendChannelAction(OutboundTwitchMessage outboundTwitchMessage) {
-        channelSender.sendChannelAction(outboundTwitchMessage);
     }
 }

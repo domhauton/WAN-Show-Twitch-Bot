@@ -11,7 +11,7 @@ import com.google.inject.Inject;
 import twitch.chat.data.InboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchTimeout;
-import twitch.chat.routing.TwitchMessageRouter;
+import twitch.chat.sender.TwitchMessageRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;

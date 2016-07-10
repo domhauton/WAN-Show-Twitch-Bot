@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import twitch.channel.message.TwitchMessage;
 import twitch.channel.TwitchUser;
-import twitch.chat.routing.TwitchMessageRouter;
+import twitch.chat.sender.TwitchMessageRouter;
 
 /**
  * Created by Dominic Hauton on 02/05/2016.

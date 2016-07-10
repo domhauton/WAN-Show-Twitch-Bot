@@ -1,9 +1,9 @@
-package twitch.chat.routing;
+package twitch.chat.sender;
 
 import com.google.inject.Inject;
 import twitch.chat.data.OutboundTwitchMessage;
+import twitch.chat.data.OutboundTwitchWhisper;
 import twitch.chat.exceptions.TwitchChatException;
-import twitch.chat.sender.WhisperSender;
 import org.joda.time.Period;
 
 import javax.inject.Singleton;
@@ -32,19 +32,11 @@ public class TwitchMessageRouter {
         this.channelSenderPool = channelSenderPool;
     }
 
-    public void sendUserWhisper(OutboundTwitchMessage outboundTwitchMessage) {
-        whisperSender.sendWhisperAsync(outboundTwitchMessage);
-    }
-
-    public void sendChannelMessage(OutboundTwitchMessage outboundTwitchMessage) {
-        channelSenderPool.sendChannelMessage(outboundTwitchMessage);
-    }
-
-    public void sendChannelAction(OutboundTwitchMessage outboundTwitchMessage) {
-        channelSenderPool.sendChannelAction(outboundTwitchMessage);
-    }
-
-    public void timeoutChannelUser(String username, String channel, Period time) {
-
+    public void sendMessage(OutboundTwitchMessage outboundTwitchMessage) {
+        if(outboundTwitchMessage instanceof OutboundTwitchWhisper) {
+            whisperSender.sendMessageAsync(outboundTwitchMessage);
+        } else {
+            channelSenderPool.sendChannelMessage(outboundTwitchMessage);
+        }
     }
 }

@@ -14,7 +14,7 @@ import javax.inject.Inject;
  *
  * Used to send messages to a given TwitchChannel
  */
-public class ChannelSender extends MessageSender{
+class ChannelSender extends MessageSender{
 
     private String channelName;
     private String twitchChatServerName;
@@ -45,12 +45,5 @@ public class ChannelSender extends MessageSender{
 
     public void sendChannelMessage(OutboundTwitchMessage outboundTwitchMessage){
         sendMessageAsync(outboundTwitchMessage);
-    }
-
-    public void sendChannelAction(OutboundTwitchMessage outboundTwitchMessage) {
-        String formattedPayload = ".me " + outboundTwitchMessage.getPayload();
-        OutboundTwitchMessage formattedAction =
-                new OutboundTwitchMessage(formattedPayload, outboundTwitchMessage.getTarget());
-        sendMessageAsync(formattedAction);
     }
 }

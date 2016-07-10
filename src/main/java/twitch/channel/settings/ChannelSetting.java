@@ -14,20 +14,22 @@ public class ChannelSetting<T extends Serializable> {
 
     private final T defaultValue;
     private final String key;
+    private final String channelName;
     private final ChannelSettingSupplier channelSettingSupplier;
     private final TypeToken<T> typeToken = new TypeToken<T>() {}; // Used due to Type Erasure
 
-    ChannelSetting(T defaultValue, String key, ChannelSettingSupplier channelSettingSupplier) {
+    ChannelSetting(T defaultValue, String channelName, String key, ChannelSettingSupplier channelSettingSupplier) {
         this.channelSettingSupplier = channelSettingSupplier;
+        this.channelName = channelName;
         this.defaultValue = defaultValue;
         this.key = key;
     }
 
-    private T get() throws DatabaseException{
-        return channelSettingSupplier.get(key, typeToken);
+    public T get() throws DatabaseException{
+        return channelSettingSupplier.get(channelName, key, typeToken);
     }
 
-    private T getOrDefault() throws DatabaseException{
+    public T getOrDefault(){
         try{
             return get();
         } catch (DatabaseException e){
@@ -35,7 +37,7 @@ public class ChannelSetting<T extends Serializable> {
         }
     }
 
-    private T set(T value) throws DatabaseException{
-        return channelSettingSupplier.set(key, value, typeToken);
+    public void set(T value) throws DatabaseException{
+        channelSettingSupplier.set(channelName, key, value, typeToken);
     }
 }
