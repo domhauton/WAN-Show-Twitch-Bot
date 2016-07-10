@@ -14,7 +14,7 @@ import javax.inject.Inject;
  *
  * Used to send whispers to other users.
  */
-public class WhisperSender extends MessageSender {
+class WhisperSender extends MessageSender {
 
     private String whisperChannelName;
     private String twitchGroupServerName;
@@ -41,11 +41,5 @@ public class WhisperSender extends MessageSender {
         super.connect(whisperChannelName, twitchGroupServerName, twitchGroupServerPort);
         sendChatHandshake(ChatHandshake.COMMANDS);
         setMessageDelay(messageDelay);
-    }
-
-    public void sendWhisperAsync(OutboundTwitchMessage outboundTwitchMessage){
-        String whisperPayload = ".w " + outboundTwitchMessage.getTarget() + " " + outboundTwitchMessage.getPayload();
-        OutboundTwitchMessage formattedWhisperMessage = outboundTwitchMessage.setPayload(whisperPayload).setTarget(whisperChannelName);
-        sendMessageAsync(formattedWhisperMessage);
     }
 }

@@ -17,14 +17,14 @@ public enum TwitchCommand {
         this.aliases = new HashSet<>(Arrays.asList(aliases));
     }
 
-    public static TwitchCommand getCommand(String commandName) throws BotCommandException {
+    static TwitchCommand getCommand(String commandName) throws BotCommandException {
         return Stream.of(TwitchCommand.values())
                 .filter(x -> x.aliasMatches(commandName))
                 .findAny()
                 .orElseThrow(() -> new BotCommandException("Could not find matching command for: " + commandName));
     }
 
-    public boolean aliasMatches(String alias) {
+    boolean aliasMatches(String alias) {
         return aliases.contains(alias);
     }
 }

@@ -7,7 +7,7 @@ import com.google.inject.name.Named;
 import twitch.chat.data.OutboundTwitchMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import twitch.chat.routing.TwitchMessageRouter;
+import twitch.chat.sender.TwitchMessageRouter;
 
 import java.util.Random;
 import java.util.concurrent.Executors;

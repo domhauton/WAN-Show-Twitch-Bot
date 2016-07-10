@@ -1,10 +1,9 @@
 package bot.commands;
 
-import bot.commands.executors.BotCommandUtil;
-import twitch.chat.data.OutboundTwitchMessage;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,8 +34,11 @@ public class BotCommand {
         }
     }
 
-    private void parseCommandMessage(String botCommand) {
-        String[] splitCommands = getChunks(botCommand);
+    /**
+     * Called during constructor
+     */
+    private void parseCommandMessage(String rawBotCommand) {
+        String[] splitCommands = getChunks(rawBotCommand);
         m_commandName = splitCommands[0];
         m_flags = Arrays.asList(splitCommands).stream()
                 .filter(command -> command.startsWith(String.valueOf(s_flagPrefix)))
@@ -56,9 +58,15 @@ public class BotCommand {
                            "]*" + s_escapeChar + ")*[^" + s_escapeChar + "]*$)");
     }
 
-    public Collection<OutboundTwitchMessage> runCommand() throws BotCommandException {
-        TwitchCommand twitchCommand = TwitchCommand.getCommand(m_commandName);
+    public ImmutableSet<Character> getFlags() {
+        return ImmutableSet.copyOf(m_flags);
+    }
 
-        return BotCommandUtil.parseCommand(twitchCommand, m_flags, m_args);
+    public TwitchCommand getTwitchCommand() throws BotCommandException {
+        return TwitchCommand.getCommand(m_commandName);
+    }
+
+    public ImmutableList<String> getArgs() {
+        return ImmutableList.copyOf(m_args);
     }
 }
