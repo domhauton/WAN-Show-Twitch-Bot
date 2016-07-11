@@ -1,5 +1,6 @@
 package bot;
 
+import com.google.inject.name.Named;
 import twitch.channel.ChannelManager;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.TwitchMessage;
@@ -11,6 +12,7 @@ import com.google.inject.Inject;
 import twitch.chat.data.InboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchTimeout;
+import twitch.chat.data.OutboundTwitchWhisper;
 import twitch.chat.sender.TwitchMessageRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,8 +57,9 @@ class BotController {
 	@Inject
 	public BotController(BitlyDecorator bitlyDecorator,
 						 TwitchMessageRouter twitchMessageRouter,
-                         MessageRepeater messageRepeater) {
-		channelManager = new ChannelManager();
+						 MessageRepeater messageRepeater,
+						 @Named("twitch.irc.public.twitchChannel") String channelName) {
+		channelManager = new ChannelManager(channelName);
 		permittedChars = ImmutableSet.copyOf("abcdefghijklmnopqrstuvwxyz.!@$%123454567890".chars().mapToObj(a -> (char) a).collect(Collectors.toList()));
 		this.blockedMessages = new HashSet<>();
 		this.blockedWords = new HashSet<>();
@@ -118,9 +121,9 @@ class BotController {
 			String timeTillLive = getTimeTillLive();
 			if( !Strings.isNullOrEmpty(timeTillLive) ){
                 OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(timeTillLive, twitchMessage.getTwitchChannel());
-                twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
-                OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(timeTillLive, senderUsername);
-                twitchMessageRouter.sendUserWhisper(outboundWhisper);
+                twitchMessageRouter.sendMessage(outboundChannelMessage);
+                OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(timeTillLive, senderUsername);
+                twitchMessageRouter.sendMessage(outboundWhisper);
             }
 		} else if (message.equalsIgnoreCase("LLL"))
 			lastLinusLink(twitchMessage.getUsername(), twitchMessage.getTwitchChannel());
@@ -139,11 +142,11 @@ class BotController {
 
         if(sendToChannel){
             OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(outboundMessagePayload, twitchChannelName);
-            twitchMessageRouter.sendChannelMessage(outboundChannelMessage);
+            twitchMessageRouter.sendMessage(outboundChannelMessage);
             commandTimeTTL = DateTime.now();
         } else {
-            OutboundTwitchMessage outboundUserWhisper = new OutboundTwitchMessage(outboundMessagePayload, senderUserName);
-            twitchMessageRouter.sendUserWhisper(outboundUserWhisper);
+            OutboundTwitchWhisper outboundUserWhisper = new OutboundTwitchWhisper(outboundMessagePayload, senderUserName);
+            twitchMessageRouter.sendMessage(outboundUserWhisper);
         }
 
     }
@@ -233,13 +236,13 @@ class BotController {
 	private void lastLinusLink(String sourceUserUsername, String sourceChannel) {
         boolean lastLinkExists = !Strings.isNullOrEmpty(lastHostLink);
         String outboundMessagePayload = lastLinkExists ? "Linus' Last Link: " + lastHostLink : "Linus has not posted a link recently.";
-        OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(outboundMessagePayload, sourceUserUsername);
-        twitchMessageRouter.sendUserWhisper(outboundWhisper);
+        OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(outboundMessagePayload, sourceUserUsername);
+        twitchMessageRouter.sendMessage(outboundWhisper);
 
         boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40;
         if( sendToChannel ){
             OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
-            twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
+            twitchMessageRouter.sendMessage(outboundTwitchMessage);
             commandTimeLLL = DateTime.now();
 		}
 	}
@@ -249,13 +252,13 @@ class BotController {
 	 */
 	private void sendHelpMessage(String sourceUserUsername, String sourceChannel) {
         String outboundMessagePayload = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
-        OutboundTwitchMessage outboundWhisper = new OutboundTwitchMessage(outboundMessagePayload, sourceUserUsername);
-        twitchMessageRouter.sendUserWhisper(outboundWhisper);
+        OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(outboundMessagePayload, sourceUserUsername);
+        twitchMessageRouter.sendMessage(outboundWhisper);
 
         boolean sendToChannel = new Period(commandTimeHelp, DateTime.now()).toStandardSeconds().getSeconds() > 30;
         if( sendToChannel ){
             OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
-            twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
+            twitchMessageRouter.sendMessage(outboundTwitchMessage);
             commandTimeHelp = DateTime.now();
         }
 	}
@@ -346,11 +349,11 @@ class BotController {
 		banLength = banLength.plus(previousBans);
 		if(banLength.toStandardMinutes().getMinutes() > 1) banLength = banLength.plusMinutes(2);
 		if(!Strings.isNullOrEmpty(reason)){
-            OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(reason, twitchUser.getUsername());
-            twitchMessageRouter.sendUserWhisper(outboundTwitchMessage);
+            OutboundTwitchWhisper outboundTwitchMessage = new OutboundTwitchWhisper(reason, twitchUser.getUsername());
+            twitchMessageRouter.sendMessage(outboundTwitchMessage);
         }
         OutboundTwitchMessage twitchTimeout = new OutboundTwitchTimeout(channel, twitchUser.getUsername(), banLength);
-		twitchMessageRouter.sendChannelMessage(twitchTimeout);
+		twitchMessageRouter.sendMessage(twitchTimeout);
 		actionLog.info("Timeout {} for {}s. Reason: {}. Message: {}", twitchUser, banLength, reason, reason);
 	}
 }
