@@ -56,7 +56,7 @@ class MessageRepeater {
             String messageToSend = messageCopy.get(indexOfMessage);
             log.info("Sending repeated message: {}", messageToSend);
             OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(messageToSend, twitchChannelName);
-            twitchMessageRouter.sendChannelMessage(outboundTwitchMessage);
+            twitchMessageRouter.sendMessage(outboundTwitchMessage);
         } else {
             log.info("Not sending message as repeater is off.");
         }
