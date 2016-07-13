@@ -25,7 +25,7 @@ class AsyncEventBuffer {
     }
 
     /**
-     * Add a message to the event Buffer
+     * Add a MESSAGE to the event Buffer
      * @return true if event added. False if addition failed.
      */
     synchronized boolean addMessage() {

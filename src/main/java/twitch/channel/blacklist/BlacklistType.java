@@ -5,11 +5,13 @@ import java.util.regex.Pattern;
 
 /**
  * Created by Dominic Hauton on 23/05/2016.
+ *
+ * Converts desired blacklist types to REGEX.
  */
 public enum BlacklistType {
-    word( word -> "*" + Pattern.quote(word) + "*"),
-    message( message -> "^" + Pattern.quote(message) + "$"),
-    regex( regex -> regex );
+    WORD(word -> "^.*" + Pattern.quote(word) + ".*$"),
+    MESSAGE(message -> "^" + Pattern.quote(message) + "$"),
+    REGEX(regex -> regex );
 
     private Function<String, String> regexConverter;
 
@@ -19,6 +21,6 @@ public enum BlacklistType {
 
     public Pattern stringToPattern(String input) {
         String convertedInput = regexConverter.apply(input);
-        return Pattern.compile(convertedInput, Pattern.CASE_INSENSITIVE);
+        return Pattern.compile(convertedInput, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
     }
 }

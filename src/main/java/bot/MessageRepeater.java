@@ -43,7 +43,7 @@ class MessageRepeater {
     void start() {
         log.info("Running repeater scheduler");
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("message-repeater-thread-%d")
+                .setNameFormat("MESSAGE-repeater-thread-%d")
                 .build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         scheduledExecutorService.scheduleAtFixedRate(this::sendRandomMessage, 60L, timeSec, TimeUnit.SECONDS);
@@ -54,11 +54,11 @@ class MessageRepeater {
             ImmutableList<String> messageCopy = ImmutableList.copyOf(messages);
             Integer indexOfMessage = randomNumberGenerator.nextInt(messageCopy.size());
             String messageToSend = messageCopy.get(indexOfMessage);
-            log.info("Sending repeated message: {}", messageToSend);
+            log.info("Sending repeated MESSAGE: {}", messageToSend);
             OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(messageToSend, twitchChannelName);
             twitchMessageRouter.sendMessage(outboundTwitchMessage);
         } else {
-            log.info("Not sending message as repeater is off.");
+            log.info("Not sending MESSAGE as repeater is off.");
         }
     }
 
@@ -78,12 +78,12 @@ class MessageRepeater {
     }
 
     OutboundTwitchMessage clearLast() {
-        log.info("Removing last message.");
+        log.info("Removing last MESSAGE.");
         if (messages.size() == 0) {
                 return clearAll();
         } else {
             messages = messages.subList(0, messages.size()-1);
-            return new OutboundTwitchMessage("Most recent message removed.", twitchChannelName);
+            return new OutboundTwitchMessage("Most recent MESSAGE removed.", twitchChannelName);
         }
     }
 

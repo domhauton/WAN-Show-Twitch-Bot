@@ -31,7 +31,7 @@ public enum UserPermission {
      * @param requiredPermissionLevel Required permissions level for action.
      * @return true if has permission required or higher.
      */
-    public boolean hasRequiredPermissions(UserPermission requiredPermissionLevel) {
+    public boolean authorizedForActionOfPermissionLevel(UserPermission requiredPermissionLevel) {
         return requiredPermissionLevel.getPermissionLevel() >= getPermissionLevel();
     }
 }

@@ -32,7 +32,7 @@ public class MessageManager {
     }
 
     /**
-     * Inserts a message into the message manager
+     * Inserts a MESSAGE into the MESSAGE manager
      * @return true if insertion was successful.
      */
     public synchronized boolean addMessage(TwitchMessage twitchMessage) {

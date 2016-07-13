@@ -3,7 +3,7 @@ package twitch.chat.data;
 /**
  * Created by Dominic Hauton on 09/07/2016.
  *
- * Whisper message builder with no target user.
+ * Whisper MESSAGE builder with no target user.
  */
 public class OutboundTwitchWhisper extends OutboundTwitchMessage {
 

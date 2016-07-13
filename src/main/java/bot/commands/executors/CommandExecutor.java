@@ -15,7 +15,7 @@ import java.util.Set;
  *
  *
  */
-interface CommandExecutor {
+public interface CommandExecutor {
     Collection<OutboundTwitchMessage> executeCommand(ImmutableSet<Character> flags,
                                                      ImmutableList<String> args,
                                                      ChannelManager channelManager) throws BotCommandException;

@@ -7,9 +7,9 @@ import twitch.channel.ChannelOperationException;
  *
  * Exception to throw when trying to add an existing blacklist entry.
  */
-public class BlacklistOperationOperationException extends ChannelOperationException {
+class BlacklistOperationOperationException extends ChannelOperationException {
 
-    public BlacklistOperationOperationException(String message) {
+    BlacklistOperationOperationException(String message) {
         super(message);
     }
 }

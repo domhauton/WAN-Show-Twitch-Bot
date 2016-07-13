@@ -19,7 +19,7 @@ public class OutboundTwitchMessage {
     }
 
     /**
-     * Returns a new outbound message with the given payload
+     * Returns a new outbound MESSAGE with the given payload
      */
     public OutboundTwitchMessage setPayload(String payload) {
         return new OutboundTwitchMessage(payload, target);
@@ -30,7 +30,7 @@ public class OutboundTwitchMessage {
     }
 
     /**
-     * Returns a new outbound message with the given payload
+     * Returns a new outbound MESSAGE with the given payload
      */
     public OutboundTwitchMessage setTarget(String target) {
         return new OutboundTwitchMessage(payload, target);

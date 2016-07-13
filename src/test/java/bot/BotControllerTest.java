@@ -31,7 +31,7 @@ public class BotControllerTest {
         twitchMessageRouterMock = Mockito.mock(TwitchMessageRouter.class);
         bitlyDecoratorMock = Mockito.mock(BitlyDecorator.class);
         messageRepeaterMock = Mockito.mock(MessageRepeater.class);
-        botController = new BotController(bitlyDecoratorMock, twitchMessageRouterMock, messageRepeaterMock);
+        botController = new BotController(bitlyDecoratorMock, twitchMessageRouterMock, messageRepeaterMock, twitchChannel1);
     }
 
     @Test

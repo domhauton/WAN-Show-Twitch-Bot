@@ -62,7 +62,7 @@ abstract class MessageSender {
             log.info("Sent Message:\t{}", outboundTwitchMessage);
             return true;
         } else {
-            log.trace("Event Buffer rejected message:\t{}\t{}");
+            log.trace("Event Buffer rejected MESSAGE:\t{}\t{}");
             return false;
         }
     }
