@@ -41,19 +41,14 @@ public class BlacklistManager {
     }
 
     /**
-     * Add input to blacklist and keep messages that match.
-     * @return Messages that match new rule.
+     * Check message against all blacklist entries.
      */
-    public Collection<TwitchMessage> addToBlacklist(
-            String input,
-            BlacklistType blacklistType,
-            Collection<TwitchMessage> twitchMessages) throws BlacklistOperationOperationException {
-        BlacklistEntry blacklistEntry = addToBlacklist(input, blacklistType);
-        Collection<TwitchMessage> filteredMessages = twitchMessages.stream()
-                .filter(twitchMessage -> blacklistEntry.matches(twitchMessage.getMessage()))
-                .collect(Collectors.toList());
-        s_log.info("Found {} of {} messages matching new rule.", twitchMessages::size, filteredMessages::size);
-        return filteredMessages;
+    public boolean isMessageBlacklisted(TwitchMessage twitchMessage) {
+        return m_blacklistEntries
+                .stream()
+                .filter(blacklistEntry -> blacklistEntry.matches(twitchMessage.toString()))
+                .findAny()
+                .isPresent();
     }
 
     public void removeFromBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationOperationException {
@@ -64,5 +59,13 @@ public class BlacklistManager {
         } else {
             throw new BlacklistOperationOperationException("Could not remove pattern. Pattern not found: " + convertedPatten);
         }
+    }
+
+    public Collection<String> searchBlacklist(String searchTerm) {
+        return m_blacklistEntries
+                .stream()
+                .map(BlacklistEntry::toString)
+                .filter(pattern -> pattern.contains(searchTerm))
+                .collect(Collectors.toSet());
     }
 }

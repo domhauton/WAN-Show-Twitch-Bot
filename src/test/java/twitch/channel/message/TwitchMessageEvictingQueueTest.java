@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 /**
  * Created by Dominic Hauton on 20/03/2016.
  *
- * Testing the effectiveness of the async message buffer.
+ * Testing the effectiveness of the async MESSAGE buffer.
  */
 public class TwitchMessageEvictingQueueTest {
 
@@ -39,10 +39,10 @@ public class TwitchMessageEvictingQueueTest {
     }
 
     /**
-     * Creates all of the message actions, then releases them to execute as asyncronously as possible.
+     * Creates all of the MESSAGE actions, then releases them to execute as asyncronously as possible.
      * @param twitchMessages    Messages to send.
      * @param pool              ThreadPool that will send messages.
-     * @param latch             Latch that message addition should trigger.
+     * @param latch             Latch that MESSAGE addition should trigger.
      */
     private void addMessagesToPoolAndRelease(Collection<TwitchMessage> twitchMessages, ExecutorService pool, CountDownLatch latch) {
         twitchMessages.stream()
@@ -53,8 +53,8 @@ public class TwitchMessageEvictingQueueTest {
 
     /**
      * Generate a series of TwitchMessages
-     * @param startMessage  id of first message
-     * @param endMessage    Exclusive id of last message.
+     * @param startMessage  id of first MESSAGE
+     * @param endMessage    Exclusive id of last MESSAGE.
      * @return              Collection of generated messages
      */
     private Collection<TwitchMessage> generateTwitchMessages(int startMessage, int endMessage) {

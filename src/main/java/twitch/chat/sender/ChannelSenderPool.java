@@ -9,7 +9,7 @@ import javax.inject.Inject;
 /**
  * Created by Dominic Hauton on 16/03/2016.
  *
- * Will manage PublicMessageSender instances to allow constant message sending.
+ * Will manage PublicMessageSender instances to allow constant MESSAGE sending.
  */
 class ChannelSenderPool {
     private ChannelSender channelSender;

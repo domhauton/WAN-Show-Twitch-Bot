@@ -30,20 +30,20 @@ public class AsyncEventBufferTest {
     @Test
     public void testEventRate() throws InterruptedException{
         IntStream.range(0, 10).forEachOrdered(value -> {
-            Assert.assertTrue("Adding message " + value, asyncEventBuffer.addMessage());
-            log.info("Adding message " + value + ". Expect Accept.");
+            Assert.assertTrue("Adding MESSAGE " + value, asyncEventBuffer.addMessage());
+            log.info("Adding MESSAGE " + value + ". Expect Accept.");
         });
         Thread.sleep(950);
-        log.info("Adding message. Expect Reject.");
-        Assert.assertFalse("Sending message before time up", asyncEventBuffer.addMessage());
+        log.info("Adding MESSAGE. Expect Reject.");
+        Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
         Thread.sleep(100);
         IntStream.range(10, 20).forEachOrdered(value -> {
-            Assert.assertTrue("Adding message " + value, asyncEventBuffer.addMessage());
-            log.info("Adding message " + value + ". Expect Accept.");
+            Assert.assertTrue("Adding MESSAGE " + value, asyncEventBuffer.addMessage());
+            log.info("Adding MESSAGE " + value + ". Expect Accept.");
         });
         Thread.sleep(950);
-        log.info("Adding message. Expect Reject.");
-        Assert.assertFalse("Sending message before time up", asyncEventBuffer.addMessage());
+        log.info("Adding MESSAGE. Expect Reject.");
+        Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
     }
 
     /**
@@ -67,15 +67,15 @@ public class AsyncEventBufferTest {
         IntStream.range(0, 20)
                 .mapToObj(value -> CompletableFuture
                     .supplyAsync(callEventBuffer::get, threadPool)
-                    .thenAccept(result -> Assert.assertTrue("Adding message " + value, result)))
+                    .thenAccept(result -> Assert.assertTrue("Adding MESSAGE " + value, result)))
                 .collect(Collectors.toList()); // Required to force evaluation
         semaphore.release(10);
 
         Thread.sleep(950); // Release 10 messages
-        Assert.assertFalse("Sending message before time up", asyncEventBuffer.addMessage());
+        Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
         Thread.sleep(100);
         semaphore.release(10); // Release 10 messages
         Thread.sleep(950);
-        Assert.assertFalse("Sending message before time up", asyncEventBuffer.addMessage());
+        Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
     }
 }

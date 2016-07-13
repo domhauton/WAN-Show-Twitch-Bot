@@ -1,6 +1,7 @@
 package twitch.channel;
 
 import org.joda.time.Period;
+import twitch.channel.blacklist.BlacklistEntry;
 import twitch.channel.blacklist.BlacklistManager;
 import twitch.channel.blacklist.BlacklistType;
 import twitch.channel.message.ImmutableTwitchMessageList;
@@ -48,7 +49,7 @@ public class ChannelManager {
      * @return true if user has permission for the action
      */
     public boolean checkPermission(TwitchUser user, UserPermission requiredPermission) {
-        return m_permissionsManager.getUser(user).hasRequiredPermissions(requiredPermission);
+        return m_permissionsManager.getUser(user).authorizedForActionOfPermissionLevel(requiredPermission);
     }
 
     public UserPermission getPermission(TwitchUser twitchUser) {
@@ -101,7 +102,11 @@ public class ChannelManager {
                     .stream()
                     .limit(messageLookBehind)
                     .collect(Collectors.toList());
-            return m_blacklistManager.addToBlacklist(input, blacklistType, trimmedMessageList);
+            BlacklistEntry blacklistEntry = m_blacklistManager.addToBlacklist(input, blacklistType);
+            return trimmedMessageList
+                    .stream()
+                    .filter(message -> blacklistEntry.matches(message.getMessage()))
+                    .collect(Collectors.toList());
         } else {
             throw new ChannelOperationException("Blacklist look-behind must be 0-" + messageList.size()
                                                 + ". Value:" + messageLookBehind);

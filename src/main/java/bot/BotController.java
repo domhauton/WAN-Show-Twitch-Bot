@@ -1,5 +1,7 @@
 package bot;
 
+import bot.commands.BotCommand;
+import bot.commands.BotCommandException;
 import com.google.inject.name.Named;
 import twitch.channel.ChannelManager;
 import twitch.channel.message.ImmutableTwitchMessageList;
@@ -81,30 +83,24 @@ class BotController {
         TwitchMessage twitchMessage = (TwitchMessage) inboundTwitchMessage;
 		channelManager.addChannelMessage(twitchMessage);
 
-		messageLog.info(twitchMessage::toString); //Stores the message in the chat log.
-
-        boolean isMessageCommand = twitchMessage.getMessage().startsWith("!");
-        if( isMessageCommand ){
-			userCommands(twitchMessage);
-		}
+		messageLog.info(twitchMessage::toString); //Stores the MESSAGE in the chat log.
 
 		Collection<OutboundTwitchMessage> responses = new LinkedList<>();
 
-        UserPermission userPermissionOnChannel = channelManager.getPermission(twitchMessage.getTwitchUser());
+        boolean isMessageCommand = BotCommand.isValidCommand(twitchMessage.getMessage());
+        if( isMessageCommand ){
+			BotCommand botCommand = new BotCommand(twitchMessage.getMessage(), twitchMessage.getTwitchUser(),
+					channelManager);
+			try {
+				botCommand.parseCommand();
+			} catch (BotCommandException e) {
+				OutboundTwitchWhisper commandFailWhisper = new OutboundTwitchWhisper(e.getMessage(),
+						twitchMessage.getUsername());
+				responses.add(commandFailWhisper);
+			}
+		}
 
-        switch (userPermissionOnChannel) {
-            case ChannelOwner:
-                responses.addAll(hostCommands(twitchMessage));
-            case BotAdmin:
 
-            case BotModerator:
-                responses.addAll( operatorCommands( twitchMessage) );
-            case ChannelModerator:
-                break;
-            default:
-                isMessagePermitted( twitchMessage, blockedWords, blockedMessages );
-                spamDetector(twitchMessage);
-        }
 
         return responses;
 	}
@@ -112,7 +108,7 @@ class BotController {
 
 
 	/**
-	 * Checks if the message sent is a current request
+	 * Checks if the MESSAGE sent is a current request
 	 */
 	private void userCommands(TwitchMessage twitchMessage) {
         String message = twitchMessage.getMessage().substring(1);
@@ -148,7 +144,6 @@ class BotController {
             OutboundTwitchWhisper outboundUserWhisper = new OutboundTwitchWhisper(outboundMessagePayload, senderUserName);
             twitchMessageRouter.sendMessage(outboundUserWhisper);
         }
-
     }
 
 	/**
@@ -264,7 +259,7 @@ class BotController {
 	}
 
 	/**
-	 * Checks if a message is in the blacklist
+	 * Checks if a MESSAGE is in the blacklist
 	 */
 	private void isMessagePermitted(
             TwitchMessage twitchMessage,
@@ -277,7 +272,7 @@ class BotController {
             timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
                     Period.minutes(45),
-                    "You posted a blacklisted word.");
+                    "You posted a blacklisted WORD.");
         }
     }
 
@@ -298,7 +293,7 @@ class BotController {
 	}
 
 	/**
-	 * If a senderOrChannel sends the same message 3 times in a row they are timed out.
+	 * If a senderOrChannel sends the same MESSAGE 3 times in a row they are timed out.
 	 */
 	private void spamDetector(TwitchMessage twitchMessage) {
         ImmutableTwitchMessageList userMessages = channelManager
@@ -323,20 +318,20 @@ class BotController {
 			timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
                     Period.seconds(20),
-                    "You have been timed out. Your message has been posted in the chat recently.");
+                    "You have been timed out. Your MESSAGE has been posted in the chat recently.");
         else if (userMessages.containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= 2) {
             timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
                     Period.seconds(20),
-                    "You have been timed out for repeating the same message.");
+                    "You have been timed out for repeating the same MESSAGE.");
         }
 	}
     
 	/**
-	 * This message to the timeoutUser log file.
+	 * This MESSAGE to the timeoutUser log file.
 	 *
 	 * @param banLength
-	 *            Length of Ban resulting from message.
+	 *            Length of Ban resulting from MESSAGE.
 	 * @param reason
 	 *            Reason for timeoutUser.
 	 */

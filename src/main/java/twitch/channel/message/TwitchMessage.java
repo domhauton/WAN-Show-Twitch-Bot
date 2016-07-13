@@ -28,7 +28,7 @@ public class TwitchMessage extends InboundTwitchMessage{
     }
 
     /**
-     * Returns the message payload with no spaces in lowercase
+     * Returns the MESSAGE payload with no spaces in lowercase
      */
     public String getSimpleMessagePayload() {
         if(simpleMessagePayload == null){
@@ -51,7 +51,7 @@ public class TwitchMessage extends InboundTwitchMessage{
     }
 
     /**
-     * Returns the ratio of legal chars in the simple message payload to number of chars in the simplified message.
+     * Returns the ratio of legal chars in the simple MESSAGE payload to number of chars in the simplified MESSAGE.
      * @param permittedCharSet Chars that are counted as legal.
      * @return Double between 0 and 1 that shows what proportion of chars are legal.
      */
@@ -64,8 +64,8 @@ public class TwitchMessage extends InboundTwitchMessage{
     }
 
     /**
-     * True if the given payload is the same as the message once both are simplified.
-     * @param messagePayload payload to compare to this message.
+     * True if the given payload is the same as the MESSAGE once both are simplified.
+     * @param messagePayload payload to compare to this MESSAGE.
      * @return true if exactly the same.
      */
     public boolean equalsSimplePayload(String messagePayload) {
@@ -74,7 +74,7 @@ public class TwitchMessage extends InboundTwitchMessage{
     }
 
     /**
-     * True if the message contains the simplified given string.
+     * True if the MESSAGE contains the simplified given string.
      * @param stringToMatch String to match. Spaces and case removed
      * @return true if match.
      */
@@ -104,9 +104,9 @@ public class TwitchMessage extends InboundTwitchMessage{
     }
 
     /**
-     * Simplifies message for easier processing
-     * @param originalMessage payload of message to simplify
-     * @return simplified message
+     * Simplifies MESSAGE for easier processing
+     * @param originalMessage payload of MESSAGE to simplify
+     * @return simplified MESSAGE
      */
     private static String simplifyMessage(String originalMessage) {
         return originalMessage.replaceAll(" ", "").toLowerCase();

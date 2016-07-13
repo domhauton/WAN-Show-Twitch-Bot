@@ -124,34 +124,34 @@ public class ImmutableTwitchMessageListTest {
     public void containsSimplePayloadTrueSimple() {
         Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
         ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-        Assert.assertTrue("Assert message is found correctly.", twitchMessageList.containsSimplePayload(payload1) >= 1);
+        Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1) >= 1);
     }
 
     @Test
     public void containsSimplePayloadTrueSpaces() {
         Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
         ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-        Assert.assertTrue("Assert message is found correctly.", twitchMessageList.containsSimplePayload(payload1 + " " ) >= 1);
+        Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1 + " " ) >= 1);
     }
 
     @Test
     public void containsSimplePayloadTrueUpperCase() {
         Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
         ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-        Assert.assertTrue("Assert message is found correctly.", twitchMessageList.containsSimplePayload(payload1.toUpperCase()) >= 1);
+        Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1.toUpperCase()) >= 1);
     }
 
     @Test
     public void containsSimplePayloadTrueUpperCaseAndSpace() {
         Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
         ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-        Assert.assertTrue("Assert message is found correctly.", twitchMessageList.containsSimplePayload(payload1.toUpperCase() + " ") >= 1 );
+        Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1.toUpperCase() + " ") >= 1 );
     }
 
     @Test
     public void containsSimplePayloadFalse() {
         Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
         ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-        Assert.assertFalse("Assert message is found correctly.", twitchMessageList.containsSimplePayload(payload1 + "foobar") >= 1);
+        Assert.assertFalse("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1 + "foobar") >= 1);
     }
 }

@@ -26,17 +26,15 @@ import java.util.stream.Stream;
  *
  * Handles blacklist command executions.
  */
-class BlacklistExecutor implements CommandExecutor {
+public class BlacklistExecutor implements CommandExecutor {
 
     private static final ImmutableMap<Character, BlacklistType> blacklistFlagMap = ImmutableMap.<Character, BlacklistType>builder()
-            .put('w', BlacklistType.word)
-            .put('r', BlacklistType.regex)
-            .put('m', BlacklistType.message)
+            .put('w', BlacklistType.WORD)
+            .put('r', BlacklistType.REGEX)
+            .put('m', BlacklistType.MESSAGE)
             .build();
 
-    private static final BlacklistType defaultBlacklistType = BlacklistType.word;
-
-    BlacklistExecutor() {}
+    private static final BlacklistType defaultBlacklistType = BlacklistType.WORD;
 
     @Override
     public Collection<OutboundTwitchMessage> executeCommand(ImmutableSet<Character> flags, ImmutableList<String> args, ChannelManager channelManager) throws BotCommandException {
