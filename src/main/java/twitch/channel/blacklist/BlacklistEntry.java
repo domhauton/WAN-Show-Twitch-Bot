@@ -22,12 +22,12 @@ public class BlacklistEntry {
     public boolean equals(Object o) {
         if (!(o instanceof BlacklistEntry)) { return false; }
         BlacklistEntry that = (BlacklistEntry) o;
-        return toString().equals((that.toString()));
+        return toString().equals(that.toString());
     }
 
     @Override
     public int hashCode() {
-        return m_pattern.hashCode();
+        return toString().hashCode();
     }
 
     @Override

@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
  */
 public class BlacklistManager {
     private static final Logger s_log = LogManager.getLogger();
-    private Set<BlacklistEntry> m_blacklistEntries;
+    private final Set<BlacklistEntry> m_blacklistEntries;
 
     public BlacklistManager() {
-        this.m_blacklistEntries = new HashSet<>();
+        m_blacklistEntries = new HashSet<>();
     }
 
     /**
@@ -30,12 +30,12 @@ public class BlacklistManager {
             BlacklistOperationOperationException {
         Pattern convertedPatten = blacklistType.stringToPattern(input);
         BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten);
-        if(!m_blacklistEntries.contains(blacklistEntry)) {
-            s_log.warn("Attempted to add existing pattern to blacklist: {}", convertedPatten);
+        if(m_blacklistEntries.contains(blacklistEntry)) {
+            s_log.warn("Failed to add pattern. Already existed: {}", convertedPatten);
             throw new BlacklistOperationOperationException("Pattern attempted: " + convertedPatten.toString());
         } else {
             m_blacklistEntries.add(blacklistEntry);
-            s_log.info("Added blacklist pattern: {}", convertedPatten);
+            s_log.info("Added blacklist pattern: {} as: {}", convertedPatten, blacklistType);
             return blacklistEntry;
         }
     }
@@ -43,10 +43,10 @@ public class BlacklistManager {
     /**
      * Check message against all blacklist entries.
      */
-    public boolean isMessageBlacklisted(TwitchMessage twitchMessage) {
+    public boolean isMessageBlacklisted(String twitchMessage) {
         return m_blacklistEntries
                 .stream()
-                .filter(blacklistEntry -> blacklistEntry.matches(twitchMessage.toString()))
+                .filter(blacklistEntry -> blacklistEntry.matches(twitchMessage))
                 .findAny()
                 .isPresent();
     }
@@ -55,8 +55,13 @@ public class BlacklistManager {
         Pattern convertedPatten = blacklistType.stringToPattern(input);
         BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten);
         if(m_blacklistEntries.contains(blacklistEntry)) {
+            s_log.info("Removing blacklist pattern {} which is a {}", convertedPatten, blacklistType);
             m_blacklistEntries.remove(blacklistEntry);
         } else {
+            s_log.warn(
+                    "Failed to remove pattern as it could not be found.\nRemoving:\n{}\nExist:\n{}",
+                    () -> blacklistEntry,
+                    () -> m_blacklistEntries.stream().map(BlacklistEntry::toString).collect(Collectors.joining("\n")));
             throw new BlacklistOperationOperationException("Could not remove pattern. Pattern not found: " + convertedPatten);
         }
     }
