@@ -9,7 +9,7 @@ import twitch.channel.message.MessageManager;
 import twitch.channel.message.TwitchMessage;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
-import twitch.channel.settings.ChannelSettingDAO;
+import twitch.channel.settings.ChannelSettingDao;
 import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
 import twitch.channel.settings.ChannelSettingDouble;
 import twitch.channel.timeouts.TimeoutManager;
@@ -29,19 +29,19 @@ public class ChannelManager {
     private final MessageManager m_messageManager;
     private final TimeoutManager m_timeoutManager;
     private final BlacklistManager m_blacklistManager;
-    private final ChannelSettingDAO channelSettingDAO;
+    private final ChannelSettingDao channelSettingDao;
 
     public ChannelManager(String channelName) {
         this(new ChannelSettingDAOHashMapImpl(), channelName);
     }
 
-    ChannelManager(ChannelSettingDAO channelSettingDAO, String channelName) {
+    ChannelManager(ChannelSettingDao channelSettingDao, String channelName) {
         this.channelName = channelName;
         m_permissionsManager = new PermissionsManager();
         m_messageManager = new MessageManager();
         m_timeoutManager = new TimeoutManager();
         m_blacklistManager = new BlacklistManager();
-        this.channelSettingDAO = channelSettingDAO;
+        this.channelSettingDao = channelSettingDao;
     }
 
     /**
@@ -82,7 +82,7 @@ public class ChannelManager {
 
     public Collection<TwitchMessage> blacklistItem(String input, BlacklistType blacklistType) throws
             ChannelOperationException {
-        Integer messageLookBehind = channelSettingDAO.getDoubleSetting(channelName, ChannelSettingDouble
+        Integer messageLookBehind = channelSettingDao.getDoubleSetting(channelName, ChannelSettingDouble
                 .CHANNEL_LOOKBACK).intValue();
         return blacklistItem(input, blacklistType, messageLookBehind);
     }

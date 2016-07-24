@@ -6,9 +6,9 @@ import java.util.Optional;
 /**
  * Created by Dominic Hauton on 27/06/2016.
  *
- * Basic implementation of ChannelSettingDAO for local storage and testing.
+ * Basic implementation of ChannelSettingDao for local storage and testing.
  */
-public class ChannelSettingDAOHashMapImpl implements ChannelSettingDAO {
+public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
     private final HashMap<String, Double> settingDoubleMap;
 
     public ChannelSettingDAOHashMapImpl() {
