@@ -1,12 +1,12 @@
 package twitch.channel.settings;
 
 /**
- * Created by Dominic Hauton on 26/06/2016.
+ * Created by Dominic Hauton on 05/06/2016.
+ *
+ * An interface to be implemented by all Persistence layers
  */
-public class ChannelSettingDao {
-    public final ChannelSetting<Integer> messageLookBehind;
+public interface ChannelSettingDao {
+    Double getDoubleSetting(String channelName, ChannelSettingDouble channelSettingDouble) throws ChannelSettingDAOException;
 
-    public ChannelSettingDao(ChannelSettingSupplier channelSettingSupplier, String channelName) {
-        this.messageLookBehind = new ChannelSetting<>(50, "messageLookBehind", channelName, channelSettingSupplier);
-    }
+    void setDoubleSetting(String channelName, ChannelSettingDouble channelSettingDouble, Double value) throws ChannelSettingDAOException;
 }

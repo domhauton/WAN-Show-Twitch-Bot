@@ -10,14 +10,14 @@ import org.junit.Test;
  */
 public abstract class ChannelSettingSupplierTest {
 
-    protected ChannelSettingDAO m_channelSettingDAO;
+    protected ChannelSettingDao m_channelSettingDao;
 
     protected static final String s_channelName1 = "channel1";
     protected static final String s_channelName2 = "channel2";
 
     @Test
     public void simpleInsertRetrieveTest() throws Exception {
-        m_channelSettingDAO.setDoubleSetting(s_channelName1, ChannelSettingDouble.CHANNEL_LOOKBACK, 50d);
-        Assert.assertEquals("Should return 50d. Has just been set.", 50d, m_channelSettingDAO.getDoubleSetting(s_channelName1, ChannelSettingDouble.CHANNEL_LOOKBACK), 0);
+        m_channelSettingDao.setDoubleSetting(s_channelName1, ChannelSettingDouble.CHANNEL_LOOKBACK, 50d);
+        Assert.assertEquals("Should return 50d. Has just been set.", 50d, m_channelSettingDao.getDoubleSetting(s_channelName1, ChannelSettingDouble.CHANNEL_LOOKBACK), 0);
     }
 }
