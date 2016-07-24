@@ -18,10 +18,6 @@ public enum UserPermission {
         this.permissionLevel = permissionLevel;
     }
 
-    public int getPermissionLevel() {
-        return permissionLevel;
-    }
-
     public static UserPermission getDefaultPermission() {
         return UserPermission.ChannelUser;
     }
@@ -32,6 +28,6 @@ public enum UserPermission {
      * @return true if has permission required or higher.
      */
     public boolean authorizedForActionOfPermissionLevel(UserPermission requiredPermissionLevel) {
-        return requiredPermissionLevel.getPermissionLevel() >= getPermissionLevel();
+        return requiredPermissionLevel.permissionLevel >= permissionLevel;
     }
 }

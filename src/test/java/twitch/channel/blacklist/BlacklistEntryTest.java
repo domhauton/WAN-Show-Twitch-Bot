@@ -22,7 +22,8 @@ public class BlacklistEntryTest {
     public void setUp() throws Exception {
         Pattern matchAll = Pattern.compile("^.*$");
         m_blacklistEntryMatchAll = new BlacklistEntry(matchAll);
-        Pattern matchContainsWord = Pattern.compile("^.*" + exampleWord + ".*$");
+        Pattern matchContainsWord = Pattern.compile(
+                "^.*" + exampleWord + ".*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
         m_blacklistEntryContainsWord = new BlacklistEntry(matchContainsWord);
         Pattern matchExact = Pattern.compile("^" + exampleWord + "$");
         m_blacklistEntryMatchExact = new BlacklistEntry(matchExact);
@@ -45,10 +46,8 @@ public class BlacklistEntryTest {
         Assert.assertTrue("Should match double WORD.", m_blacklistEntryContainsWord.matches(exampleWord + exampleWord));
         Assert.assertTrue("Sound match phase with REGEX control chars.", m_blacklistEntryContainsWord.matches(
                 "$^*" + exampleWord));
-        Assert.assertTrue("Should match uppercase", m_blacklistEntryContainsWord.matches(exampleWord.toUpperCase
-                ()));
-        Assert.assertFalse("Should fail to match missing char", m_blacklistEntryContainsWord.matches(exampleWord
-                .substring(2)));
+        Assert.assertTrue("Should match uppercase", m_blacklistEntryContainsWord.matches(exampleWord.toUpperCase()));
+        Assert.assertFalse("Should fail to match missing char", m_blacklistEntryContainsWord.matches(exampleWord.substring(2)));
     }
 
     @Test

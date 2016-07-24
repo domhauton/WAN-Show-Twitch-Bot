@@ -33,10 +33,4 @@ public class BotControllerTest {
         messageRepeaterMock = Mockito.mock(MessageRepeater.class);
         botController = new BotController(bitlyDecoratorMock, twitchMessageRouterMock, messageRepeaterMock, twitchChannel1);
     }
-
-    @Test
-    public void testNoMessageResponse(){
-        TwitchMessage inboundTwitchMessage = new TwitchMessage( messagePayload1, twitchUser1, DateTime.now(), twitchChannel1);
-        botController.processMessage(inboundTwitchMessage);
-    }
 }

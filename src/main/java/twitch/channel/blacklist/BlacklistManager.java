@@ -2,7 +2,6 @@ package twitch.channel.blacklist;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import twitch.channel.message.TwitchMessage;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by Dominic Hauton on 03/05/2016.
- *
+ * <p>
  * Stores the channel blacklists
  */
 public class BlacklistManager {
@@ -26,11 +25,10 @@ public class BlacklistManager {
     /**
      * Attempts to add pattern to blacklist. Rejected if already blacklisted.
      */
-    public BlacklistEntry addToBlacklist(String input, BlacklistType blacklistType) throws
-            BlacklistOperationOperationException {
+    public BlacklistEntry addToBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationOperationException {
         Pattern convertedPatten = blacklistType.stringToPattern(input);
-        BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten);
-        if(m_blacklistEntries.contains(blacklistEntry)) {
+        BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten, blacklistType);
+        if (m_blacklistEntries.contains(blacklistEntry)) {
             s_log.warn("Failed to add pattern. Already existed: {}", convertedPatten);
             throw new BlacklistOperationOperationException("Pattern attempted: " + convertedPatten.toString());
         } else {
@@ -44,8 +42,7 @@ public class BlacklistManager {
      * Check message against all blacklist entries.
      */
     public boolean isMessageBlacklisted(String twitchMessage) {
-        return m_blacklistEntries
-                .stream()
+        return m_blacklistEntries.stream()
                 .filter(blacklistEntry -> blacklistEntry.matches(twitchMessage))
                 .findAny()
                 .isPresent();
@@ -54,23 +51,27 @@ public class BlacklistManager {
     public void removeFromBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationOperationException {
         Pattern convertedPatten = blacklistType.stringToPattern(input);
         BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten);
-        if(m_blacklistEntries.contains(blacklistEntry)) {
-            s_log.info("Removing blacklist pattern {} which is a {}", convertedPatten, blacklistType);
+        removeFromBlacklist(blacklistEntry);
+    }
+
+    public void removeFromBlacklist(BlacklistEntry blacklistEntry) throws BlacklistOperationOperationException {
+        if (m_blacklistEntries.contains(blacklistEntry)) {
+            s_log.info("Removing blacklist pattern {} which is a {}", blacklistEntry.toString(), blacklistEntry.getBlacklistType()
+                    .toString());
             m_blacklistEntries.remove(blacklistEntry);
         } else {
-            s_log.warn(
-                    "Failed to remove pattern as it could not be found.\nRemoving:\n{}\nExist:\n{}",
-                    () -> blacklistEntry,
-                    () -> m_blacklistEntries.stream().map(BlacklistEntry::toString).collect(Collectors.joining("\n")));
-            throw new BlacklistOperationOperationException("Could not remove pattern. Pattern not found: " + convertedPatten);
+            s_log.warn("Failed to remove pattern as it could not be found.\nRemoving:\n{}\nExist:\n{}", () -> blacklistEntry, () -> m_blacklistEntries
+                    .stream()
+                    .map(BlacklistEntry::toString)
+                    .collect(Collectors.joining("\n")));
+            throw new BlacklistOperationOperationException(
+                    "Could not remove pattern. Pattern not found: " + blacklistEntry.toString());
         }
     }
 
-    public Collection<String> searchBlacklist(String searchTerm) {
-        return m_blacklistEntries
-                .stream()
-                .map(BlacklistEntry::toString)
-                .filter(pattern -> pattern.contains(searchTerm))
+    public Collection<BlacklistEntry> searchBlacklist(String searchTerm) {
+        return m_blacklistEntries.stream()
+                .filter(blacklistEntry -> blacklistEntry.toString().contains(searchTerm))
                 .collect(Collectors.toSet());
     }
 }
