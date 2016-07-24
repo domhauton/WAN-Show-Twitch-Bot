@@ -1,8 +1,10 @@
 package twitch.channel.permissions;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import twitch.channel.TwitchUser;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -10,10 +12,11 @@ import java.util.HashMap;
  * Contains the permissions for all of the users.
  */
 public class PermissionsManager {
-    private HashMap<TwitchUser, UserPermission> userHashMap;
+    private ConcurrentHashMap<TwitchUser, UserPermission> userHashMap;
+    private static final Logger s_log = LogManager.getLogger();
 
     public PermissionsManager() {
-        userHashMap = new HashMap<>();
+        userHashMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -21,15 +24,18 @@ public class PermissionsManager {
      * @return The stored permissions or default.
      */
     public UserPermission getUser(TwitchUser user) {
+        s_log.debug("Retrieving permissions for user {} from Permissions Manager.", user::getUsername);
         return userHashMap.getOrDefault(user, UserPermission.getDefaultPermission());
     }
 
     /**
      * Adds/Replaces any user stored
-     * @return The previous value or default.
      */
-    public UserPermission addUser(TwitchUser user, UserPermission userPermission){
-        UserPermission oldPermission = userHashMap.put(user, userPermission);
-        return oldPermission == null ? UserPermission.getDefaultPermission() : oldPermission;
+    public void changeUserPermission(TwitchUser user, UserPermission userPermission){
+        if(userPermission == UserPermission.getDefaultPermission()) {
+            userHashMap.remove(user);
+        } else {
+            userHashMap.put(user, userPermission);
+        }
     }
 }

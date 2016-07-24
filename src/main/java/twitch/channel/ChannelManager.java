@@ -9,9 +9,9 @@ import twitch.channel.message.MessageManager;
 import twitch.channel.message.TwitchMessage;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
-import twitch.channel.settings.ChannelSettingDao;
-import twitch.channel.settings.ChannelSettingSupplier;
-import twitch.channel.settings.suppliers.ChannelSettingsHashMap;
+import twitch.channel.settings.ChannelSettingDAO;
+import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
+import twitch.channel.settings.ChannelSettingDouble;
 import twitch.channel.timeouts.TimeoutManager;
 
 import java.util.Collection;
@@ -29,19 +29,19 @@ public class ChannelManager {
     private final MessageManager m_messageManager;
     private final TimeoutManager m_timeoutManager;
     private final BlacklistManager m_blacklistManager;
-    private final ChannelSettingDao m_channelChannelSettingDao;
+    private final ChannelSettingDAO channelSettingDAO;
 
     public ChannelManager(String channelName) {
-        this(new ChannelSettingsHashMap(), channelName);
+        this(new ChannelSettingDAOHashMapImpl(), channelName);
     }
 
-    ChannelManager(ChannelSettingSupplier channelSettingSupplier, String channelName) {
+    ChannelManager(ChannelSettingDAO channelSettingDAO, String channelName) {
         this.channelName = channelName;
         m_permissionsManager = new PermissionsManager();
         m_messageManager = new MessageManager();
         m_timeoutManager = new TimeoutManager();
         m_blacklistManager = new BlacklistManager();
-        m_channelChannelSettingDao = new ChannelSettingDao(channelSettingSupplier, channelName);
+        this.channelSettingDAO = channelSettingDAO;
     }
 
     /**
@@ -56,8 +56,8 @@ public class ChannelManager {
         return m_permissionsManager.getUser(twitchUser);
     }
 
-    public UserPermission setPermission(TwitchUser twitchUser, UserPermission newPermission) {
-        return m_permissionsManager.addUser(twitchUser, newPermission);
+    public void setPermission(TwitchUser twitchUser, UserPermission newPermission) {
+        m_permissionsManager.changeUserPermission(twitchUser, newPermission);
     }
 
     public ImmutableTwitchMessageList getMessageSnapshot() {
@@ -82,7 +82,8 @@ public class ChannelManager {
 
     public Collection<TwitchMessage> blacklistItem(String input, BlacklistType blacklistType) throws
             ChannelOperationException {
-        Integer messageLookBehind = m_channelChannelSettingDao.messageLookBehind.getOrDefault();
+        Integer messageLookBehind = channelSettingDAO.getDoubleSetting(channelName, ChannelSettingDouble
+                .CHANNEL_LOOKBACK).intValue();
         return blacklistItem(input, blacklistType, messageLookBehind);
     }
 

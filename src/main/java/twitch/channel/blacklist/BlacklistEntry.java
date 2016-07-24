@@ -9,9 +9,15 @@ import java.util.regex.Pattern;
  */
 public class BlacklistEntry {
     private final Pattern m_pattern;
+    private final BlacklistType m_blacklistType;
 
     BlacklistEntry(Pattern pattern) {
-        this.m_pattern = pattern;
+        this(pattern, BlacklistType.REGEX);
+    }
+
+    BlacklistEntry(Pattern pattern, BlacklistType blacklistType) {
+        m_pattern = pattern;
+        m_blacklistType = blacklistType;
     }
 
     public boolean matches(String inputString) {
@@ -22,6 +28,7 @@ public class BlacklistEntry {
     public boolean equals(Object o) {
         if (!(o instanceof BlacklistEntry)) { return false; }
         BlacklistEntry that = (BlacklistEntry) o;
+        // Do not compare blacklist type, unnecessary!
         return toString().equals(that.toString());
     }
 
@@ -33,5 +40,9 @@ public class BlacklistEntry {
     @Override
     public String toString() {
         return m_pattern.pattern();
+    }
+
+    BlacklistType getBlacklistType() {
+        return m_blacklistType;
     }
 }
