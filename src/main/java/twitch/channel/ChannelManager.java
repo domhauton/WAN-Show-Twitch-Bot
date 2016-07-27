@@ -11,7 +11,8 @@ import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
 import twitch.channel.settings.ChannelSettingDao;
 import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
-import twitch.channel.settings.ChannelSettingDouble;
+import twitch.channel.settings.enums.ChannelSettingDouble;
+import twitch.channel.settings.enums.ChannelSettingInteger;
 import twitch.channel.timeouts.TimeoutManager;
 
 import java.util.Collection;
@@ -82,8 +83,7 @@ public class ChannelManager {
 
     public Collection<TwitchMessage> blacklistItem(String input, BlacklistType blacklistType) throws
             ChannelOperationException {
-        Integer messageLookBehind = channelSettingDao.getDoubleSetting(channelName, ChannelSettingDouble
-                .CHANNEL_LOOKBACK).intValue();
+        Integer messageLookBehind = channelSettingDao.getSetting(channelName, ChannelSettingInteger.CHANNEL_RETROSPECTIVE_LOOKBACK);
         return blacklistItem(input, blacklistType, messageLookBehind);
     }
 
