@@ -1,5 +1,7 @@
 package twitch.channel.settings;
 
+import twitch.channel.settings.enums.IChannelSetting;
+
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -9,27 +11,39 @@ import java.util.Optional;
  * Basic implementation of ChannelSettingDao for local storage and testing.
  */
 public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
-    private final HashMap<String, Double> settingDoubleMap;
+    private final HashMap<String, Object> settingMap;
 
     public ChannelSettingDAOHashMapImpl() {
-        settingDoubleMap = new HashMap<>();
+        settingMap = new HashMap<>();
     }
 
     @Override
-    public Double getDoubleSetting(String channelName, ChannelSettingDouble channelSettingDouble) throws ChannelSettingDAOException {
-        String hashMapKey = generateKey(channelName, channelSettingDouble);
-        Optional<Double> mapResultOptional = Optional.of(settingDoubleMap.get(hashMapKey));
-        return mapResultOptional.orElseThrow(
+    @SuppressWarnings("unchecked")
+    public <T> T getSetting(String channelName, IChannelSetting<T> channelSetting) throws ChannelSettingDAOException{
+        String hashMapKey = generateKey(channelName, channelSetting);
+        Optional<Object> mapResultOptional = Optional.ofNullable(settingMap.get(hashMapKey));
+        Object mapResult = mapResultOptional.orElseThrow(
                 () -> new ChannelSettingDAOException("Key " + hashMapKey + " not found."));
+
+        if( channelSetting.getGenericInterfaceType().isInstance(mapResult) ){
+            try {
+                return (T) mapResult;
+            } catch (ClassCastException e) {
+                throw new ChannelSettingDAOException("Database returned object of incorrect type. Type check passed "
+                                                     + "but cast failed!");
+            }
+        } else {
+            throw new ChannelSettingDAOException("Database returned object of incorrect type!");
+        }
     }
 
     @Override
-    public void setDoubleSetting(String channelName, ChannelSettingDouble channelSettingDouble, Double value) throws ChannelSettingDAOException {
-        String hashMapKey = generateKey(channelName, channelSettingDouble);
-        settingDoubleMap.put(hashMapKey, value);
+    public <T> void setSetting(String channelName, IChannelSetting<T> channelSetting, T value) throws ChannelSettingDAOException{
+        String hashMapKey = generateKey(channelName, channelSetting);
+        settingMap.put(hashMapKey, value);
     }
 
-    private String generateKey(String channelName, ChannelSettingDouble channelSettingDouble) {
-        return String.join("_", channelName, channelSettingDouble.toString());
+    private <T> String generateKey(String channelName, IChannelSetting<T> channelSetting) {
+        return String.join("___", channelName, channelSetting.getGenericInterfaceType().getSimpleName(), channelSetting.toString());
     }
 }
