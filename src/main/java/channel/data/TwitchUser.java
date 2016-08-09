@@ -11,8 +11,8 @@ public class TwitchUser {
     private String username;
 
     public TwitchUser(String username) {
-        Objects.requireNonNull(username);
-        this.username = username;
+      Objects.requireNonNull(username);
+      this.username = username;
     }
 
     public String getUsername() {

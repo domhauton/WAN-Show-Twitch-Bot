@@ -15,8 +15,8 @@ public class ChannelManager {
     private MessageManager     messageManager;
 
     public ChannelManager() {
-        permissionsManager =     new PermissionsManager();
-        messageManager =         new MessageManager();
+        permissionsManager = new PermissionsManager();
+        messageManager = new MessageManager();
     }
 
     /**

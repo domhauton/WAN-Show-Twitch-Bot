@@ -87,6 +87,10 @@ public class TwitchMessage {
         return getSimpleMessagePayload().contains(simplifyMessage(stringToMatch));
     }
 
+    public boolean isCommand(){
+      return getMessagePayload().startsWith("!");
+    }
+
     @Override
     public String toString() {
         return String.format("TwitchMessage{[%s] %s: %s}", messageDateTime, sender, messagePayload);
