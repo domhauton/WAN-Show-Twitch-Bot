@@ -44,6 +44,7 @@ public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
     }
 
     private <T> String generateKey(String channelName, IChannelSetting<T> channelSetting) {
-        return String.join("___", channelName, channelSetting.getGenericInterfaceType().getSimpleName(), channelSetting.toString());
+        return String.join("#", channelName, channelSetting.getGenericInterfaceType().getSimpleName(), channelSetting
+                .toString());
     }
 }

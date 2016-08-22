@@ -6,6 +6,8 @@ import static org.junit.Assert.*;
 
 /**
  * Created by Dominic Hauton on 26/07/2016.
+ *
+ * An implementation of the DOA interface test for the HashMap Implementation
  */
 public class IChannelSettingDAOHashMapImplTest extends ChannelSettingSupplierTest{
     @Override

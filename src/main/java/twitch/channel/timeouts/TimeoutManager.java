@@ -1,7 +1,6 @@
 package twitch.channel.timeouts;
 
-import org.joda.time.Period;
-import twitch.channel.TwitchUser;
+import org.joda.time.Duration;
 
 import java.util.HashMap;
 
@@ -12,17 +11,26 @@ import java.util.HashMap;
  */
 public class TimeoutManager {
 
-    private HashMap<TwitchUser, Period> userTimeoutHistory;
+    private HashMap<String, Duration> userTimeoutHistory;
 
     public TimeoutManager() {
         userTimeoutHistory = new HashMap<>();
     }
 
-    public Period getUserTimeout(TwitchUser twitchUser) {
-        return userTimeoutHistory.getOrDefault(twitchUser, Period.ZERO);
+    public Duration getUserTimeout(String twitchUser) {
+        return userTimeoutHistory.getOrDefault(twitchUser, Duration.ZERO);
     }
 
-    public void addUserTimeout(TwitchUser twitchUser, Period timeoutPeriod){
-        userTimeoutHistory.put(twitchUser, timeoutPeriod);
+    /**
+     * Adds the timeout and calculates new total time
+     * @return new timeout time
+     */
+    public synchronized Duration addUserTimeout(String twitchUser, TimeoutReason timeoutReason){
+        Duration previousTimeout = getUserTimeout(twitchUser);
+        Integer newTimeoutSeconds = Math.round(previousTimeout.toStandardSeconds().getSeconds()*timeoutReason.getMultiplier()) +
+                                    timeoutReason.getTimeout().toStandardSeconds().getSeconds();
+        Duration newTimeout = Duration.standardSeconds(newTimeoutSeconds);
+        userTimeoutHistory.put(twitchUser, newTimeout);
+        return newTimeout;
     }
 }

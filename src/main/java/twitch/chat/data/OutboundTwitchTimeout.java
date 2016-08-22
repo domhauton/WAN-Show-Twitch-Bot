@@ -1,5 +1,6 @@
 package twitch.chat.data;
 
+import org.joda.time.Duration;
 import org.joda.time.Period;
 
 /**
@@ -8,11 +9,11 @@ import org.joda.time.Period;
  * Extends an OutboundTwitchMessage to implement a Timeout
  */
 public class OutboundTwitchTimeout extends OutboundTwitchMessage {
-    public OutboundTwitchTimeout(String targetChannel, String targetUser, Period timeoutPeriod) {
+    public OutboundTwitchTimeout(String targetChannel, String targetUser, Duration timeoutPeriod) {
         super(createBanMessage(timeoutPeriod, targetUser), targetChannel);
     }
 
-    private static String createBanMessage(Period timeoutPeriod, String targetUser) {
+    private static String createBanMessage(Duration timeoutPeriod, String targetUser) {
         Integer seconds = timeoutPeriod.toStandardSeconds().getSeconds();
         return ".timeout " + targetUser + " " + seconds.toString();
     }

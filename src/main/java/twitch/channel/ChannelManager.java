@@ -1,5 +1,6 @@
 package twitch.channel;
 
+import org.joda.time.Duration;
 import org.joda.time.Period;
 import twitch.channel.blacklist.BlacklistEntry;
 import twitch.channel.blacklist.BlacklistManager;
@@ -7,16 +8,21 @@ import twitch.channel.blacklist.BlacklistType;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.MessageManager;
 import twitch.channel.message.TwitchMessage;
+import twitch.channel.permissions.PermissionException;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
+import twitch.channel.settings.ChannelSettingDAOException;
 import twitch.channel.settings.ChannelSettingDao;
 import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
 import twitch.channel.settings.enums.ChannelSettingDouble;
 import twitch.channel.settings.enums.ChannelSettingInteger;
+import twitch.channel.settings.enums.ChannelSettingString;
 import twitch.channel.timeouts.TimeoutManager;
+import twitch.channel.timeouts.TimeoutReason;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -50,11 +56,21 @@ public class ChannelManager {
      * @return true if user has permission for the action
      */
     public boolean checkPermission(TwitchUser user, UserPermission requiredPermission) {
-        return m_permissionsManager.getUser(user).authorizedForActionOfPermissionLevel(requiredPermission);
+        return getPermission(user).authorizedForActionOfPermissionLevel(requiredPermission);
     }
 
     public UserPermission getPermission(TwitchUser twitchUser) {
-        return m_permissionsManager.getUser(twitchUser);
+        try {
+            return m_permissionsManager.getUser(twitchUser);
+        } catch (PermissionException e) {
+            String defaultPermissionString = channelSettingDao.getSettingOrDefault(channelName, ChannelSettingString
+                    .DEFAULT_PERMISSION);
+            try {
+                return UserPermission.valueOf(defaultPermissionString);
+            } catch (IllegalArgumentException e2) {
+                return UserPermission.ChannelUser;
+            }
+        }
     }
 
     public void setPermission(TwitchUser twitchUser, UserPermission newPermission) {
@@ -69,12 +85,12 @@ public class ChannelManager {
         return m_messageManager.getUserSnapshot(username);
     }
 
-    public Period getUserTimeout(TwitchUser twitchUser) {
-        return m_timeoutManager.getUserTimeout(twitchUser);
+    public Duration getUserTimeout(TwitchUser twitchUser) {
+        return m_timeoutManager.getUserTimeout(twitchUser.getUsername());
     }
 
-    public void addUserTimeout(TwitchUser twitchUser, Period timeoutPeriod){
-        m_timeoutManager.addUserTimeout(twitchUser, timeoutPeriod);
+    public Duration addUserTimeout(String twitchUser, TimeoutReason timeoutReason){
+        return m_timeoutManager.addUserTimeout(twitchUser, timeoutReason);
     }
 
     public boolean addChannelMessage(TwitchMessage message) {

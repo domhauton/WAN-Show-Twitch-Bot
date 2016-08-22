@@ -8,17 +8,10 @@ import static org.junit.Assert.*;
 
 /**
  * Created by Dominic Hauton on 18/07/2016.
+ *
+ * Testing authorisation works in expected direction
  */
 public class UserPermissionTest {
-
-    @Test
-    public void testDefaultPermission() throws Exception {
-        Assert.assertFalse("Default permission should always be less than any mod/admin/owner rank.",
-                UserPermission.getDefaultPermission().authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner) ||
-                UserPermission.getDefaultPermission().authorizedForActionOfPermissionLevel(UserPermission.ChannelModerator) ||
-                UserPermission.getDefaultPermission().authorizedForActionOfPermissionLevel(UserPermission.BotAdmin) ||
-                UserPermission.getDefaultPermission().authorizedForActionOfPermissionLevel(UserPermission.BotModerator));
-    }
 
     @Test
     public void authorizedForActionOfPermissionLevelLessThan() throws Exception {

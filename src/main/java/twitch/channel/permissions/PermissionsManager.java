@@ -3,7 +3,9 @@ package twitch.channel.permissions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import twitch.channel.TwitchUser;
+import twitch.channel.settings.ChannelSettingDao;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -21,21 +23,25 @@ public class PermissionsManager {
 
     /**
      * Gets the current permissions for the given user.
-     * @return The stored permissions or default.
+     * @return The stored permissions.
+     * @throws PermissionException if permission not stored.
      */
-    public UserPermission getUser(TwitchUser user) {
+    public UserPermission getUser(TwitchUser user) throws PermissionException{
         s_log.debug("Retrieving permissions for user {} from Permissions Manager.", user::getUsername);
-        return userHashMap.getOrDefault(user, UserPermission.getDefaultPermission());
+        UserPermission permission = userHashMap.get(user);
+        if(Objects.nonNull(permission)) {
+            return permission;
+        } else {
+            s_log.info("Permission for user {} not found.", user::getUsername);
+            throw new PermissionException("Permission for user " + user.getUsername() + " not found.");
+        }
     }
 
     /**
      * Adds/Replaces any user stored
      */
     public void changeUserPermission(TwitchUser user, UserPermission userPermission){
-        if(userPermission == UserPermission.getDefaultPermission()) {
-            userHashMap.remove(user);
-        } else {
-            userHashMap.put(user, userPermission);
-        }
+        s_log.info("Changing permission of user {} to {}", user::getUsername, userPermission::toString);
+        userHashMap.put(user, userPermission);
     }
 }
