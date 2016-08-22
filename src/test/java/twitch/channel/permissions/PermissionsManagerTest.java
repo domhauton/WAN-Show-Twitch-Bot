@@ -2,7 +2,9 @@ package twitch.channel.permissions;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import twitch.channel.TwitchUser;
 
 import java.util.stream.Stream;
@@ -13,6 +15,9 @@ import java.util.stream.Stream;
  * Check that permissions can be added and removed correctly.
  */
 public class PermissionsManagerTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private static TwitchUser s_twitchUser1 = new TwitchUser("fooUser1");
     private static TwitchUser s_twitchUser1_1 = new TwitchUser(s_twitchUser1.getUsername());
@@ -28,9 +33,8 @@ public class PermissionsManagerTest {
 
     @Test
     public void retrievingEmptyUserTest() throws Exception {
-        UserPermission actualUserPermissions = m_permissionsManager.getUser(s_twitchUser1);
-        UserPermission expectedUserPermissions = UserPermission.getDefaultPermission();
-        Assert.assertEquals("Should return default if no user entry", expectedUserPermissions, actualUserPermissions);
+        expectedException.expect(PermissionException.class);
+        m_permissionsManager.getUser(s_twitchUser1);
     }
 
     @Test
@@ -59,7 +63,12 @@ public class PermissionsManagerTest {
 
     private void setAndTestUserPermission(TwitchUser twitchUser, UserPermission userPermission) {
         m_permissionsManager.changeUserPermission(twitchUser, userPermission);
-        Assert.assertEquals("Permission for " + twitchUser.toString() + " should be set to "
-                            + userPermission.toString(), userPermission, m_permissionsManager.getUser(twitchUser));
+        try{
+            Assert.assertEquals("Permission for " + twitchUser.toString() + " should be set to "
+                                + userPermission.toString(), userPermission, m_permissionsManager.getUser(twitchUser));
+        } catch (PermissionException e) {
+            throw new RuntimeException(e); // Cast to unchecked. Stream workaround -_-
+        }
+
     }
 }

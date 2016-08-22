@@ -10,4 +10,11 @@ import twitch.channel.settings.enums.IChannelSetting;
 public interface ChannelSettingDao {
     <T> T getSetting(String channelName, IChannelSetting<T> channelSetting) throws ChannelSettingDAOException;
     <T> void setSetting(String channelName, IChannelSetting<T> channelSetting, T value) throws ChannelSettingDAOException;
+    default <T> T getSettingOrDefault(String channelName, IChannelSetting<T> channelSetting) {
+        try {
+            return getSetting(channelName, channelSetting);
+        } catch (ChannelSettingDAOException e) {
+            return channelSetting.getDefault();
+        }
+    }
 }

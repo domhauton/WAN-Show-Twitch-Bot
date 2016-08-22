@@ -4,7 +4,7 @@ import bot.commands.BotCommandException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.joda.time.Period;
+import org.joda.time.Duration;
 import twitch.channel.ChannelManager;
 import twitch.channel.ChannelOperationException;
 import twitch.channel.blacklist.BlacklistType;
@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 /**
  * Created by Dominic Hauton on 05/06/2016.
- *
+ * <p>
  * Handles blacklist command executions.
  */
 public class BlacklistExecutor implements CommandExecutor {
@@ -53,8 +53,8 @@ public class BlacklistExecutor implements CommandExecutor {
                                                                     : channelManager.blacklistItem(blackListItem, blacklistType);
 
                 OutboundTwitchMessage publicAdditionSuccessMessage = new OutboundTwitchMessage(
-                        "Added new item to blacklist. " + retrospectivelyBreaches.size() +
-                        " retrospective timeouts issued.", channelManager.getChannelName());
+                        "Added new item to blacklist. " + retrospectivelyBreaches.size()
+                        + " retrospective timeouts issued.", channelManager.getChannelName());
 
                 Collection<OutboundTwitchMessage> outboundMessages = convertRetrospectiveBreachesToBans(retrospectivelyBreaches);
                 outboundMessages.add(publicAdditionSuccessMessage);
@@ -107,7 +107,7 @@ public class BlacklistExecutor implements CommandExecutor {
     }
 
     private OutboundTwitchTimeout createRetrospectiveTimeoutCommand(String twitchUsername, String targetChannel) {
-        //TODO use channelSpecificTimeoutValue. Pass in channel and use DAO.
-        return new OutboundTwitchTimeout(targetChannel, twitchUsername, Period.seconds(45));
+        //TODO use channelSpecificTimeoutValue. Pass in channel and use DAO. Needs to submit time to TOM
+        return new OutboundTwitchTimeout(targetChannel, twitchUsername, Duration.standardSeconds(45));
     }
 }

@@ -18,10 +18,6 @@ public enum UserPermission {
         this.permissionLevel = permissionLevel;
     }
 
-    public static UserPermission getDefaultPermission() {
-        return UserPermission.ChannelUser;
-    }
-
     /**
      * Checks if the current permissions have permissions for the level given.
      * @param requiredPermissionLevel Required permissions level for action.

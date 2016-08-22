@@ -3,6 +3,7 @@ package bot;
 import bot.commands.BotCommand;
 import bot.commands.BotCommandException;
 import com.google.inject.name.Named;
+import org.joda.time.Duration;
 import twitch.channel.ChannelManager;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.TwitchMessage;
@@ -11,6 +12,7 @@ import twitch.channel.permissions.UserPermission;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import twitch.channel.timeouts.TimeoutReason;
 import twitch.chat.data.InboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchTimeout;
@@ -271,8 +273,7 @@ class BotController {
         if( messagePermitted ){
             timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
-                    Period.minutes(45),
-                    "You posted a blacklisted WORD.");
+                    TimeoutReason.BLACKLISTED_WORD);
         }
     }
 
@@ -302,14 +303,12 @@ class BotController {
 		if(twitchMessage.getMessage().length() > 5 && twitchMessage.getLegalCharRatio(permittedChars) < 0.1)
 			timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
-                    Period.seconds(20),
-                    "You have been timed out for posting ASCII art.");
+                    TimeoutReason.EXCESSIVE_SYMBOLS);
 
 		if(userMessages.size() > 2 && (float) userMessages.size()/(float) userMessages.getMessageTimePeriod().toStandardSeconds().getSeconds() > m_messagesPerSecond){
 			timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
-                    Period.seconds(20),
-                    "You have been timed out for posting messages to quickly.");
+                    TimeoutReason.MESSAGE_RATE );
 			return;
 		}
 
@@ -317,38 +316,31 @@ class BotController {
 		if(channelManager.getMessageSnapshot().containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= m_repetitionSearch)
 			timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
-                    Period.seconds(20),
-                    "You have been timed out. Your MESSAGE has been posted in the chat recently.");
+                    TimeoutReason.CHAT_REPETITION);
         else if (userMessages.containsSimplePayload(twitchMessage.getSimpleMessagePayload()) >= 2) {
             timeoutUser(twitchMessage.getTwitchUser(),
                     twitchMessage.getTwitchChannel(),
-                    Period.seconds(20),
-                    "You have been timed out for repeating the same MESSAGE.");
+                    TimeoutReason.MESSAGE_REPETITION);
         }
 	}
     
 	/**
 	 * This MESSAGE to the timeoutUser log file.
-	 *
-	 * @param banLength
-	 *            Length of Ban resulting from MESSAGE.
-	 * @param reason
-	 *            Reason for timeoutUser.
 	 */
 	private void timeoutUser(
-            TwitchUser twitchUser,
-            String channel,
-            Period banLength,
-			String reason) {
-		Period previousBans = channelManager.getUserTimeout(twitchUser);
-		banLength = banLength.plus(previousBans);
-		if(banLength.toStandardMinutes().getMinutes() > 1) banLength = banLength.plusMinutes(2);
-		if(!Strings.isNullOrEmpty(reason)){
-            OutboundTwitchWhisper outboundTwitchMessage = new OutboundTwitchWhisper(reason, twitchUser.getUsername());
-            twitchMessageRouter.sendMessage(outboundTwitchMessage);
-        }
-        OutboundTwitchMessage twitchTimeout = new OutboundTwitchTimeout(channel, twitchUser.getUsername(), banLength);
+			TwitchUser twitchUser,
+			String channel,
+			TimeoutReason timeoutReason) {
+		OutboundTwitchWhisper privateUserBanNotification = new OutboundTwitchWhisper(timeoutReason.getMessage(), twitchUser
+				.getUsername());
+		twitchMessageRouter.sendMessage(privateUserBanNotification);
+		Duration timeoutDuration = channelManager.addUserTimeout(twitchUser.getUsername(), timeoutReason);
+        OutboundTwitchMessage twitchTimeout = new OutboundTwitchTimeout(channel, twitchUser.getUsername(), timeoutDuration);
 		twitchMessageRouter.sendMessage(twitchTimeout);
-		actionLog.info("Timeout {} for {}s. Reason: {}. Message: {}", twitchUser, banLength, reason, reason);
+		actionLog.info("Timeout {} for {}. Reason: {}. Message: {}",
+				twitchUser::toString,
+				timeoutDuration::toString,
+				timeoutReason::toString,
+				timeoutReason::getMessage);
 	}
 }
