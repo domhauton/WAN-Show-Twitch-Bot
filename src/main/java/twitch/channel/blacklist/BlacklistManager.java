@@ -5,9 +5,12 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Dominic Hauton on 03/05/2016.
@@ -25,12 +28,13 @@ public class BlacklistManager {
     /**
      * Attempts to add pattern to blacklist. Rejected if already blacklisted.
      */
-    public BlacklistEntry addToBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationOperationException {
+    public BlacklistEntry addToBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationException {
         Pattern convertedPatten = blacklistType.stringToPattern(input);
         BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten, blacklistType);
         if (m_blacklistEntries.contains(blacklistEntry)) {
             s_log.warn("Failed to add pattern. Already existed: {}", convertedPatten);
-            throw new BlacklistOperationOperationException("Pattern attempted: " + convertedPatten.toString());
+            throw new BlacklistOperationException("Failed to add pattern. Already existed: " +
+                                                  convertedPatten.toString());
         } else {
             m_blacklistEntries.add(blacklistEntry);
             s_log.info("Added blacklist pattern: {} as: {}", convertedPatten, blacklistType);
@@ -42,34 +46,78 @@ public class BlacklistManager {
      * Check message against all blacklist entries.
      */
     public boolean isMessageBlacklisted(String twitchMessage) {
+        s_log.debug("Checking if message is blacklisted: {}", twitchMessage);
         return m_blacklistEntries.stream()
                 .filter(blacklistEntry -> blacklistEntry.matches(twitchMessage))
                 .findAny()
                 .isPresent();
     }
 
-    public void removeFromBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationOperationException {
+    public BlacklistEntry removeFromBlacklist(String input, BlacklistType blacklistType) throws BlacklistOperationException {
         Pattern convertedPatten = blacklistType.stringToPattern(input);
         BlacklistEntry blacklistEntry = new BlacklistEntry(convertedPatten);
-        removeFromBlacklist(blacklistEntry);
+        return removeFromBlacklist(blacklistEntry);
     }
 
-    public void removeFromBlacklist(BlacklistEntry blacklistEntry) throws BlacklistOperationOperationException {
+    BlacklistEntry removeFromBlacklist(BlacklistEntry blacklistEntry) throws BlacklistOperationException {
         if (m_blacklistEntries.contains(blacklistEntry)) {
             s_log.info("Removing blacklist pattern {} which is a {}", blacklistEntry.toString(), blacklistEntry.getBlacklistType()
                     .toString());
             m_blacklistEntries.remove(blacklistEntry);
+            return blacklistEntry;
         } else {
             s_log.warn("Failed to remove pattern as it could not be found.\nRemoving:\n{}\nExist:\n{}", () -> blacklistEntry, () -> m_blacklistEntries
                     .stream()
                     .map(BlacklistEntry::toString)
                     .collect(Collectors.joining("\n")));
-            throw new BlacklistOperationOperationException(
+            throw new BlacklistOperationException(
                     "Could not remove pattern. Pattern not found: " + blacklistEntry.toString());
         }
     }
 
+    /**
+     * An unsafe way to remove from blacklist, will return null instead of throwing exception. For streams.
+     * @return null if remove failed. Otherwise item removed.
+     */
+    private BlacklistEntry removeFromBlacklistUnsafe(String input, BlacklistType blacklistType) {
+        try {
+            return removeFromBlacklist(input, blacklistType);
+        } catch (BlacklistOperationException e) {
+            return null;
+        }
+    }
+
+    /**
+     * An unsafe way to remove from blacklist, will return null instead of throwing exception. For streams.
+     * @return null if remove failed. Otherwise item removed.
+     */
+    private BlacklistEntry removeFromBlacklistUnsafe(BlacklistEntry blacklistEntry) {
+        try {
+            return removeFromBlacklist(blacklistEntry);
+        } catch (BlacklistOperationException e) {
+            return null;
+        }
+    }
+
+    Collection<BlacklistEntry> removeFromBlacklist(String input) {
+        Collection<BlacklistEntry> removedBlacklistEntries = Stream.of(BlacklistType.values())
+                .map(blacklistType -> removeFromBlacklistUnsafe(input, blacklistType))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (removedBlacklistEntries.isEmpty()) {
+            Collection<BlacklistEntry> matchingEntries = searchBlacklist(input);
+            Collection<BlacklistEntry> removedSearchEntries = matchingEntries.stream()
+                    .map(this::removeFromBlacklistUnsafe)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            return removedSearchEntries;
+        } else {
+            return removedBlacklistEntries;
+        }
+    }
+
     public Collection<BlacklistEntry> searchBlacklist(String searchTerm) {
+        s_log.info("Searching blacklist for: {}", searchTerm);
         return m_blacklistEntries.stream()
                 .filter(blacklistEntry -> blacklistEntry.toString().contains(searchTerm))
                 .collect(Collectors.toSet());

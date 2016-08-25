@@ -1,5 +1,7 @@
 package twitch.channel.settings;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import twitch.channel.settings.enums.IChannelSetting;
 
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import java.util.Optional;
  */
 public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
     private final HashMap<String, Object> settingMap;
+    private static final Logger s_log = LogManager.getLogger();
 
     public ChannelSettingDAOHashMapImpl() {
         settingMap = new HashMap<>();
@@ -20,11 +23,11 @@ public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getSetting(String channelName, IChannelSetting<T> channelSetting) throws ChannelSettingDAOException{
+        s_log.info("Retrieving setting {} for channel {}", channelSetting, channelName);
         String hashMapKey = generateKey(channelName, channelSetting);
         Optional<Object> mapResultOptional = Optional.ofNullable(settingMap.get(hashMapKey));
         Object mapResult = mapResultOptional.orElseThrow(
                 () -> new ChannelSettingDAOException("Key " + hashMapKey + " not found."));
-
         if( channelSetting.getGenericInterfaceType().isInstance(mapResult) ){
             try {
                 return (T) mapResult;

@@ -1,9 +1,11 @@
 package twitch.channel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.Duration;
-import org.joda.time.Period;
 import twitch.channel.blacklist.BlacklistEntry;
 import twitch.channel.blacklist.BlacklistManager;
+import twitch.channel.blacklist.BlacklistOperationException;
 import twitch.channel.blacklist.BlacklistType;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.MessageManager;
@@ -11,10 +13,8 @@ import twitch.channel.message.TwitchMessage;
 import twitch.channel.permissions.PermissionException;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
-import twitch.channel.settings.ChannelSettingDAOException;
 import twitch.channel.settings.ChannelSettingDao;
 import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
-import twitch.channel.settings.enums.ChannelSettingDouble;
 import twitch.channel.settings.enums.ChannelSettingInteger;
 import twitch.channel.settings.enums.ChannelSettingString;
 import twitch.channel.timeouts.TimeoutManager;
@@ -22,7 +22,6 @@ import twitch.channel.timeouts.TimeoutReason;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -31,31 +30,33 @@ import java.util.stream.Collectors;
  * Stores information about the user channel.
  */
 public class ChannelManager {
-    private final String channelName;
+    private final String m_channelName;
     private final PermissionsManager m_permissionsManager;
     private final MessageManager m_messageManager;
     private final TimeoutManager m_timeoutManager;
     private final BlacklistManager m_blacklistManager;
-    private final ChannelSettingDao channelSettingDao;
+    private final ChannelSettingDao m_channelSettingDao;
+
+    private static final Logger s_log = LogManager.getLogger();
 
     public ChannelManager(String channelName) {
         this(new ChannelSettingDAOHashMapImpl(), channelName);
     }
 
     ChannelManager(ChannelSettingDao channelSettingDao, String channelName) {
-        this.channelName = channelName;
+        m_channelName = channelName;
         m_permissionsManager = new PermissionsManager();
         m_messageManager = new MessageManager();
         m_timeoutManager = new TimeoutManager();
         m_blacklistManager = new BlacklistManager();
-        this.channelSettingDao = channelSettingDao;
+        m_channelSettingDao = channelSettingDao;
     }
 
     /**
      * Checks if the given user has permission for the requested action per
      * @return true if user has permission for the action
      */
-    public boolean checkPermission(TwitchUser user, UserPermission requiredPermission) {
+    boolean checkPermission(TwitchUser user, UserPermission requiredPermission) {
         return getPermission(user).authorizedForActionOfPermissionLevel(requiredPermission);
     }
 
@@ -63,7 +64,7 @@ public class ChannelManager {
         try {
             return m_permissionsManager.getUser(twitchUser);
         } catch (PermissionException e) {
-            String defaultPermissionString = channelSettingDao.getSettingOrDefault(channelName, ChannelSettingString
+            String defaultPermissionString = m_channelSettingDao.getSettingOrDefault(m_channelName, ChannelSettingString
                     .DEFAULT_PERMISSION);
             try {
                 return UserPermission.valueOf(defaultPermissionString);
@@ -74,7 +75,22 @@ public class ChannelManager {
     }
 
     public void setPermission(TwitchUser twitchUser, UserPermission newPermission) {
+        s_log.info("Setting permission {} for user {}", newPermission::toString, twitchUser::toString);
         m_permissionsManager.changeUserPermission(twitchUser, newPermission);
+    }
+
+    /**
+     * Adds a message to the channel message manager.
+     * @return true if message passed blacklists.
+     * @throws ChannelOperationException insertion failed. Reason unknown.
+     */
+    public boolean addChannelMessage(TwitchMessage message) throws ChannelOperationException {
+        if (m_messageManager.addMessage(message)) {
+            // n.b. Inverted boolean!
+            return !m_blacklistManager.isMessageBlacklisted(message.getMessage());
+        } else {
+            throw new ChannelOperationException("Failed to insert message into channel. Reason Unknown.");
+        }
     }
 
     public ImmutableTwitchMessageList getMessageSnapshot() {
@@ -85,21 +101,19 @@ public class ChannelManager {
         return m_messageManager.getUserSnapshot(username);
     }
 
-    public Duration getUserTimeout(TwitchUser twitchUser) {
+    Duration getUserTimeout(TwitchUser twitchUser) {
         return m_timeoutManager.getUserTimeout(twitchUser.getUsername());
     }
 
     public Duration addUserTimeout(String twitchUser, TimeoutReason timeoutReason){
+        s_log.info("Adding a timeout {} for user {}", timeoutReason::toString, twitchUser::toString);
         return m_timeoutManager.addUserTimeout(twitchUser, timeoutReason);
-    }
-
-    public boolean addChannelMessage(TwitchMessage message) {
-        return m_messageManager.addMessage(message);
     }
 
     public Collection<TwitchMessage> blacklistItem(String input, BlacklistType blacklistType) throws
             ChannelOperationException {
-        Integer messageLookBehind = channelSettingDao.getSetting(channelName, ChannelSettingInteger.CHANNEL_RETROSPECTIVE_LOOKBACK);
+        Integer messageLookBehind = m_channelSettingDao.getSettingOrDefault(m_channelName, ChannelSettingInteger
+                .CHANNEL_RETROSPECTIVE_LOOKBACK);
         return blacklistItem(input, blacklistType, messageLookBehind);
     }
 
@@ -110,11 +124,13 @@ public class ChannelManager {
             String input,
             BlacklistType blacklistType,
             int messageLookBehind) throws ChannelOperationException {
+        s_log.info("Adding item {} to channel {} blacklist as {} with {} look behind", input, m_channelName,
+                blacklistType, messageLookBehind);
         ImmutableTwitchMessageList messageList = getMessageSnapshot();
         if ( messageLookBehind == 0 ) {
             m_blacklistManager.addToBlacklist(input, blacklistType);
             return Collections.emptyList();
-        } else if ( messageLookBehind > 0 && messageLookBehind <= messageList.size() ) {
+        } else {
             Collection<TwitchMessage> trimmedMessageList = messageList
                     .stream()
                     .limit(messageLookBehind)
@@ -124,14 +140,33 @@ public class ChannelManager {
                     .stream()
                     .filter(message -> blacklistEntry.matches(message.getMessage()))
                     .collect(Collectors.toList());
-        } else {
-            throw new ChannelOperationException("Blacklist look-behind must be 0-" + messageList.size()
-                                                + ". Value:" + messageLookBehind);
         }
+    }
 
+    /**
+     * Remove exact blacklist entry
+     * @return Blacklist entry that has been removed
+     * @throws ChannelOperationException if Blacklist entry request was not found.
+     */
+    public BlacklistEntry removeBlacklistItem(String input, BlacklistType blacklistType) throws ChannelOperationException {
+        try {
+            return m_blacklistManager.removeFromBlacklist(input, blacklistType);
+        } catch (BlacklistOperationException e) {
+            throw new ChannelOperationException("Failed to remove blacklist entry " + input + " of type " +
+                                                blacklistType.toString());
+        }
+    }
+
+    /**
+     * Fuzzy removal of blacklist entry. Will first search exact, then any matching entry
+     * @param input contents of blacklist message
+     * @return All blacklist entries that have been removed.
+     */
+    Collection<BlacklistEntry> removeBlacklistItem(String input) {
+        return removeBlacklistItem(input);
     }
 
     public String getChannelName() {
-        return channelName;
+        return m_channelName;
     }
 }

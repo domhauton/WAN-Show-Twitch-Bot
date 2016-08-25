@@ -38,12 +38,16 @@ public class MessageManager {
 
 
     public ImmutableTwitchMessageList getChannelSnapshot() {
-        return m_channelEvictingQueue.getMessageBufferSnapshot();
+        ImmutableTwitchMessageList messageBufferSnapshot = m_channelEvictingQueue.getMessageBufferSnapshot();
+        s_log.debug("Retrieving channel snapshot. Current size: {}", messageBufferSnapshot::size);
+        return messageBufferSnapshot;
     }
 
     public ImmutableTwitchMessageList getUserSnapshot(TwitchUser user) {
-        return m_userEvictingQueueMap.getOrDefault(user, new TwitchMessageEvictingQueue(userQueueSize))
+        ImmutableTwitchMessageList messageBufferSnapshot = m_userEvictingQueueMap.getOrDefault(user, new TwitchMessageEvictingQueue(userQueueSize))
                 .getMessageBufferSnapshot();
+        s_log.debug("Retrieving user {} snapshot. Current size: {}", user::toString, messageBufferSnapshot::size);
+        return messageBufferSnapshot;
     }
 
     /**

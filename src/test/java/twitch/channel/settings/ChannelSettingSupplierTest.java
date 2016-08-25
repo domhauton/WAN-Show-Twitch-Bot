@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import twitch.channel.settings.enums.ChannelSettingDouble;
 import twitch.channel.settings.enums.ChannelSettingInteger;
+import twitch.channel.settings.enums.ChannelSettingString;
 
 /**
  * Created by Dominic Hauton on 24/07/2016.
@@ -59,6 +60,15 @@ public abstract class ChannelSettingSupplierTest {
         Double actualValue2 = m_channelSettingDao.getSetting(s_channelName1, ChannelSettingDouble.MAX_MESSAGE_RATE);
         Assert.assertEquals("Should return 45. Has just been set.", 45d, actualValue2, 0);
     }
+
+    @Test
+    public void simpleInsertRetrieveStringTest() throws Exception {
+        String newValue = "ChannelUserFoo";
+        m_channelSettingDao.setSetting(s_channelName1, ChannelSettingString.DEFAULT_PERMISSION, newValue);
+        String actualValue = m_channelSettingDao.getSetting(s_channelName1, ChannelSettingString.DEFAULT_PERMISSION);
+        Assert.assertEquals("Should return 50. Has just been set.", newValue, actualValue);
+    }
+
 
     @Test
     public void retrieveBeforeInsertTest() throws Exception {

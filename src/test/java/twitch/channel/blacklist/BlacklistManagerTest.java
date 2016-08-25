@@ -59,7 +59,7 @@ public class BlacklistManagerTest {
     @Test
     public void removeMessageFromBlacklistDoesNotExistException() throws Exception {
         addToBlacklistMessage();
-        thrown.expect(BlacklistOperationOperationException.class);
+        thrown.expect(BlacklistOperationException.class);
         thrown.reportMissingExceptionWithMessage(
                 "Exception should be thrown. Should not be able to remove from " + "blacklist.");
         blacklistManager.removeFromBlacklist(message2.getMessage(), BlacklistType.MESSAGE);
@@ -131,7 +131,7 @@ public class BlacklistManagerTest {
     private void removeFromBlacklistIgnoreException(BlacklistManager blacklistManager, BlacklistEntry blacklistEntry) {
         try {
             blacklistManager.removeFromBlacklist(blacklistEntry);
-        } catch (BlacklistOperationOperationException e) {
+        } catch (BlacklistOperationException e) {
             // Ignore. TEST ONLY!
         }
     }

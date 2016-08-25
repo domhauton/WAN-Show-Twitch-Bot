@@ -1,5 +1,7 @@
 package twitch.channel.timeouts;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.Duration;
 
 import java.util.HashMap;
@@ -12,13 +14,17 @@ import java.util.HashMap;
 public class TimeoutManager {
 
     private HashMap<String, Duration> userTimeoutHistory;
+    private static final Logger s_log = LogManager.getLogger();
 
     public TimeoutManager() {
         userTimeoutHistory = new HashMap<>();
     }
 
     public Duration getUserTimeout(String twitchUser) {
-        return userTimeoutHistory.getOrDefault(twitchUser, Duration.ZERO);
+        Duration userTimeoutDuration = userTimeoutHistory.getOrDefault(twitchUser, Duration.ZERO);
+        s_log.debug("Retrieving timeout for user {} from TimeoutManager. Current: {}", twitchUser::toString,
+                userTimeoutDuration::toString);
+        return userTimeoutDuration;
     }
 
     /**
@@ -30,6 +36,8 @@ public class TimeoutManager {
         Integer newTimeoutSeconds = Math.round(previousTimeout.toStandardSeconds().getSeconds()*timeoutReason.getMultiplier()) +
                                     timeoutReason.getTimeout().toStandardSeconds().getSeconds();
         Duration newTimeout = Duration.standardSeconds(newTimeoutSeconds);
+        s_log.info("Adding user Timeout for {}. Previous was {} therefore new is {}", twitchUser::toString,
+                previousTimeout::toString, newTimeout::toString);
         userTimeoutHistory.put(twitchUser, newTimeout);
         return newTimeout;
     }

@@ -5,6 +5,7 @@ import bot.commands.BotCommandException;
 import com.google.inject.name.Named;
 import org.joda.time.Duration;
 import twitch.channel.ChannelManager;
+import twitch.channel.ChannelOperationException;
 import twitch.channel.message.ImmutableTwitchMessageList;
 import twitch.channel.message.TwitchMessage;
 import twitch.channel.TwitchUser;
@@ -83,7 +84,12 @@ class BotController {
      */
     Collection<OutboundTwitchMessage> processMessage(InboundTwitchMessage inboundTwitchMessage) {
         TwitchMessage twitchMessage = (TwitchMessage) inboundTwitchMessage;
-		channelManager.addChannelMessage(twitchMessage);
+		try {
+			channelManager.addChannelMessage(twitchMessage);
+			//TODO Blacklist check!
+		} catch (ChannelOperationException e) {
+			//TODO Panic?
+		}
 
 		messageLog.info(twitchMessage::toString); //Stores the MESSAGE in the chat log.
 
