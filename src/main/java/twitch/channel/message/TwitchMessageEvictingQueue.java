@@ -10,20 +10,19 @@ import java.util.Optional;
  *
  * Decorator for an Evicting queue
  */
-public class TwitchMessageEvictingQueue {
+class TwitchMessageEvictingQueue {
     private EvictingQueue<TwitchMessage> m_messageBuffer;
 
-    public TwitchMessageEvictingQueue(int bufferLength) {
+    TwitchMessageEvictingQueue(int bufferLength) {
         m_messageBuffer = EvictingQueue.create(bufferLength);
     }
 
-    public ImmutableTwitchMessageList getMessageBufferSnapshot() {
+    ImmutableTwitchMessageList getMessageBufferSnapshot() {
         return new ImmutableTwitchMessageList(m_messageBuffer);
     }
 
     /**
      * Gets an optional containing the most recent message.
-     * @return
      */
     public Optional<TwitchMessage> getMostRecentMessage() {
         try {
@@ -33,6 +32,10 @@ public class TwitchMessageEvictingQueue {
         }
     }
 
+    /**
+     * Offers the message.
+     * @return False if insertion failed. EvictingQueue offer should never fail!
+     */
     public synchronized boolean addMessage(TwitchMessage message) {
         return m_messageBuffer.offer(message);
     }

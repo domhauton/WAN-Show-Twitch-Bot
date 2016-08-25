@@ -36,6 +36,10 @@ public class ImmutableTwitchMessageList {
                 .collect(Collectors.toList()));
     }
 
+    /**
+     * Finds the number of messages containing the payload.
+     * @return message count that matches.
+     */
     public long containsSimplePayload(String payload) {
         return stream().filter(twitchMessage -> twitchMessage.equalsSimplePayload(payload)).count();
     }
