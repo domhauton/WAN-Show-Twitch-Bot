@@ -77,4 +77,32 @@ public class TwitchMessageTest {
         Assert.assertFalse(twitchMessagePayload1User1_1.equalsSimplePayload(payload2));
         Assert.assertFalse(twitchMessagePayload1User1_1.equalsSimplePayload(payload2Simple));
     }
+
+    @Test
+    public void containsStringTest() throws Exception {
+        Assert.assertTrue("Should contain part of self", twitchMessagePayload1User1_1.containsString(payload1.substring
+                (5, 9)));
+        Assert.assertTrue("Should contain empty message", twitchMessagePayload1User1_1.containsString(""));
+        Assert.assertFalse(twitchMessagePayload1User1_1.containsString(payload2.substring(2) + "s"));
+    }
+
+    @Test
+    public void toStringTest() throws Exception {
+        Assert.assertTrue("Should contain time", twitchMessagePayload1User1_1.toString().contains(baseDateTime.toString()));
+        Assert.assertTrue("Should contain payload", twitchMessagePayload1User1_1.toString().contains(payload1));
+        Assert.assertTrue("Should contain user", twitchMessagePayload1User1_1.toString().contains(twitchUsername));
+    }
+
+    @Test
+    public void hashCodeTest() throws Exception {
+        Assert.assertEquals("Should have same hashcode!",
+                twitchMessagePayload1User1_1.hashCode(),
+                twitchMessagePayload1User1_2.hashCode());
+    }
+
+    @Test
+    public void equalityTest() throws Exception {
+        Assert.assertTrue("Should have same hashcode!",
+                twitchMessagePayload1User1_1.equals(twitchMessagePayload1User1_2));
+    }
 }

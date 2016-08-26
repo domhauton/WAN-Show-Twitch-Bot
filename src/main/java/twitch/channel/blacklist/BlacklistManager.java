@@ -66,10 +66,12 @@ public class BlacklistManager {
             m_blacklistEntries.remove(blacklistEntry);
             return blacklistEntry;
         } else {
-            s_log.warn("Failed to remove pattern as it could not be found.\nRemoving:\n{}\nExist:\n{}", () -> blacklistEntry, () -> m_blacklistEntries
+            s_log.info("Attempted to remove non-existent blacklist entry {} . Current entries: {}", () ->
+                    blacklistEntry, () -> m_blacklistEntries
                     .stream()
                     .map(BlacklistEntry::toString)
-                    .collect(Collectors.joining("\n")));
+                    .collect(Collectors.toList())
+                    .toString());
             throw new BlacklistOperationException(
                     "Could not remove pattern. Pattern not found: " + blacklistEntry.toString());
         }
@@ -95,16 +97,19 @@ public class BlacklistManager {
         try {
             return removeFromBlacklist(blacklistEntry);
         } catch (BlacklistOperationException e) {
+            // Race condition precaution
             return null;
         }
     }
 
-    Collection<BlacklistEntry> removeFromBlacklist(String input) {
+    public Collection<BlacklistEntry> removeFromBlacklist(String input) {
+        s_log.info("Attempting assisted blacklist removal of: {}.", input);
         Collection<BlacklistEntry> removedBlacklistEntries = Stream.of(BlacklistType.values())
                 .map(blacklistType -> removeFromBlacklistUnsafe(input, blacklistType))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         if (removedBlacklistEntries.isEmpty()) {
+            s_log.info("Attempting assisted blacklist removal of: {}. No exact match found, searching...", input);
             Collection<BlacklistEntry> matchingEntries = searchBlacklist(input);
             Collection<BlacklistEntry> removedSearchEntries = matchingEntries.stream()
                     .map(this::removeFromBlacklistUnsafe)
@@ -112,6 +117,7 @@ public class BlacklistManager {
                     .collect(Collectors.toSet());
             return removedSearchEntries;
         } else {
+            s_log.info("Attempting assisted blacklist removal of: {}. Found exact match/es.", input);
             return removedBlacklistEntries;
         }
     }

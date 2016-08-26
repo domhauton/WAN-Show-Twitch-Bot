@@ -9,7 +9,7 @@ import twitch.channel.ChannelOperationException;
  */
 public class ChannelSettingDAOException extends ChannelOperationException{
 
-    ChannelSettingDAOException(String message) {
+    public ChannelSettingDAOException(String message) {
         super(message);
     }
 }

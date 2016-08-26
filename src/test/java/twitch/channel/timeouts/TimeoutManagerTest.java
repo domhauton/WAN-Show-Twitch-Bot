@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.stream.Stream;
+
 /**
  * Created by Dominic Hauton on 22/08/2016.
  * <p>
@@ -41,5 +43,13 @@ public class TimeoutManagerTest {
         Duration expectedTimeout = Duration.standardSeconds(expectedTimeoutSeconds);
         Assert.assertEquals("Timeout should be same as return", actualReturnedTimeout, actualTimeout);
         Assert.assertEquals("Timeout should be same as original with multiplier applied", expectedTimeout, actualTimeout);
+    }
+
+    @Test
+    public void timeoutMessageTest() throws Exception {
+        Stream.of(TimeoutReason.values())
+                .map(TimeoutReason::getMessage)
+                .forEach(s -> Assert.assertFalse("TimeoutMessage should never be empty", s.isEmpty()));
+
     }
 }

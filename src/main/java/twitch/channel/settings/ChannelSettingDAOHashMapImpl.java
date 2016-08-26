@@ -17,7 +17,11 @@ public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
     private static final Logger s_log = LogManager.getLogger();
 
     public ChannelSettingDAOHashMapImpl() {
-        settingMap = new HashMap<>();
+        this(new HashMap<>());
+    }
+
+    ChannelSettingDAOHashMapImpl(HashMap<String, Object> settingMap) {
+        this.settingMap = settingMap;
     }
 
     @Override
@@ -32,10 +36,11 @@ public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
             try {
                 return (T) mapResult;
             } catch (ClassCastException e) {
-                throw new ChannelSettingDAOException("Database returned object of incorrect type. Type check passed "
-                                                     + "but cast failed!");
+                settingMap.remove(hashMapKey);
+                throw new ChannelSettingDAOException("Cast fail on entry. Removed from table for safety. Try again.");
             }
         } else {
+            s_log.error("Database corrupted. Setting of incorrect type present for {}", channelSetting);
             throw new ChannelSettingDAOException("Database returned object of incorrect type!");
         }
     }
@@ -46,7 +51,7 @@ public class ChannelSettingDAOHashMapImpl implements ChannelSettingDao {
         settingMap.put(hashMapKey, value);
     }
 
-    private <T> String generateKey(String channelName, IChannelSetting<T> channelSetting) {
+    static <T> String generateKey(String channelName, IChannelSetting<T> channelSetting) {
         return String.join("#", channelName, channelSetting.getGenericInterfaceType().getSimpleName(), channelSetting
                 .toString());
     }

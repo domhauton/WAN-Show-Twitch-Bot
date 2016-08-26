@@ -4,11 +4,21 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+import org.mockito.internal.matchers.Any;
+import twitch.channel.blacklist.BlacklistEntry;
+import twitch.channel.blacklist.BlacklistManager;
 import twitch.channel.blacklist.BlacklistType;
+import twitch.channel.message.MessageManager;
 import twitch.channel.message.TwitchMessage;
+import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
 import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
+import twitch.channel.settings.enums.ChannelSettingString;
+import twitch.channel.timeouts.TimeoutManager;
 import twitch.channel.timeouts.TimeoutReason;
 
 import java.util.Collection;
@@ -22,6 +32,9 @@ import java.util.stream.Stream;
  */
 public class ChannelManagerTest {
 
+    @Rule
+    public final ExpectedException expectedException = ExpectedException.none();
+
     private ChannelManager m_channelManager;
     private TwitchUser m_twitchUser1;
     private TwitchMessage m_twitchMessage1;
@@ -31,7 +44,7 @@ public class ChannelManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        m_channelManager = new ChannelManager(new ChannelSettingDAOHashMapImpl(), s_channelName);
+        m_channelManager = new ChannelManager(s_channelName);
         m_twitchUser1 = new TwitchUser("foobarUser1");
         m_twitchMessage1 = new TwitchMessage(s_payload1, m_twitchUser1, DateTime.now(), s_channelName);
     }
@@ -52,8 +65,35 @@ public class ChannelManagerTest {
 
     private void permissionsSetAndTestSingle(UserPermission userPermission) {
         m_channelManager.setPermission(m_twitchUser1, userPermission);
-        UserPermission actualPermission = m_channelManager.getPermission(m_twitchUser1);
+        UserPermission actualPermission = null;
+        try {
+            actualPermission = m_channelManager.getPermission(m_twitchUser1);
+        } catch (ChannelOperationException e) {
+            Assert.fail(e.getMessage());
+        }
         Assert.assertEquals("Value just set, should be identical", userPermission, actualPermission);
+    }
+
+    @Test
+    public void permissionGetWithoutSetTest() throws Exception {
+        UserPermission permission = m_channelManager.getPermission(m_twitchUser1);
+        Assert.assertNotNull("Should have fetched default", permission);
+    }
+
+    @Test
+    public void permissionGetWithoutSetFail() throws Exception {
+        ChannelSettingDAOHashMapImpl mockChannelSettingDAO = Mockito.mock(ChannelSettingDAOHashMapImpl.class);
+        Mockito.when(mockChannelSettingDAO.getSettingOrDefault(s_channelName, ChannelSettingString.DEFAULT_PERMISSION))
+                .thenReturn("thispermissionwillnotexist");
+        ChannelManager tempChannelManager = new ChannelManager(
+                s_channelName,
+                new PermissionsManager(),
+                new MessageManager(),
+                new TimeoutManager(),
+                new BlacklistManager(),
+                mockChannelSettingDAO);
+        expectedException.expect(ChannelOperationException.class);
+        tempChannelManager.getPermission(m_twitchUser1);
     }
 
     @Test
@@ -75,6 +115,22 @@ public class ChannelManagerTest {
         Assert.assertEquals("Messages should be deleted after reaching cap. If fail, check cap has not changed!", 10, m_channelManager
                 .getMessageSnapshot(m_twitchUser1)
                 .containsSimplePayload(s_payload1));
+    }
+
+    @Test
+    public void failMessageInsertTest() throws Exception {
+        MessageManager mockMessageManager = Mockito.mock(MessageManager.class);
+        TwitchMessage twitchMessage = new TwitchMessage("foobar", m_twitchUser1, DateTime.now(), s_channelName);
+        Mockito.when(mockMessageManager.addMessage(twitchMessage)).thenReturn(false);
+        ChannelManager tempChannelManager = new ChannelManager(
+                s_channelName,
+                new PermissionsManager(),
+                mockMessageManager,
+                new TimeoutManager(),
+                new BlacklistManager(),
+                new ChannelSettingDAOHashMapImpl());
+        expectedException.expect(ChannelOperationException.class);
+        tempChannelManager.addChannelMessage(twitchMessage);
     }
 
     /**
@@ -110,18 +166,50 @@ public class ChannelManagerTest {
 
     @Test
     public void blackListItemRetroactiveTest() throws Exception {
+        String regexToBlacklist = ".*foobar.*";
         int messagesToAdd = 10;
         IntStream.range(0, messagesToAdd).boxed().forEach(x -> addChannelMessageUnsafe(m_twitchMessage1));
-        Collection<TwitchMessage> retroBannedMessages = m_channelManager.blacklistItem(".*foobar.*", BlacklistType
+        Collection<TwitchMessage> retroBannedMessages = m_channelManager.blacklistItem(regexToBlacklist, BlacklistType
                 .REGEX);
         Assert.assertEquals("All added messages should break rule", messagesToAdd, retroBannedMessages.size());
-        Collection<TwitchMessage> retroBannedMessagesNone = m_channelManager.blacklistItem(".*foobar.*", BlacklistType
+        m_channelManager.removeBlacklistItem(regexToBlacklist, BlacklistType.REGEX);
+        Collection<TwitchMessage> retroBannedMessagesNone = m_channelManager.blacklistItem(regexToBlacklist, BlacklistType
                 .REGEX, 0);
         Assert.assertTrue("Ensure no retroactive bans.", retroBannedMessagesNone.isEmpty());
-        Collection<TwitchMessage> retroBannedMessagesNeg = m_channelManager.blacklistItem(".*foobar.*", BlacklistType
+        m_channelManager.removeBlacklistItem(regexToBlacklist, BlacklistType.REGEX);
+        Collection<TwitchMessage> retroBannedMessagesNeg = m_channelManager.blacklistItem(regexToBlacklist, BlacklistType
                 .REGEX, -1);
         Assert.assertTrue("Ensure no retroactive bans.", retroBannedMessagesNeg.isEmpty());
     }
 
-    //TODO Blacklist removal tests.
+    @Test
+    public void blackListRemoveItemTest() throws Exception {
+        String finalTestMessage = "A final test for item 3";
+        m_channelManager.blacklistItem("Test Item 1", BlacklistType.MESSAGE);
+        m_channelManager.blacklistItem("A test for Item 2", BlacklistType.WORD);
+        m_channelManager.blacklistItem(finalTestMessage, BlacklistType.REGEX);
+        Collection<BlacklistEntry> blacklistEntries = m_channelManager.removeBlacklistItem("Item");
+        Assert.assertEquals("Should have removed two entries", 2, blacklistEntries.size());
+        TwitchMessage twitchMessage = new TwitchMessage(finalTestMessage, m_twitchUser1, DateTime.now(), s_channelName);
+        Assert.assertFalse("Should not have removed mis-capitalised entry", m_channelManager.addChannelMessage(twitchMessage));
+    }
+
+    @Test
+    public void blackListItemRemoveFail() throws Exception {
+        expectedException.expect(ChannelOperationException.class);
+        m_channelManager.removeBlacklistItem("foobar", BlacklistType.REGEX);
+    }
+
+    @Test
+    public void blackListItemAddTwiceTest() throws Exception {
+        m_channelManager.blacklistItem("foobar1", BlacklistType.REGEX);
+        expectedException.expect(ChannelOperationException.class);
+        m_channelManager.blacklistItem("foobar1", BlacklistType.REGEX);
+    }
+
+    @Test
+    public void getChannelNameTest() throws Exception {
+        String actualChannelName = m_channelManager.getChannelName();
+        Assert.assertEquals(actualChannelName, s_channelName);
+    }
 }
