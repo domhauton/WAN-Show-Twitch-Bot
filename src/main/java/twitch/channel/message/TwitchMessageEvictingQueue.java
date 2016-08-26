@@ -2,6 +2,7 @@ package twitch.channel.message;
 
 import com.google.common.collect.EvictingQueue;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -25,11 +26,12 @@ class TwitchMessageEvictingQueue {
      * Gets an optional containing the most recent message.
      */
     public Optional<TwitchMessage> getMostRecentMessage() {
-        try {
-            return Optional.of(m_messageBuffer.iterator().next());
-        } catch (NoSuchElementException e) {
-            return Optional.empty();
+        Iterator<TwitchMessage> messageIterator = m_messageBuffer.iterator();
+        TwitchMessage finalMessage = null;
+        while(messageIterator.hasNext()){
+            finalMessage = messageIterator.next();
         }
+        return Optional.ofNullable(finalMessage);
     }
 
     /**

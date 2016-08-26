@@ -13,6 +13,7 @@ import twitch.channel.message.TwitchMessage;
 import twitch.channel.permissions.PermissionException;
 import twitch.channel.permissions.PermissionsManager;
 import twitch.channel.permissions.UserPermission;
+import twitch.channel.settings.ChannelSettingDAOException;
 import twitch.channel.settings.ChannelSettingDao;
 import twitch.channel.settings.ChannelSettingDAOHashMapImpl;
 import twitch.channel.settings.enums.ChannelSettingInteger;
@@ -40,15 +41,26 @@ public class ChannelManager {
     private static final Logger s_log = LogManager.getLogger();
 
     public ChannelManager(String channelName) {
-        this(new ChannelSettingDAOHashMapImpl(), channelName);
+        this(channelName,
+                new PermissionsManager(),
+                new MessageManager(),
+                new TimeoutManager(),
+                new BlacklistManager(),
+                new ChannelSettingDAOHashMapImpl());
     }
 
-    ChannelManager(ChannelSettingDao channelSettingDao, String channelName) {
+    ChannelManager(
+            String channelName,
+            PermissionsManager permissionsManager,
+            MessageManager messageManager,
+            TimeoutManager timeoutManager,
+            BlacklistManager blacklistManager,
+            ChannelSettingDao channelSettingDao) {
         m_channelName = channelName;
-        m_permissionsManager = new PermissionsManager();
-        m_messageManager = new MessageManager();
-        m_timeoutManager = new TimeoutManager();
-        m_blacklistManager = new BlacklistManager();
+        m_permissionsManager = permissionsManager;
+        m_messageManager = messageManager;
+        m_timeoutManager = timeoutManager;
+        m_blacklistManager = blacklistManager;
         m_channelSettingDao = channelSettingDao;
     }
 
@@ -56,20 +68,20 @@ public class ChannelManager {
      * Checks if the given user has permission for the requested action per
      * @return true if user has permission for the action
      */
-    boolean checkPermission(TwitchUser user, UserPermission requiredPermission) {
+    boolean checkPermission(TwitchUser user, UserPermission requiredPermission) throws ChannelOperationException {
         return getPermission(user).authorizedForActionOfPermissionLevel(requiredPermission);
     }
 
-    public UserPermission getPermission(TwitchUser twitchUser) {
+    public UserPermission getPermission(TwitchUser twitchUser) throws ChannelOperationException {
         try {
             return m_permissionsManager.getUser(twitchUser);
         } catch (PermissionException e) {
             String defaultPermissionString = m_channelSettingDao.getSettingOrDefault(m_channelName, ChannelSettingString
                     .DEFAULT_PERMISSION);
-            try {
+            try{
                 return UserPermission.valueOf(defaultPermissionString);
             } catch (IllegalArgumentException e2) {
-                return UserPermission.ChannelUser;
+                throw new ChannelOperationException("Failed to cast default permission to valid permission");
             }
         }
     }
@@ -127,7 +139,7 @@ public class ChannelManager {
         s_log.info("Adding item {} to channel {} blacklist as {} with {} look behind", input, m_channelName,
                 blacklistType, messageLookBehind);
         ImmutableTwitchMessageList messageList = getMessageSnapshot();
-        if ( messageLookBehind == 0 ) {
+        if ( messageLookBehind <= 0 ) {
             m_blacklistManager.addToBlacklist(input, blacklistType);
             return Collections.emptyList();
         } else {
@@ -163,7 +175,7 @@ public class ChannelManager {
      * @return All blacklist entries that have been removed.
      */
     Collection<BlacklistEntry> removeBlacklistItem(String input) {
-        return removeBlacklistItem(input);
+        return m_blacklistManager.removeFromBlacklist(input);
     }
 
     public String getChannelName() {

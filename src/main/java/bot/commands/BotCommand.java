@@ -3,6 +3,7 @@ package bot.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import twitch.channel.ChannelManager;
+import twitch.channel.ChannelOperationException;
 import twitch.channel.TwitchUser;
 import twitch.channel.permissions.UserPermission;
 import twitch.chat.data.OutboundTwitchMessage;
@@ -75,7 +76,12 @@ public class BotCommand {
     }
 
     public Collection<OutboundTwitchMessage> parseCommand() throws BotCommandException {
-        UserPermission userPermission = m_channelManager.getPermission(m_twitchUser);
+        UserPermission userPermission;
+        try {
+            userPermission = m_channelManager.getPermission(m_twitchUser);
+        } catch (ChannelOperationException e) {
+            userPermission = UserPermission.ChannelUser;
+        }
         if(userPermission.authorizedForActionOfPermissionLevel(m_botCommandType.requiredUserPermissionLevel())) {
             return m_botCommandType.getCommandExecutor().executeCommand(m_flags, m_args, m_channelManager);
         } else {

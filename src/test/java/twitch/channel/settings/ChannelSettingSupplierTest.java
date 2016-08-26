@@ -21,7 +21,6 @@ public abstract class ChannelSettingSupplierTest {
     protected ChannelSettingDao m_channelSettingDao;
 
     protected static final String s_channelName1 = "channel1";
-    protected static final String s_channelName2 = "channel2";
 
     @Before
     public void setUp() throws Exception {
@@ -55,10 +54,16 @@ public abstract class ChannelSettingSupplierTest {
     @Test
     public void repeatedInsertRetrieveDoubleTest() throws Exception {
         simpleInsertRetrieveDoubleTest();
-
         m_channelSettingDao.setSetting(s_channelName1, ChannelSettingDouble.MAX_MESSAGE_RATE, 45d);
         Double actualValue2 = m_channelSettingDao.getSetting(s_channelName1, ChannelSettingDouble.MAX_MESSAGE_RATE);
         Assert.assertEquals("Should return 45. Has just been set.", 45d, actualValue2, 0);
+    }
+
+    @Test
+    public void ensureDoubleDefaultMatchGetOrDefaultTest() throws Exception {
+        Double expectedDefault = ChannelSettingDouble.MAX_MESSAGE_RATE.getDefault();
+        Double actualDefault = m_channelSettingDao.getSettingOrDefault(s_channelName1, ChannelSettingDouble.MAX_MESSAGE_RATE);
+        Assert.assertEquals(expectedDefault, actualDefault);
     }
 
     @Test
@@ -68,7 +73,6 @@ public abstract class ChannelSettingSupplierTest {
         String actualValue = m_channelSettingDao.getSetting(s_channelName1, ChannelSettingString.DEFAULT_PERMISSION);
         Assert.assertEquals("Should return 50. Has just been set.", newValue, actualValue);
     }
-
 
     @Test
     public void retrieveBeforeInsertTest() throws Exception {

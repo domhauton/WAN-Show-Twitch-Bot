@@ -17,7 +17,7 @@ public class PermissionException extends ChannelOperationException {
      * @param message the detail MESSAGE. The detail MESSAGE is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public PermissionException(String message) {
+    PermissionException(String message) {
         super(message);
     }
 }

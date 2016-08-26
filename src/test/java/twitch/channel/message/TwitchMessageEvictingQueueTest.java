@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -18,7 +19,7 @@ import java.util.stream.IntStream;
  */
 public class TwitchMessageEvictingQueueTest {
 
-    private TwitchMessageEvictingQueue TwitchMessageEvictingQueue;
+    private TwitchMessageEvictingQueue twitchMessageEvictingQueue;
     private Semaphore semaphore;
 
     /**
@@ -29,7 +30,7 @@ public class TwitchMessageEvictingQueueTest {
     private boolean sendMessageOnSemaphore(TwitchMessage twitchMessage, CountDownLatch latch) {
         try {
             semaphore.acquire();
-            boolean success = TwitchMessageEvictingQueue.addMessage(twitchMessage);
+            boolean success = twitchMessageEvictingQueue.addMessage(twitchMessage);
             latch.countDown();
             return success;
         } catch (InterruptedException e) {
@@ -75,28 +76,28 @@ public class TwitchMessageEvictingQueueTest {
     @Before
     public void setUp() throws Exception {
         semaphore = new Semaphore(0);
-        TwitchMessageEvictingQueue = new TwitchMessageEvictingQueue(5);
+        twitchMessageEvictingQueue = new TwitchMessageEvictingQueue(5);
     }
 
     @Test
     public void testMessageAddition() throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(5);
         addMessagesAndWait(0, 3, pool);
-        Assert.assertEquals("Assert no collisions", 3, TwitchMessageEvictingQueue.getMessageBufferSnapshot().size());
+        Assert.assertEquals("Assert no collisions", 3, twitchMessageEvictingQueue.getMessageBufferSnapshot().size());
         addMessagesAndWait(3, 5, pool);
         Assert.assertEquals("Assert can go up to max size",
-                5, TwitchMessageEvictingQueue.getMessageBufferSnapshot().size());
+                5, twitchMessageEvictingQueue.getMessageBufferSnapshot().size());
         addMessagesAndWait(5, 20, pool);
-        Assert.assertEquals("Assert no overflow", 5, TwitchMessageEvictingQueue.getMessageBufferSnapshot().size());
+        Assert.assertEquals("Assert no overflow", 5, twitchMessageEvictingQueue.getMessageBufferSnapshot().size());
     }
 
     @Test
     public void testMessageRemoval() throws Exception {
         Collection<TwitchMessage> firstMessageBatch = generateTwitchMessages(0, 3);
 
-        firstMessageBatch.stream().forEachOrdered(message -> TwitchMessageEvictingQueue.addMessage(message));
+        firstMessageBatch.stream().forEachOrdered(message -> twitchMessageEvictingQueue.addMessage(message));
 
-        Collection<TwitchMessage> actualFirstMessageBatch = TwitchMessageEvictingQueue
+        Collection<TwitchMessage> actualFirstMessageBatch = twitchMessageEvictingQueue
                 .getMessageBufferSnapshot()
                 .stream()
                 .collect(Collectors.toList());
@@ -105,14 +106,30 @@ public class TwitchMessageEvictingQueueTest {
 
         Collection<TwitchMessage> secondMessageBatch = generateTwitchMessages(4, 9);
 
-        secondMessageBatch.stream().forEachOrdered(message -> TwitchMessageEvictingQueue.addMessage(message));
+        secondMessageBatch.stream().forEachOrdered(message -> twitchMessageEvictingQueue.addMessage(message));
 
-        Collection<TwitchMessage> actualSecondMessageBatch = TwitchMessageEvictingQueue
+        Collection<TwitchMessage> actualSecondMessageBatch = twitchMessageEvictingQueue
                 .getMessageBufferSnapshot()
                 .stream()
                 .collect(Collectors.toList());
 
         Assert.assertEquals("Assert messages replace on another correctly.",
                 secondMessageBatch, actualSecondMessageBatch);
+    }
+
+    @Test
+    public void getMostRecentMessageSimpleTest() throws Exception {
+        Collection<TwitchMessage> twitchMessages = generateTwitchMessages(0, 10);
+        TwitchMessage expectedTwitchMessage = new TwitchMessage("foo", new TwitchUser("foo"), DateTime.now(), "foo");
+        twitchMessages.forEach(twitchMessage -> twitchMessageEvictingQueue.addMessage(twitchMessage));
+        twitchMessageEvictingQueue.addMessage(expectedTwitchMessage);
+        TwitchMessage actualTwitchMessage = twitchMessageEvictingQueue.getMostRecentMessage().orElse(null);
+        Assert.assertEquals(expectedTwitchMessage, actualTwitchMessage);
+    }
+
+    @Test
+    public void getMostRecentMessageEmptyTest() throws Exception {
+        Optional<TwitchMessage> actualTwitchMessage = twitchMessageEvictingQueue.getMostRecentMessage();
+        Assert.assertFalse(actualTwitchMessage.isPresent());
     }
 }

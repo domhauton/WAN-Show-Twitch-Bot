@@ -154,4 +154,20 @@ public class ImmutableTwitchMessageListTest {
         ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
         Assert.assertFalse("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1 + "foobar") >= 1);
     }
+
+    @Test
+    public void hashCodeTest() throws Exception {
+        Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
+        ImmutableTwitchMessageList twitchMessageList1 = new ImmutableTwitchMessageList(twitchMessages);
+        ImmutableTwitchMessageList twitchMessageList2 = new ImmutableTwitchMessageList(twitchMessages);
+        Assert.assertEquals("Hashcodes should be the same", twitchMessageList1.hashCode(), twitchMessageList2.hashCode());
+    }
+
+    @Test
+    public void testToString() throws Exception {
+        Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
+        ImmutableTwitchMessageList twitchMessageList1 = new ImmutableTwitchMessageList(twitchMessages);
+        Assert.assertTrue("List should contain at least one of the added messages",  twitchMessageList1.toString()
+                .contains(twitchMessage1.toString()));
+    }
 }
