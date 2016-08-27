@@ -6,19 +6,19 @@ package bot.channel.settings.enums;
  * Double
  */
 public enum ChannelSettingInteger implements IChannelSetting<Integer> {
-    CHANNEL_RETROSPECTIVE_LOOKBACK(50);
+  CHANNEL_RETROSPECTIVE_LOOKBACK(50);
 
-    private Integer defaultValue;
+  private Integer defaultValue;
 
-    ChannelSettingInteger(Integer defaultValue) {
-        this.defaultValue = defaultValue;
-    }
+  ChannelSettingInteger(Integer defaultValue) {
+    this.defaultValue = defaultValue;
+  }
 
-    public Integer getDefault() {
-        return defaultValue;
-    }
+  public Integer getDefault() {
+    return defaultValue;
+  }
 
-    public Class<Integer> getGenericInterfaceType() {
-        return Integer.class;
-    }
+  public Class<Integer> getGenericInterfaceType() {
+    return Integer.class;
+  }
 }

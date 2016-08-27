@@ -6,19 +6,19 @@ package bot.channel.settings.enums;
  * Double
  */
 public enum ChannelSettingDouble implements IChannelSetting<Double> {
-    MAX_MESSAGE_RATE(50d);
+  MAX_MESSAGE_RATE(50d);
 
-    private Double defaultValue;
+  private Double defaultValue;
 
-    ChannelSettingDouble(Double defaultValue) {
-        this.defaultValue = defaultValue;
-    }
+  ChannelSettingDouble(Double defaultValue) {
+    this.defaultValue = defaultValue;
+  }
 
-    public Double getDefault() {
-        return defaultValue;
-    }
+  public Double getDefault() {
+    return defaultValue;
+  }
 
-    public Class<Double> getGenericInterfaceType() {
-        return Double.class;
-    }
+  public Class<Double> getGenericInterfaceType() {
+    return Double.class;
+  }
 }

@@ -10,22 +10,22 @@ import org.junit.Test;
  */
 public class UserPermissionTest {
 
-    @Test
-    public void authorizedForActionOfPermissionLevelLessThan() throws Exception {
-        Assert.assertTrue("ChannelOwner should have access to BotAdmin", UserPermission.ChannelOwner
-                .authorizedForActionOfPermissionLevel(UserPermission.BotAdmin));
-    }
+  @Test
+  public void authorizedForActionOfPermissionLevelLessThan() throws Exception {
+    Assert.assertTrue("ChannelOwner should have access to BotAdmin", UserPermission.ChannelOwner
+        .authorizedForActionOfPermissionLevel(UserPermission.BotAdmin));
+  }
 
-    @Test
-    public void authorizedForActionOfPermissionLevelEqualTo() throws Exception {
-        Assert.assertTrue("ChannelOwner should have access to ChannelAdmin Actions", UserPermission.ChannelOwner
-                .authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner));
-    }
+  @Test
+  public void authorizedForActionOfPermissionLevelEqualTo() throws Exception {
+    Assert.assertTrue("ChannelOwner should have access to ChannelAdmin Actions", UserPermission.ChannelOwner
+        .authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner));
+  }
 
-    @Test
-    public void unauthorizedForActionOfPermissionLevelGreaterThan() throws Exception {
-        Assert.assertFalse("ChannelOwner should have access to BotAdmin", UserPermission.BotAdmin
-                .authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner));
-    }
+  @Test
+  public void unauthorizedForActionOfPermissionLevelGreaterThan() throws Exception {
+    Assert.assertFalse("ChannelOwner should have access to BotAdmin", UserPermission.BotAdmin
+        .authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner));
+  }
 
 }

@@ -6,6 +6,7 @@ package bot.channel.settings.enums;
  * Interface for all ChannelSettingEnums
  */
 public interface IChannelSetting<T> {
-    T getDefault();
-    Class<T> getGenericInterfaceType();
+  T getDefault();
+
+  Class<T> getGenericInterfaceType();
 }

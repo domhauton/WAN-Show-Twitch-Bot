@@ -4,16 +4,16 @@ package bot.util.config;
  * Created by Dominic Hauton on 16/03/2016.
  */
 public enum Environment {
-    PROD("bot.properties"),
-    DEV("bot-dev.properties");
+  PROD("bot.properties"),
+  DEV("bot-dev.properties");
 
-    private String configFileName;
+  private String configFileName;
 
-    Environment(String configFileName) {
-        this.configFileName = configFileName;
-    }
+  Environment(String configFileName) {
+    this.configFileName = configFileName;
+  }
 
-    public String getConfigFileName() {
-        return configFileName;
-    }
+  public String getConfigFileName() {
+    return configFileName;
+  }
 }

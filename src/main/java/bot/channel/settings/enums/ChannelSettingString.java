@@ -5,22 +5,22 @@ package bot.channel.settings.enums;
  *
  * Stores a list of possible String channel settings.
  */
-public enum ChannelSettingString implements IChannelSetting<String>{
-    DEFAULT_PERMISSION("ChannelUser");
+public enum ChannelSettingString implements IChannelSetting<String> {
+  DEFAULT_PERMISSION("ChannelUser");
 
-    private String defaultValue;
+  private String defaultValue;
 
-    ChannelSettingString(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
+  ChannelSettingString(String defaultValue) {
+    this.defaultValue = defaultValue;
+  }
 
-    @Override
-    public String getDefault() {
-        return defaultValue;
-    }
+  @Override
+  public String getDefault() {
+    return defaultValue;
+  }
 
-    @Override
-    public Class getGenericInterfaceType() {
-        return String.class;
-    }
+  @Override
+  public Class getGenericInterfaceType() {
+    return String.class;
+  }
 }

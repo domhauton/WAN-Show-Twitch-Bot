@@ -2,8 +2,10 @@ package bot.util;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
 import org.junit.Assert;
 import org.junit.Test;
+
 import bot.util.config.AppInjector;
 import bot.util.config.Environment;
 
@@ -14,15 +16,15 @@ import bot.util.config.Environment;
  */
 public class BitlyDecoratorTest {
 
-    @Test
-    public void shortenURLIntegrationTest() throws Exception {
-        Injector injector = Guice.createInjector(new AppInjector(Environment.DEV));
-        BitlyDecorator bitlyDecorator = injector.getInstance(BitlyDecorator.class);
-        final String exampleURLString = "http://www.example.com";
-        final String expectedShortenedURL = "http://bit.ly/1FU7TNG";
-        final String actualShortenedURL = bitlyDecorator.shortenURL(exampleURLString);
-        Assert.assertEquals("Check " + exampleURLString + " shortens to expected URL.",
-                expectedShortenedURL,
-                actualShortenedURL);
-    }
+  @Test
+  public void shortenURLIntegrationTest() throws Exception {
+    Injector injector = Guice.createInjector(new AppInjector(Environment.DEV));
+    BitlyDecorator bitlyDecorator = injector.getInstance(BitlyDecorator.class);
+    String exampleURLString = "http://www.example.com";
+    String expectedShortenedURL = "http://bit.ly/1FU7TNG";
+    String actualShortenedURL = bitlyDecorator.shortenURL(exampleURLString);
+    Assert.assertEquals("Check " + exampleURLString + " shortens to expected URL.",
+        expectedShortenedURL,
+        actualShortenedURL);
+  }
 }

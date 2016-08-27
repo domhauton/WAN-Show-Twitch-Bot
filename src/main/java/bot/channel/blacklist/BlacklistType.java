@@ -9,18 +9,18 @@ import java.util.regex.Pattern;
  * Converts desired blacklist types to REGEX.
  */
 public enum BlacklistType {
-    WORD(word -> "^.*" + Pattern.quote(word) + ".*$"),
-    MESSAGE(message -> "^" + Pattern.quote(message) + "$"),
-    REGEX(regex -> regex );
+  WORD(word -> "^.*" + Pattern.quote(word) + ".*$"),
+  MESSAGE(message -> "^" + Pattern.quote(message) + "$"),
+  REGEX(regex -> regex);
 
-    private Function<String, String> regexConverter;
+  private Function<String, String> regexConverter;
 
-    BlacklistType(Function<String, String> regexConverter) {
-        this.regexConverter = regexConverter;
-    }
+  BlacklistType(Function<String, String> regexConverter) {
+    this.regexConverter = regexConverter;
+  }
 
-    public Pattern stringToPattern(String input) {
-        String convertedInput = regexConverter.apply(input);
-        return Pattern.compile(convertedInput, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-    }
+  public Pattern stringToPattern(String input) {
+    String convertedInput = regexConverter.apply(input);
+    return Pattern.compile(convertedInput, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+  }
 }

@@ -6,24 +6,25 @@ package bot.channel.permissions;
  * Controls user permissions
  */
 public enum UserPermission {
-    ChannelOwner(0),
-    BotAdmin(1),
-    BotModerator(2),
-    ChannelModerator(3),
-    ChannelUser(4);
+  ChannelOwner(0),
+  BotAdmin(1),
+  BotModerator(2),
+  ChannelModerator(3),
+  ChannelUser(4);
 
-    private int permissionLevel;
+  private int permissionLevel;
 
-    UserPermission(int permissionLevel) {
-        this.permissionLevel = permissionLevel;
-    }
+  UserPermission(int permissionLevel) {
+    this.permissionLevel = permissionLevel;
+  }
 
-    /**
-     * Checks if the current permissions have permissions for the level given.
-     * @param requiredPermissionLevel Required permissions level for action.
-     * @return true if has permission required or higher.
-     */
-    public boolean authorizedForActionOfPermissionLevel(UserPermission requiredPermissionLevel) {
-        return requiredPermissionLevel.permissionLevel >= permissionLevel;
-    }
+  /**
+   * Checks if the current permissions have permissions for the level given.
+   *
+   * @param requiredPermissionLevel Required permissions level for action.
+   * @return true if has permission required or higher.
+   */
+  public boolean authorizedForActionOfPermissionLevel(UserPermission requiredPermissionLevel) {
+    return requiredPermissionLevel.permissionLevel >= permissionLevel;
+  }
 }

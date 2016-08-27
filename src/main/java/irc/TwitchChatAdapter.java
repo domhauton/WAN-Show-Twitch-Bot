@@ -4,11 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jibble.pircbot.IrcException;
 import org.joda.time.Period;
-import twitch.chat.data.InboundTwitchMessage;
-import twitch.chat.exceptions.TwitchChatException;
 
 import java.io.IOException;
 import java.util.function.Consumer;
+
+import twitch.chat.data.InboundTwitchMessage;
+import twitch.chat.exceptions.TwitchChatException;
 
 /**
  * Created by Dominic Hauton on 10/04/2016.
@@ -16,57 +17,57 @@ import java.util.function.Consumer;
  * An adapter PircBot that only exposes required methods.
  */
 final public class TwitchChatAdapter {
-    private Logger log = LogManager.getLogger();
+  private Logger log = LogManager.getLogger();
 
-    private PircBotImpl pircBot;
+  private PircBotImpl pircBot;
 
-    public TwitchChatAdapter(String twitchUsername) {
-        pircBot = new PircBotImpl(twitchUsername);
-        pircBot.changeNick(twitchUsername);
+  public TwitchChatAdapter(String twitchUsername) {
+    pircBot = new PircBotImpl(twitchUsername);
+    pircBot.changeNick(twitchUsername);
+  }
+
+  public void setMessageDelay(Period time) {
+    pircBot.setMessageDelay(time.toStandardSeconds().getSeconds());
+  }
+
+  /**
+   * Attempts to establish a connection to the twitch server.
+   *
+   * @throws TwitchChatException If an error occurred during connection.
+   */
+  public void connectToTwitchServer(String serverURL, int serverPort, String oAuthToken) throws TwitchChatException {
+    try {
+      pircBot.connect(serverURL, serverPort, oAuthToken);
+    } catch (IOException | IrcException e) {
+      String errorMessage = "An IRC error occurred while connecting to TwitchChat Server " + serverURL + ":" +
+          serverPort + ". Error: " + e.getMessage();
+      log.error(errorMessage);
+      throw new TwitchChatException(errorMessage);
     }
+  }
 
-    public void setMessageDelay(Period time) {
-        pircBot.setMessageDelay(time.toStandardSeconds().getSeconds());
-    }
+  public void joinTwitchChannel(String channelName) {
+    pircBot.joinChannel(channelName);
+  }
 
-    /**
-     * Attempts to establish a connection to the twitch server.
-     *
-     * @throws TwitchChatException If an error occurred during connection.
-     */
-    public void connectToTwitchServer(String serverURL, int serverPort, String oAuthToken) throws TwitchChatException {
-        try {
-            pircBot.connect(serverURL, serverPort, oAuthToken);
-        } catch (IOException | IrcException e) {
-            String errorMessage = "An IRC error occurred while connecting to TwitchChat Server " + serverURL + ":" +
-                                  serverPort + ". Error: " + e.getMessage();
-            log.error(errorMessage);
-            throw new TwitchChatException(errorMessage);
-        }
-    }
+  public void sendMessage(String targetChannel, String messagePayload) {
+    pircBot.sendMessage(targetChannel, messagePayload);
+  }
 
-    public void joinTwitchChannel(String channelName) {
-        pircBot.joinChannel(channelName);
-    }
+  public void sendChatHandshake(ChatHandshake chatHandshake) {
+    pircBot.sendRawLine(chatHandshake.getHandshake());
+  }
 
-    public void sendMessage(String targetChannel, String messagePayload) {
-        pircBot.sendMessage(targetChannel, messagePayload);
-    }
+  public void setMessageListener(Consumer<InboundTwitchMessage> twitchMessageConsumer) {
+    Consumer<InboundIRCMessage> ircMessageConsumer =
+        (InboundIRCMessage ircMessage) -> twitchMessageConsumer.accept(convertIRCToTwitchMessage(ircMessage));
+    pircBot.setTwitchMessageConsumer(ircMessageConsumer);
+  }
 
-    public void sendChatHandshake(ChatHandshake chatHandshake) {
-        pircBot.sendRawLine(chatHandshake.getHandshake());
-    }
-
-    public void setMessageListener(Consumer<InboundTwitchMessage> twitchMessageConsumer) {
-        Consumer<InboundIRCMessage> ircMessageConsumer =
-                (InboundIRCMessage ircMessage) -> twitchMessageConsumer.accept(convertIRCToTwitchMessage(ircMessage));
-        pircBot.setTwitchMessageConsumer(ircMessageConsumer);
-    }
-
-    /**
-     * Maps an InboundIRCMessage onto an Inbound Twitch Message
-     */
-    private InboundTwitchMessage convertIRCToTwitchMessage(InboundIRCMessage ircMessage) {
-        return new InboundTwitchMessage(ircMessage.getChannel(), ircMessage.getSender(), ircMessage.getMessage());
-    }
+  /**
+   * Maps an InboundIRCMessage onto an Inbound Twitch Message
+   */
+  private InboundTwitchMessage convertIRCToTwitchMessage(InboundIRCMessage ircMessage) {
+    return new InboundTwitchMessage(ircMessage.getChannel(), ircMessage.getSender(), ircMessage.getMessage());
+  }
 }

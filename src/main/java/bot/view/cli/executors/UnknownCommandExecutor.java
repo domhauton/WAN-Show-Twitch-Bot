@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import bot.channel.ChannelManager;
 import bot.view.cli.BotCommandException;
@@ -11,11 +12,16 @@ import twitch.chat.data.OutboundTwitchMessage;
 
 /**
  * Created by Dominic Hauton on 11/07/2016.
+ *
+ * An implementation to an unknown command.
  */
-public class ChannelSettingModifier implements CommandExecutor {
+public class UnknownCommandExecutor implements CommandExecutor {
+
   @Override
   public Collection<OutboundTwitchMessage> executeCommand(ImmutableSet<Character> flags, ImmutableList<String> args, ChannelManager channelManager) throws BotCommandException {
-    throw new BotCommandException("Command not yet implemented");
-    //TODO Add ability to set the show start time and modify settings
+    OutboundTwitchMessage outboundChannelResponse = new OutboundTwitchMessage(
+        "Invalid Command Used",
+        channelManager.getChannelName());
+    return Collections.singletonList(outboundChannelResponse);
   }
 }

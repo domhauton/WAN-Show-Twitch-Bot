@@ -11,33 +11,34 @@ import java.util.Optional;
  * Decorator for an Evicting queue
  */
 class TwitchMessageEvictingQueue {
-    private EvictingQueue<TwitchMessage> m_messageBuffer;
+  private EvictingQueue<TwitchMessage> messageBuffer;
 
-    TwitchMessageEvictingQueue(int bufferLength) {
-        m_messageBuffer = EvictingQueue.create(bufferLength);
-    }
+  TwitchMessageEvictingQueue(int bufferLength) {
+    messageBuffer = EvictingQueue.create(bufferLength);
+  }
 
-    ImmutableTwitchMessageList getMessageBufferSnapshot() {
-        return new ImmutableTwitchMessageList(m_messageBuffer);
-    }
+  ImmutableTwitchMessageList getMessageBufferSnapshot() {
+    return new ImmutableTwitchMessageList(messageBuffer);
+  }
 
-    /**
-     * Gets an optional containing the most recent message.
-     */
-    public Optional<TwitchMessage> getMostRecentMessage() {
-        Iterator<TwitchMessage> messageIterator = m_messageBuffer.iterator();
-        TwitchMessage finalMessage = null;
-        while(messageIterator.hasNext()){
-            finalMessage = messageIterator.next();
-        }
-        return Optional.ofNullable(finalMessage);
+  /**
+   * Gets an optional containing the most recent message.
+   */
+  public Optional<TwitchMessage> getMostRecentMessage() {
+    Iterator<TwitchMessage> messageIterator = messageBuffer.iterator();
+    TwitchMessage finalMessage = null;
+    while (messageIterator.hasNext()) {
+      finalMessage = messageIterator.next();
     }
+    return Optional.ofNullable(finalMessage);
+  }
 
-    /**
-     * Offers the message.
-     * @return False if insertion failed. EvictingQueue offer should never fail!
-     */
-    public synchronized boolean addMessage(TwitchMessage message) {
-        return m_messageBuffer.offer(message);
-    }
+  /**
+   * Offers the message.
+   *
+   * @return False if insertion failed. EvictingQueue offer should never fail!
+   */
+  public synchronized boolean addMessage(TwitchMessage message) {
+    return messageBuffer.offer(message);
+  }
 }

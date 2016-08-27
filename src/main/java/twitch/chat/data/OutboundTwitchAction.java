@@ -5,17 +5,16 @@ package twitch.chat.data;
  *
  * Wraps an outbound twitch action.
  */
-public class OutboundTwitchAction extends OutboundTwitchMessage{
+public class OutboundTwitchAction extends OutboundTwitchMessage {
 
-    public OutboundTwitchAction(String payload, String targetChannel) {
-        super(buildAction(payload), targetChannel);
-    }
+  public OutboundTwitchAction(String payload, String targetChannel) {
+    super(buildAction(payload), targetChannel);
+  }
 
-    private static String buildAction(String message) {
-        return ".me " + message;
-    }
+  private static String buildAction(String message) {
+    return ".me " + message;
+  }
 }
 
 
 
-;

@@ -9,7 +9,7 @@ import bot.channel.ChannelOperationException;
  */
 public class BlacklistOperationException extends ChannelOperationException {
 
-    BlacklistOperationException(String message) {
-        super(message);
-    }
+  BlacklistOperationException(String message) {
+    super(message);
+  }
 }

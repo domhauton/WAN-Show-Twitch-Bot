@@ -7,8 +7,8 @@ import java.io.IOException;
  *
  * General Exception while sending/receiving messages from TwitchChat
  */
-public class TwitchChatException extends IOException{
-    public TwitchChatException(String message) {
-        super(message);
-    }
+public class TwitchChatException extends IOException {
+  public TwitchChatException(String message) {
+    super(message);
+  }
 }

@@ -13,32 +13,33 @@ import java.util.HashMap;
  */
 public class TimeoutManager {
 
-    private HashMap<String, Duration> userTimeoutHistory;
-    private static final Logger s_log = LogManager.getLogger();
+  private static final Logger log = LogManager.getLogger();
+  private HashMap<String, Duration> userTimeoutHistory;
 
-    public TimeoutManager() {
-        userTimeoutHistory = new HashMap<>();
-    }
+  public TimeoutManager() {
+    userTimeoutHistory = new HashMap<>();
+  }
 
-    public Duration getUserTimeout(String twitchUser) {
-        Duration userTimeoutDuration = userTimeoutHistory.getOrDefault(twitchUser, Duration.ZERO);
-        s_log.debug("Retrieving timeout for user {} from TimeoutManager. Current: {}", twitchUser::toString,
-                userTimeoutDuration::toString);
-        return userTimeoutDuration;
-    }
+  public Duration getUserTimeout(String twitchUser) {
+    Duration userTimeoutDuration = userTimeoutHistory.getOrDefault(twitchUser, Duration.ZERO);
+    log.debug("Retrieving timeout for user {} from TimeoutManager. Current: {}", twitchUser::toString,
+        userTimeoutDuration::toString);
+    return userTimeoutDuration;
+  }
 
-    /**
-     * Adds the timeout and calculates new total time
-     * @return new timeout time
-     */
-    public synchronized Duration addUserTimeout(String twitchUser, TimeoutReason timeoutReason){
-        Duration previousTimeout = getUserTimeout(twitchUser);
-        Integer newTimeoutSeconds = Math.round(previousTimeout.toStandardSeconds().getSeconds()*timeoutReason.getMultiplier()) +
-                                    timeoutReason.getTimeout().toStandardSeconds().getSeconds();
-        Duration newTimeout = Duration.standardSeconds(newTimeoutSeconds);
-        s_log.info("Adding user Timeout for {}. Previous was {} therefore new is {}", twitchUser::toString,
-                previousTimeout::toString, newTimeout::toString);
-        userTimeoutHistory.put(twitchUser, newTimeout);
-        return newTimeout;
-    }
+  /**
+   * Adds the timeout and calculates new total time
+   *
+   * @return new timeout time
+   */
+  public synchronized Duration addUserTimeout(String twitchUser, TimeoutReason timeoutReason) {
+    Duration previousTimeout = getUserTimeout(twitchUser);
+    Integer newTimeoutSeconds = Math.round(previousTimeout.toStandardSeconds().getSeconds() * timeoutReason.getMultiplier()) +
+        timeoutReason.getTimeout().toStandardSeconds().getSeconds();
+    Duration newTimeout = Duration.standardSeconds(newTimeoutSeconds);
+    log.info("Adding user Timeout for {}. Previous was {} therefore new is {}", twitchUser::toString,
+        previousTimeout::toString, newTimeout::toString);
+    userTimeoutHistory.put(twitchUser, newTimeout);
+    return newTimeout;
+  }
 }

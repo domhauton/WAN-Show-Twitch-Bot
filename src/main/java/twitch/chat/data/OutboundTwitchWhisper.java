@@ -7,11 +7,11 @@ package twitch.chat.data;
  */
 public class OutboundTwitchWhisper extends OutboundTwitchMessage {
 
-    public OutboundTwitchWhisper(String payload, String targetUser) {
-        super(buildWhisper(payload, targetUser), "");
-    }
+  public OutboundTwitchWhisper(String payload, String targetUser) {
+    super(buildWhisper(payload, targetUser), "");
+  }
 
-    private static String buildWhisper(String message, String targetUser) {
-        return ".w " + targetUser + message;
-    }
+  private static String buildWhisper(String message, String targetUser) {
+    return ".w " + targetUser + message;
+  }
 }

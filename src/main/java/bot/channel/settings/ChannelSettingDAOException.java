@@ -7,9 +7,9 @@ import bot.channel.ChannelOperationException;
  *
  * Basic Exception for the DAO
  */
-public class ChannelSettingDAOException extends ChannelOperationException{
+public class ChannelSettingDAOException extends ChannelOperationException {
 
-    public ChannelSettingDAOException(String message) {
-        super(message);
-    }
+  public ChannelSettingDAOException(String message) {
+    super(message);
+  }
 }
