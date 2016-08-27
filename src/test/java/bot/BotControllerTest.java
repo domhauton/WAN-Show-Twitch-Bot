@@ -1,12 +1,9 @@
 package bot;
 
 import bot.util.BitlyDecorator;
-import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mockito;
-import twitch.channel.message.TwitchMessage;
-import twitch.channel.TwitchUser;
+import bot.channel.TwitchUser;
 import twitch.chat.sender.TwitchMessageRouter;
 
 /**
