@@ -1,0 +1,914 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="JUnit Jupiter" tests="142" skipped="0" failures="0" errors="0" time="4.803" hostname="expiravit" timestamp="2017-08-03T22:08:43">
+<properties>
+<property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
+<property name="file.encoding" value="UTF-8"/>
+<property name="file.encoding.pkg" value="sun.io"/>
+<property name="file.separator" value="/"/>
+<property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+<property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+<property name="java.class.path" value="/home/dominic/Documents/wan-twitch-chat-bot/build/classes/java/test:/home/dominic/Documents/wan-twitch-chat-bot/build/resources/test:/home/dominic/Documents/wan-twitch-chat-bot/build/classes/java/main:/home/dominic/Documents/wan-twitch-chat-bot/build/resources/main:/home/dominic/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.8.2/979fc0cf8460302e4ffbfe38c1b66a99450b0bb7/log4j-core-2.8.2.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/2.9.0/bb774cd393710a8513e802dbda0f402a66a928a5/jackson-dataformat-yaml-2.9.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.9.0/88e7c6220be3b3497b3074d3fc7754213289b987/jackson-core-2.9.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/22.0/3564ef3803de51fb0530a8377ec6100b33b0d073/guava-22.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.9.9/f7b520c458572890807d143670c9b24f4de90897/joda-time-2.9.9.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-collections4/4.1/a4cf4688fe1c7e3a63aa636cc96d013af537768e/commons-collections4-4.1.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.rosaloves/bitlyj/2.0.0/4556d1395fb808de976eaa4c110d86c5a30a9778/bitlyj-2.0.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/pircbot/pircbot/1.5.0/7a9dd235e6e81db733212202cc4067b5625650cf/pircbot-1.5.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.apache.lucene/lucene-facet/6.6.0/1575955fdd8a57dd077cf3e584025365c0a63701/lucene-facet-6.6.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.apache.lucene/lucene-core/6.6.0/918030732dcbddcf893043729ae2486a3a1fe743/lucene-core-6.6.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-engine/5.0.0-M6/ed587395f817b7c6a28b4745b6c2f23a90e75ec6/junit-jupiter-engine-5.0.0-M6.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-api/5.0.0-M6/d5845b87787a935ae41cef4f738ee1b0f948d864/junit-jupiter-api-5.0.0-M6.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.mockito/mockito-core/2.8.47/48840cfced22ec0c07203a0201c5ae7bc12557b5/mockito-core-2.8.47.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.8.2/e590eeb783348ce8ddef205b82127f9084d82bf3/log4j-api-2.8.2.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.yaml/snakeyaml/1.17/7a27ea250c5130b2922b86dea63cbb1cc10a660c/snakeyaml-1.17.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/1.3.9/40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf/jsr305-1.3.9.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.0.18/5f65affce1684999e2f4024983835efc3504012e/error_prone_annotations-2.0.18.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/com.google.j2objc/j2objc-annotations/1.1/ed28ded51a8b1c6b112568def5f4b455e6809019/j2objc-annotations-1.1.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.codehaus.mojo/animal-sniffer-annotations/1.14/775b7e22fb10026eed3f86e8dc556dfafe35f2d5/animal-sniffer-annotations-1.14.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.apache.lucene/lucene-queries/6.6.0/216e4980f45b5532d59da6420fc37857314aef25/lucene-queries-6.6.0.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-engine/1.0.0-M6/7f23112c003fb688d197619d28f5b86e632751c2/junit-platform-engine-1.0.0-M6.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.opentest4j/opentest4j/1.0.0-M3/3e2eaab0d26974e4006c9134ae15b1ba17c33f1/opentest4j-1.0.0-M3.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-commons/1.0.0-M6/8f6d78c9e74974407bbbd4e9c64828b32d0c33e7/junit-platform-commons-1.0.0-M6.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy/1.6.14/871c3e49dc6183d0d361601c2f1d11abb1a6b48c/byte-buddy-1.6.14.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.6.14/ba1e5ba3a84fb2fbf2f4de9138df19665eec4d59/byte-buddy-agent-1.6.14.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.objenesis/objenesis/2.5/612ecb799912ccf77cba9b3ed8c813da086076e9/objenesis-2.5.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-console/1.0.0-M6/94b3d8d88a9cce71e44bfe5a38d44b88d8b98ed8/junit-platform-console-1.0.0-M6.jar:/home/dominic/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-launcher/1.0.0-M6/dbaa72fd9c15548347a326067de19de82afa837/junit-platform-launcher-1.0.0-M6.jar"/>
+<property name="java.class.version" value="52.0"/>
+<property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-oracle/jre/lib/endorsed"/>
+<property name="java.ext.dirs" value="/usr/lib/jvm/java-8-oracle/jre/lib/ext:/usr/java/packages/lib/ext"/>
+<property name="java.home" value="/usr/lib/jvm/java-8-oracle/jre"/>
+<property name="java.io.tmpdir" value="/tmp"/>
+<property name="java.library.path" value="/opt/Qt5.7.1/5.7/gcc_64/lib:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib"/>
+<property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+<property name="java.runtime.version" value="1.8.0_131-b11"/>
+<property name="java.specification.name" value="Java Platform API Specification"/>
+<property name="java.specification.vendor" value="Oracle Corporation"/>
+<property name="java.specification.version" value="1.8"/>
+<property name="java.vendor" value="Oracle Corporation"/>
+<property name="java.vendor.url" value="http://java.oracle.com/"/>
+<property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+<property name="java.version" value="1.8.0_131"/>
+<property name="java.vm.info" value="mixed mode"/>
+<property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+<property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+<property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+<property name="java.vm.specification.version" value="1.8"/>
+<property name="java.vm.vendor" value="Oracle Corporation"/>
+<property name="java.vm.version" value="25.131-b11"/>
+<property name="line.separator" value="
+"/>
+<property name="os.arch" value="amd64"/>
+<property name="os.name" value="Linux"/>
+<property name="os.version" value="4.8.0-59-generic"/>
+<property name="path.separator" value=":"/>
+<property name="sun.arch.data.model" value="64"/>
+<property name="sun.boot.class.path" value="/usr/lib/jvm/java-8-oracle/jre/lib/resources.jar:/usr/lib/jvm/java-8-oracle/jre/lib/rt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jce.jar:/usr/lib/jvm/java-8-oracle/jre/lib/charsets.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfr.jar:/usr/lib/jvm/java-8-oracle/jre/classes"/>
+<property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-oracle/jre/lib/amd64"/>
+<property name="sun.cpu.endian" value="little"/>
+<property name="sun.cpu.isalist" value=""/>
+<property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+<property name="sun.java.command" value="org.junit.platform.console.ConsoleLauncher --details NONE --scan-class-path /home/dominic/Documents/wan-twitch-chat-bot/build/classes/java/main:/home/dominic/Documents/wan-twitch-chat-bot/build/resources/main:/home/dominic/Documents/wan-twitch-chat-bot/build/classes/java/test:/home/dominic/Documents/wan-twitch-chat-bot/build/resources/test -n ^.*Tests?$ -T slow -e junit-jupiter --reports-dir /home/dominic/Documents/wan-twitch-chat-bot/build/test-results"/>
+<property name="sun.java.launcher" value="SUN_STANDARD"/>
+<property name="sun.jnu.encoding" value="UTF-8"/>
+<property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+<property name="sun.os.patch.level" value="unknown"/>
+<property name="user.country" value="GB"/>
+<property name="user.dir" value="/home/dominic/Documents/wan-twitch-chat-bot"/>
+<property name="user.home" value="/home/dominic"/>
+<property name="user.language" value="en"/>
+<property name="user.name" value="dominic"/>
+<property name="user.timezone" value="Europe/London"/>
+<property name="user.variant" value=""/>
+</properties>
+<testcase name="getOutboundTwitchMessages()" classname="com.domhauton.wanbot.bot.view.cli.executors.BotCommandResultTest" time="0.006">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BotCommandResultTest]/[method:getOutboundTwitchMessages()]
+display-name: getOutboundTwitchMessages()
+]]></system-out>
+</testcase>
+<testcase name="getCommandExecutionMessage()" classname="com.domhauton.wanbot.bot.view.cli.executors.BotCommandResultTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BotCommandResultTest]/[method:getCommandExecutionMessage()]
+display-name: getCommandExecutionMessage()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandTwoArgsFail()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.253">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandTwoArgsFail()]
+display-name: executeCommandTwoArgsFail()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandMessageAdditionNoRetroactiveRemovalTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.006">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandMessageAdditionNoRetroactiveRemovalTest()]
+display-name: executeCommandMessageAdditionNoRetroactiveRemovalTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandRemoveRegexFailTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.008">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandRemoveRegexFailTest()]
+display-name: executeCommandRemoveRegexFailTest()
+]]></system-out>
+</testcase>
+<testcase name="extractBlackListTypeSimpleEmptyTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:extractBlackListTypeSimpleEmptyTest()]
+display-name: extractBlackListTypeSimpleEmptyTest()
+]]></system-out>
+</testcase>
+<testcase name="extractBlackListTypeSimpleWordTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:extractBlackListTypeSimpleWordTest()]
+display-name: extractBlackListTypeSimpleWordTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandRemoveRegexTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.015">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandRemoveRegexTest()]
+display-name: executeCommandRemoveRegexTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandMultiFlagAddition1Test()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandMultiFlagAddition1Test()]
+display-name: executeCommandMultiFlagAddition1Test()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandMultiFlagAddition2Test()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandMultiFlagAddition2Test()]
+display-name: executeCommandMultiFlagAddition2Test()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandSimpleWordDoubleAdditionTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandSimpleWordDoubleAdditionTest()]
+display-name: executeCommandSimpleWordDoubleAdditionTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandSimpleRegexAdditionTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandSimpleRegexAdditionTest()]
+display-name: executeCommandSimpleRegexAdditionTest()
+]]></system-out>
+</testcase>
+<testcase name="extractBlackListTypeIrrelevantFlagTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:extractBlackListTypeIrrelevantFlagTest()]
+display-name: extractBlackListTypeIrrelevantFlagTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandSimpleWordAdditionTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandSimpleWordAdditionTest()]
+display-name: executeCommandSimpleWordAdditionTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandMessageRemovalFuzzyTestFail()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.005">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandMessageRemovalFuzzyTestFail()]
+display-name: executeCommandMessageRemovalFuzzyTestFail()
+]]></system-out>
+</testcase>
+<testcase name="extractBlackListTypeSimpleRegexTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:extractBlackListTypeSimpleRegexTest()]
+display-name: extractBlackListTypeSimpleRegexTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandSimpleDefaultWordAdditionTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandSimpleDefaultWordAdditionTest()]
+display-name: executeCommandSimpleDefaultWordAdditionTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandMessageAdditionRetroactiveRemovalTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandMessageAdditionRetroactiveRemovalTest()]
+display-name: executeCommandMessageAdditionRetroactiveRemovalTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandEmptyArgsFail()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandEmptyArgsFail()]
+display-name: executeCommandEmptyArgsFail()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandMessageRemovalFuzzyTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandMessageRemovalFuzzyTest()]
+display-name: executeCommandMessageRemovalFuzzyTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandNonRetroWordDoubleAdditionTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandNonRetroWordDoubleAdditionTest()]
+display-name: executeCommandNonRetroWordDoubleAdditionTest()
+]]></system-out>
+</testcase>
+<testcase name="extractBlackListTypeSimpleDoubleTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:extractBlackListTypeSimpleDoubleTest()]
+display-name: extractBlackListTypeSimpleDoubleTest()
+]]></system-out>
+</testcase>
+<testcase name="extractBlackListTypeSimpleMessageTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:extractBlackListTypeSimpleMessageTest()]
+display-name: extractBlackListTypeSimpleMessageTest()
+]]></system-out>
+</testcase>
+<testcase name="executeCommandSimpleMessageAdditionTest()" classname="com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.executors.BlacklistModifierTest]/[method:executeCommandSimpleMessageAdditionTest()]
+display-name: executeCommandSimpleMessageAdditionTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandMultiWhitespaceTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0.005">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandMultiWhitespaceTest()]
+display-name: splitCommandMultiWhitespaceTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandFailedEscapeTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandFailedEscapeTest()]
+display-name: splitCommandFailedEscapeTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandEmptyQuoteTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandEmptyQuoteTest()]
+display-name: splitCommandEmptyQuoteTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandEscapedEscapeTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandEscapedEscapeTest()]
+display-name: splitCommandEscapedEscapeTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandEmptyTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandEmptyTest()]
+display-name: splitCommandEmptyTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandEscapedQuotesTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandEscapedQuotesTest()]
+display-name: splitCommandEscapedQuotesTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandSimpleQuotesTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandSimpleQuotesTest()]
+display-name: splitCommandSimpleQuotesTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandWhitespaceTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandWhitespaceTest()]
+display-name: splitCommandWhitespaceTest()
+]]></system-out>
+</testcase>
+<testcase name="splitCommandSimpleTest()" classname="com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.view.cli.BotCommandManagerTest]/[method:splitCommandSimpleTest()]
+display-name: splitCommandSimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="testMessageAddition()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest" time="0.005">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest]/[method:testMessageAddition()]
+display-name: testMessageAddition()
+]]></system-out>
+</testcase>
+<testcase name="testMessageRemoval()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest]/[method:testMessageRemoval()]
+display-name: testMessageRemoval()
+]]></system-out>
+</testcase>
+<testcase name="getMostRecentMessageSimpleTest()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest]/[method:getMostRecentMessageSimpleTest()]
+display-name: getMostRecentMessageSimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="getMostRecentMessageEmptyTest()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageEvictingQueueTest]/[method:getMostRecentMessageEmptyTest()]
+display-name: getMostRecentMessageEmptyTest()
+]]></system-out>
+</testcase>
+<testcase name="addFirstMessageAndGetSnapshotTest()" classname="com.domhauton.wanbot.bot.channel.message.MessageManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.MessageManagerTest]/[method:addFirstMessageAndGetSnapshotTest()]
+display-name: addFirstMessageAndGetSnapshotTest()
+]]></system-out>
+</testcase>
+<testcase name="addFirstFourMessagesAndGetUserSnapshotTest()" classname="com.domhauton.wanbot.bot.channel.message.MessageManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.MessageManagerTest]/[method:addFirstFourMessagesAndGetUserSnapshotTest()]
+display-name: addFirstFourMessagesAndGetUserSnapshotTest()
+]]></system-out>
+</testcase>
+<testcase name="extractMessagesForEmptyUserTest()" classname="com.domhauton.wanbot.bot.channel.message.MessageManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.MessageManagerTest]/[method:extractMessagesForEmptyUserTest()]
+display-name: extractMessagesForEmptyUserTest()
+]]></system-out>
+</testcase>
+<testcase name="extractMessagesForEmptyChannelSnapshot()" classname="com.domhauton.wanbot.bot.channel.message.MessageManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.MessageManagerTest]/[method:extractMessagesForEmptyChannelSnapshot()]
+display-name: extractMessagesForEmptyChannelSnapshot()
+]]></system-out>
+</testcase>
+<testcase name="addFirstFourMessagesAndGetSnapshotTest()" classname="com.domhauton.wanbot.bot.channel.message.MessageManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.MessageManagerTest]/[method:addFirstFourMessagesAndGetSnapshotTest()]
+display-name: addFirstFourMessagesAndGetSnapshotTest()
+]]></system-out>
+</testcase>
+<testcase name="overflowBufferTest()" classname="com.domhauton.wanbot.bot.channel.message.MessageManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.MessageManagerTest]/[method:overflowBufferTest()]
+display-name: overflowBufferTest()
+]]></system-out>
+</testcase>
+<testcase name="getLegalCharRatio()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:getLegalCharRatio()]
+display-name: getLegalCharRatio()
+]]></system-out>
+</testcase>
+<testcase name="equalityTest()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:equalityTest()]
+display-name: equalityTest()
+]]></system-out>
+</testcase>
+<testcase name="getMessagePayload()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:getMessagePayload()]
+display-name: getMessagePayload()
+]]></system-out>
+</testcase>
+<testcase name="equalsSimplePayload()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:equalsSimplePayload()]
+display-name: equalsSimplePayload()
+]]></system-out>
+</testcase>
+<testcase name="toStringTest()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0.009">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:toStringTest()]
+display-name: toStringTest()
+]]></system-out>
+</testcase>
+<testcase name="getSender()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:getSender()]
+display-name: getSender()
+]]></system-out>
+</testcase>
+<testcase name="hashCodeTest()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:hashCodeTest()]
+display-name: hashCodeTest()
+]]></system-out>
+</testcase>
+<testcase name="containsStringTest()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:containsStringTest()]
+display-name: containsStringTest()
+]]></system-out>
+</testcase>
+<testcase name="getSimpleMessagePayload()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:getSimpleMessagePayload()]
+display-name: getSimpleMessagePayload()
+]]></system-out>
+</testcase>
+<testcase name="getMessageDateTime()" classname="com.domhauton.wanbot.bot.channel.message.TwitchMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.TwitchMessageTest]/[method:getMessageDateTime()]
+display-name: getMessageDateTime()
+]]></system-out>
+</testcase>
+<testcase name="containsSimplePayloadTrueUpperCaseAndSpace()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:containsSimplePayloadTrueUpperCaseAndSpace()]
+display-name: containsSimplePayloadTrueUpperCaseAndSpace()
+]]></system-out>
+</testcase>
+<testcase name="testSize()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testSize()]
+display-name: testSize()
+]]></system-out>
+</testcase>
+<testcase name="testToString()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testToString()]
+display-name: testToString()
+]]></system-out>
+</testcase>
+<testcase name="stream()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:stream()]
+display-name: stream()
+]]></system-out>
+</testcase>
+<testcase name="containsSimplePayloadTrueUpperCase()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:containsSimplePayloadTrueUpperCase()]
+display-name: containsSimplePayloadTrueUpperCase()
+]]></system-out>
+</testcase>
+<testcase name="testImmutableMessageListGivenNull()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testImmutableMessageListGivenNull()]
+display-name: testImmutableMessageListGivenNull()
+]]></system-out>
+</testcase>
+<testcase name="testTimeSpanTwoMessages()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0.008">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testTimeSpanTwoMessages()]
+display-name: testTimeSpanTwoMessages()
+]]></system-out>
+</testcase>
+<testcase name="containsSimplePayloadTrueSimple()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:containsSimplePayloadTrueSimple()]
+display-name: containsSimplePayloadTrueSimple()
+]]></system-out>
+</testcase>
+<testcase name="containsSimplePayloadTrueSpaces()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:containsSimplePayloadTrueSpaces()]
+display-name: containsSimplePayloadTrueSpaces()
+]]></system-out>
+</testcase>
+<testcase name="containsSimplePayloadFalse()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:containsSimplePayloadFalse()]
+display-name: containsSimplePayloadFalse()
+]]></system-out>
+</testcase>
+<testcase name="testTimeSpanThreeMessages()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testTimeSpanThreeMessages()]
+display-name: testTimeSpanThreeMessages()
+]]></system-out>
+</testcase>
+<testcase name="hashCodeTest()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:hashCodeTest()]
+display-name: hashCodeTest()
+]]></system-out>
+</testcase>
+<testcase name="testUserFilteringRemoveAll()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testUserFilteringRemoveAll()]
+display-name: testUserFilteringRemoveAll()
+]]></system-out>
+</testcase>
+<testcase name="testTimeSpanNoMessages()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testTimeSpanNoMessages()]
+display-name: testTimeSpanNoMessages()
+]]></system-out>
+</testcase>
+<testcase name="testUserFilteringRemoveHalf()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testUserFilteringRemoveHalf()]
+display-name: testUserFilteringRemoveHalf()
+]]></system-out>
+</testcase>
+<testcase name="testUserFilteringRemoveNone()" classname="com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.message.ImmutableTwitchMessageListTest]/[method:testUserFilteringRemoveNone()]
+display-name: testUserFilteringRemoveNone()
+]]></system-out>
+</testcase>
+<testcase name="unauthorizedForActionOfPermissionLevelGreaterThan()" classname="com.domhauton.wanbot.bot.channel.permissions.UserPermissionTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.UserPermissionTest]/[method:unauthorizedForActionOfPermissionLevelGreaterThan()]
+display-name: unauthorizedForActionOfPermissionLevelGreaterThan()
+]]></system-out>
+</testcase>
+<testcase name="authorizedForActionOfPermissionLevelLessThan()" classname="com.domhauton.wanbot.bot.channel.permissions.UserPermissionTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.UserPermissionTest]/[method:authorizedForActionOfPermissionLevelLessThan()]
+display-name: authorizedForActionOfPermissionLevelLessThan()
+]]></system-out>
+</testcase>
+<testcase name="authorizedForActionOfPermissionLevelEqualTo()" classname="com.domhauton.wanbot.bot.channel.permissions.UserPermissionTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.UserPermissionTest]/[method:authorizedForActionOfPermissionLevelEqualTo()]
+display-name: authorizedForActionOfPermissionLevelEqualTo()
+]]></system-out>
+</testcase>
+<testcase name="addAndRetrieveMultipleUsersTest()" classname="com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest]/[method:addAndRetrieveMultipleUsersTest()]
+display-name: addAndRetrieveMultipleUsersTest()
+]]></system-out>
+</testcase>
+<testcase name="eachPermissionStoredCorrectlyTest()" classname="com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest]/[method:eachPermissionStoredCorrectlyTest()]
+display-name: eachPermissionStoredCorrectlyTest()
+]]></system-out>
+</testcase>
+<testcase name="checkRetrievalByValueTest()" classname="com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest]/[method:checkRetrievalByValueTest()]
+display-name: checkRetrievalByValueTest()
+]]></system-out>
+</testcase>
+<testcase name="retrievingEmptyUserTest()" classname="com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.permissions.PermissionsManagerTest]/[method:retrievingEmptyUserTest()]
+display-name: retrievingEmptyUserTest()
+]]></system-out>
+</testcase>
+<testcase name="matchesExactTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:matchesExactTest()]
+display-name: matchesExactTest()
+]]></system-out>
+</testcase>
+<testcase name="matchesContainsWordTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:matchesContainsWordTest()]
+display-name: matchesContainsWordTest()
+]]></system-out>
+</testcase>
+<testcase name="matchesAnyTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:matchesAnyTest()]
+display-name: matchesAnyTest()
+]]></system-out>
+</testcase>
+<testcase name="wordBlackListTypeConverterTestWithEscapes()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:wordBlackListTypeConverterTestWithEscapes()]
+display-name: wordBlackListTypeConverterTestWithEscapes()
+]]></system-out>
+</testcase>
+<testcase name="wordBlackListTypeConverterTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:wordBlackListTypeConverterTest()]
+display-name: wordBlackListTypeConverterTest()
+]]></system-out>
+</testcase>
+<testcase name="messageBlackListTypeConverterTestWithEscapes()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:messageBlackListTypeConverterTestWithEscapes()]
+display-name: messageBlackListTypeConverterTestWithEscapes()
+]]></system-out>
+</testcase>
+<testcase name="regexBlackListTypeConverterTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:regexBlackListTypeConverterTest()]
+display-name: regexBlackListTypeConverterTest()
+]]></system-out>
+</testcase>
+<testcase name="messageBlackListTypeConverterTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistTypeTest]/[method:messageBlackListTypeConverterTest()]
+display-name: messageBlackListTypeConverterTest()
+]]></system-out>
+</testcase>
+<testcase name="matchesExactTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistEntryTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistEntryTest]/[method:matchesExactTest()]
+display-name: matchesExactTest()
+]]></system-out>
+</testcase>
+<testcase name="matchesContainsWordTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistEntryTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistEntryTest]/[method:matchesContainsWordTest()]
+display-name: matchesContainsWordTest()
+]]></system-out>
+</testcase>
+<testcase name="matchesAnyTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistEntryTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistEntryTest]/[method:matchesAnyTest()]
+display-name: matchesAnyTest()
+]]></system-out>
+</testcase>
+<testcase name="removeMessageFromBlacklist()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:removeMessageFromBlacklist()]
+display-name: removeMessageFromBlacklist()
+]]></system-out>
+</testcase>
+<testcase name="removeFromBlacklistFuzzySearchTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:removeFromBlacklistFuzzySearchTest()]
+display-name: removeFromBlacklistFuzzySearchTest()
+]]></system-out>
+</testcase>
+<testcase name="removeFromBlacklistOnlyExactMatchTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:removeFromBlacklistOnlyExactMatchTest()]
+display-name: removeFromBlacklistOnlyExactMatchTest()
+]]></system-out>
+</testcase>
+<testcase name="searchForExistingBlacklistEntryAndRemoveTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:searchForExistingBlacklistEntryAndRemoveTest()]
+display-name: searchForExistingBlacklistEntryAndRemoveTest()
+]]></system-out>
+</testcase>
+<testcase name="addTwoMessagesToBlacklist()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:addTwoMessagesToBlacklist()]
+display-name: addTwoMessagesToBlacklist()
+]]></system-out>
+</testcase>
+<testcase name="removeFromBlacklistFuzzyNoneMatchTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:removeFromBlacklistFuzzyNoneMatchTest()]
+display-name: removeFromBlacklistFuzzyNoneMatchTest()
+]]></system-out>
+</testcase>
+<testcase name="messageOnlyBlacklistTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:messageOnlyBlacklistTest()]
+display-name: messageOnlyBlacklistTest()
+]]></system-out>
+</testcase>
+<testcase name="searchForExistingBlacklistEntriesTwoResultsTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:searchForExistingBlacklistEntriesTwoResultsTest()]
+display-name: searchForExistingBlacklistEntriesTwoResultsTest()
+]]></system-out>
+</testcase>
+<testcase name="searchForExistingBlacklistEntriesTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:searchForExistingBlacklistEntriesTest()]
+display-name: searchForExistingBlacklistEntriesTest()
+]]></system-out>
+</testcase>
+<testcase name="regexBlacklistTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:regexBlacklistTest()]
+display-name: regexBlacklistTest()
+]]></system-out>
+</testcase>
+<testcase name="removeMessageFromBlacklistDoesNotExistException()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:removeMessageFromBlacklistDoesNotExistException()]
+display-name: removeMessageFromBlacklistDoesNotExistException()
+]]></system-out>
+</testcase>
+<testcase name="removeFromBlacklistFuzzySimpleTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0.003">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:removeFromBlacklistFuzzySimpleTest()]
+display-name: removeFromBlacklistFuzzySimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="wordBlacklistTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:wordBlacklistTest()]
+display-name: wordBlacklistTest()
+]]></system-out>
+</testcase>
+<testcase name="searchForExistingBlacklistEntriesNoResultsTest()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:searchForExistingBlacklistEntriesNoResultsTest()]
+display-name: searchForExistingBlacklistEntriesNoResultsTest()
+]]></system-out>
+</testcase>
+<testcase name="addToBlacklistMessage()" classname="com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.blacklist.BlacklistManagerTest]/[method:addToBlacklistMessage()]
+display-name: addToBlacklistMessage()
+]]></system-out>
+</testcase>
+<testcase name="blackListItemRemoveFail()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:blackListItemRemoveFail()]
+display-name: blackListItemRemoveFail()
+]]></system-out>
+</testcase>
+<testcase name="blackListRemoveItemTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:blackListRemoveItemTest()]
+display-name: blackListRemoveItemTest()
+]]></system-out>
+</testcase>
+<testcase name="getChannelSettingTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:getChannelSettingTest()]
+display-name: getChannelSettingTest()
+]]></system-out>
+</testcase>
+<testcase name="permissionSetAndGetTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:permissionSetAndGetTest()]
+display-name: permissionSetAndGetTest()
+]]></system-out>
+</testcase>
+<testcase name="messageManagerOverflowTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.017">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:messageManagerOverflowTest()]
+display-name: messageManagerOverflowTest()
+]]></system-out>
+</testcase>
+<testcase name="blackListItemAddTwiceTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:blackListItemAddTwiceTest()]
+display-name: blackListItemAddTwiceTest()
+]]></system-out>
+</testcase>
+<testcase name="permissionSimpleTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:permissionSimpleTest()]
+display-name: permissionSimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="blackListItemSimpleTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:blackListItemSimpleTest()]
+display-name: blackListItemSimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="failMessageInsertTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.273">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:failMessageInsertTest()]
+display-name: failMessageInsertTest()
+]]></system-out>
+</testcase>
+<testcase name="messageManagerSimpleTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:messageManagerSimpleTest()]
+display-name: messageManagerSimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="customiseURLFailTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.017">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:customiseURLFailTest()]
+display-name: customiseURLFailTest()
+]]></system-out>
+</testcase>
+<testcase name="blackListItemRetroactiveTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:blackListItemRetroactiveTest()]
+display-name: blackListItemRetroactiveTest()
+]]></system-out>
+</testcase>
+<testcase name="userTimeoutSimpleTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:userTimeoutSimpleTest()]
+display-name: userTimeoutSimpleTest()
+]]></system-out>
+</testcase>
+<testcase name="permissionGetWithoutSetFail()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.031">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:permissionGetWithoutSetFail()]
+display-name: permissionGetWithoutSetFail()
+]]></system-out>
+</testcase>
+<testcase name="permissionGetWithoutSetTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:permissionGetWithoutSetTest()]
+display-name: permissionGetWithoutSetTest()
+]]></system-out>
+</testcase>
+<testcase name="getChannelNameTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:getChannelNameTest()]
+display-name: getChannelNameTest()
+]]></system-out>
+</testcase>
+<testcase name="customiseURLTest()" classname="com.domhauton.wanbot.bot.channel.ChannelManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.ChannelManagerTest]/[method:customiseURLTest()]
+display-name: customiseURLTest()
+]]></system-out>
+</testcase>
+<testcase name="timeoutMultiplierTest()" classname="com.domhauton.wanbot.bot.channel.timeouts.TimeoutManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.timeouts.TimeoutManagerTest]/[method:timeoutMultiplierTest()]
+display-name: timeoutMultiplierTest()
+]]></system-out>
+</testcase>
+<testcase name="simpleAddTimeTest()" classname="com.domhauton.wanbot.bot.channel.timeouts.TimeoutManagerTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.timeouts.TimeoutManagerTest]/[method:simpleAddTimeTest()]
+display-name: simpleAddTimeTest()
+]]></system-out>
+</testcase>
+<testcase name="timeoutMessageTest()" classname="com.domhauton.wanbot.bot.channel.timeouts.TimeoutManagerTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.timeouts.TimeoutManagerTest]/[method:timeoutMessageTest()]
+display-name: timeoutMessageTest()
+]]></system-out>
+</testcase>
+<testcase name="retrieveBeforeInsertTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:retrieveBeforeInsertTest()]
+display-name: retrieveBeforeInsertTest()
+]]></system-out>
+</testcase>
+<testcase name="simpleInsertRetrieveDoubleTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:simpleInsertRetrieveDoubleTest()]
+display-name: simpleInsertRetrieveDoubleTest()
+]]></system-out>
+</testcase>
+<testcase name="repeatedInsertRetrieveIntegerTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:repeatedInsertRetrieveIntegerTest()]
+display-name: repeatedInsertRetrieveIntegerTest()
+]]></system-out>
+</testcase>
+<testcase name="repeatedInsertRetrieveDoubleTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:repeatedInsertRetrieveDoubleTest()]
+display-name: repeatedInsertRetrieveDoubleTest()
+]]></system-out>
+</testcase>
+<testcase name="simpleInsertRetrieveStringTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:simpleInsertRetrieveStringTest()]
+display-name: simpleInsertRetrieveStringTest()
+]]></system-out>
+</testcase>
+<testcase name="simpleInsertRetrieveIntegerTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:simpleInsertRetrieveIntegerTest()]
+display-name: simpleInsertRetrieveIntegerTest()
+]]></system-out>
+</testcase>
+<testcase name="ensureDoubleDefaultMatchGetOrDefaultTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:ensureDoubleDefaultMatchGetOrDefaultTest()]
+display-name: ensureDoubleDefaultMatchGetOrDefaultTest()
+]]></system-out>
+</testcase>
+<testcase name="castErrorWrongObjectTest()" classname="com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.channel.settings.IChannelSettingDAOHashMapImplTest]/[method:castErrorWrongObjectTest()]
+display-name: castErrorWrongObjectTest()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestEmpty()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestEmpty()]
+display-name: periodToStringTestEmpty()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestHour1()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestHour1()]
+display-name: periodToStringTestHour1()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestHour2()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestHour2()]
+display-name: periodToStringTestHour2()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestDay1()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestDay1()]
+display-name: periodToStringTestDay1()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestDay2()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestDay2()]
+display-name: periodToStringTestDay2()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestDay3()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestDay3()]
+display-name: periodToStringTestDay3()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestDay4()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestDay4()]
+display-name: periodToStringTestDay4()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestMin1()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestMin1()]
+display-name: periodToStringTestMin1()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestMin2()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestMin2()]
+display-name: periodToStringTestMin2()
+]]></system-out>
+</testcase>
+<testcase name="periodToStringTestLow()" classname="com.domhauton.wanbot.bot.util.DateTimeUtilTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.bot.util.DateTimeUtilTest]/[method:periodToStringTestLow()]
+display-name: periodToStringTestLow()
+]]></system-out>
+</testcase>
+<testcase name="testEventRateMultiThread()" classname="com.domhauton.wanbot.chat.sender.AsyncEventBufferTest" time="2.003">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.chat.sender.AsyncEventBufferTest]/[method:testEventRateMultiThread()]
+display-name: testEventRateMultiThread()
+]]></system-out>
+</testcase>
+<testcase name="testEventRate()" classname="com.domhauton.wanbot.chat.sender.AsyncEventBufferTest" time="2.003">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.domhauton.wanbot.chat.sender.AsyncEventBufferTest]/[method:testEventRate()]
+display-name: testEventRate()
+]]></system-out>
+</testcase>
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]
+display-name: JUnit Jupiter
+]]></system-out>
+</testsuite>

@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+<<<<<<< f9ac3a962a7c90330d9d44adce2245674b350b67
 class BotController {
 	private Logger log = LogManager.getLogger();
 	private Logger messageLog = LogManager.getLogger("Message Log");
@@ -241,6 +242,13 @@ class BotController {
         String outboundMessagePayload = lastLinkExists ? "Linus' Last Link: " + lastHostLink : "Linus has not posted a link recently.";
         OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(outboundMessagePayload, sourceUserUsername);
         twitchMessageRouter.sendMessage(outboundWhisper);
+=======
+    messageLog.info(twitchMessage::toString); //Stores the MESSAGE in the chat log.
+
+    Collection<OutboundTwitchMessage> responses = new LinkedList<>();
+
+    //TODO Direct some to Bot Command Executor.
+>>>>>>> Connected Blacklist Executor
 
         boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40;
         if( sendToChannel ){

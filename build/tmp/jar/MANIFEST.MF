@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Implementation-Title: wanbot
+Implementation-Version: 1.0.0-alpha.1
+Main-Class: com.domhauton.wanbot.Main
+

@@ -180,4 +180,22 @@ public class ChannelManager {
     public String getChannelName() {
         return m_channelName;
     }
+<<<<<<< f9ac3a962a7c90330d9d44adce2245674b350b67
+=======
+  }
+
+  /**
+   * Fuzzy removal of blacklist entry. Will first search exact, then any matching entry
+   *
+   * @param input contents of blacklist message
+   * @return All blacklist entries that have been removed.
+   */
+  public Collection<BlacklistEntry> removeBlacklistItem(String input) {
+    return blacklistManager.removeFromBlacklist(input);
+  }
+
+  public String getChannelName() {
+    return channelName;
+  }
+>>>>>>> Connected Blacklist Executor
 }
