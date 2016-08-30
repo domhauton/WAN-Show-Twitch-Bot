@@ -177,7 +177,7 @@ public class ChannelManager {
    * @param input contents of blacklist message
    * @return All blacklist entries that have been removed.
    */
-  Collection<BlacklistEntry> removeBlacklistItem(String input) {
+  public Collection<BlacklistEntry> removeBlacklistItem(String input) {
     return blacklistManager.removeFromBlacklist(input);
   }
 

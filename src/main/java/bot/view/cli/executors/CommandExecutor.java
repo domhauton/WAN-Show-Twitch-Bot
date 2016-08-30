@@ -13,7 +13,7 @@ import twitch.chat.data.OutboundTwitchMessage;
  * Created by Dominic Hauton on 29/05/2016.
  */
 public interface CommandExecutor {
-  Collection<OutboundTwitchMessage> executeCommand(ImmutableSet<Character> flags,
+  BotCommandResult executeCommand(ImmutableSet<Character> flags,
                                                    ImmutableList<String> args,
                                                    ChannelManager channelManager) throws BotCommandException;
 }

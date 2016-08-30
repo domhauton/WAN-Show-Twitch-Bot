@@ -1,4 +1,4 @@
-package bot.view.cli;
+package bot.view.cli.executors;
 
 import java.util.Collection;
 
@@ -12,12 +12,10 @@ import twitch.chat.data.OutboundTwitchMessage;
 public class BotCommandResult {
   private final Collection<OutboundTwitchMessage> outboundTwitchMessages;
   private final String commandExecutionMessage;
-  private final boolean isSuccessful;
 
-  public BotCommandResult(Collection<OutboundTwitchMessage> outboundTwitchMessages, String commandExecutionMessage, boolean isSuccessful) {
+  BotCommandResult(Collection<OutboundTwitchMessage> outboundTwitchMessages, String commandExecutionMessage) {
     this.outboundTwitchMessages = outboundTwitchMessages;
     this.commandExecutionMessage = commandExecutionMessage;
-    this.isSuccessful = isSuccessful;
   }
 
   public Collection<OutboundTwitchMessage> getOutboundTwitchMessages() {
@@ -26,9 +24,5 @@ public class BotCommandResult {
 
   public String getcommandExecutionMessage() {
     return commandExecutionMessage;
-  }
-
-  public boolean isSuccessful() {
-    return isSuccessful;
   }
 }

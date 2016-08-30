@@ -12,13 +12,13 @@ import java.util.List;
  * <p>
  * Checks the adapter to ensure that the commands are valid
  */
-public class BotCommandTest {
+public class BotCommandManagerTest {
 
   @Test
   public void splitCommandSimpleTest() throws Exception {
     String exampleCommand = "This is an example";
     List<String> expectedChunks = Arrays.asList("This", "is", "an", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -26,7 +26,7 @@ public class BotCommandTest {
   public void splitCommandEmptyTest() throws Exception {
     String exampleCommand = "";
     List<String> expectedChunks = new ArrayList<>();
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -34,7 +34,7 @@ public class BotCommandTest {
   public void splitCommandWhitespaceTest() throws Exception {
     String exampleCommand = "  ";
     List<String> expectedChunks = new ArrayList<>();
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -43,7 +43,7 @@ public class BotCommandTest {
     String exampleCommand = "This   is an  example";
     List<String> expectedChunks = Arrays.asList("This", "is", "an"
         + "", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -51,7 +51,7 @@ public class BotCommandTest {
   public void splitCommandSimpleQuotesTest() throws Exception {
     String exampleCommand = "This \"is an\"  example";
     List<String> expectedChunks = Arrays.asList("This", "is an", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -59,7 +59,7 @@ public class BotCommandTest {
   public void splitCommandEscapedQuotesTest() throws Exception {
     String exampleCommand = "This \"is\\\" an\"  example";
     List<String> expectedChunks = Arrays.asList("This", "is\" an", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -67,7 +67,7 @@ public class BotCommandTest {
   public void splitCommandEscapedEscapeTest() throws Exception {
     String exampleCommand = "This \"is\\\\\" an\"  example";
     List<String> expectedChunks = Arrays.asList("This", "is\\", "an\"", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -75,7 +75,7 @@ public class BotCommandTest {
   public void splitCommandEmptyQuoteTest() throws Exception {
     String exampleCommand = "This \"\"  example";
     List<String> expectedChunks = Arrays.asList("This", "", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 
@@ -83,7 +83,7 @@ public class BotCommandTest {
   public void splitCommandFailedEscapeTest() throws Exception {
     String exampleCommand = "This \"\\a\"  example";
     List<String> expectedChunks = Arrays.asList("This", "\\a", "example");
-    List<String> actualChunks = BotCommand.splitCommand(exampleCommand);
+    List<String> actualChunks = BotCommandManager.splitCommand(exampleCommand);
     Assert.assertEquals(expectedChunks, actualChunks);
   }
 }

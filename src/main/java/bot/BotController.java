@@ -105,19 +105,7 @@ class BotController {
 
     Collection<OutboundTwitchMessage> responses = new LinkedList<>();
 
-    boolean isMessageCommand = BotCommand.isValidCommand(twitchMessage.getMessage());
-    if (isMessageCommand) {
-      BotCommand botCommand = new BotCommand(twitchMessage.getMessage(), twitchMessage.getTwitchUser(),
-          channelManager);
-      try {
-        botCommand.parseCommand();
-      } catch (BotCommandException e) {
-        OutboundTwitchWhisper commandFailWhisper = new OutboundTwitchWhisper(e.getMessage(),
-            twitchMessage.getUsername());
-        responses.add(commandFailWhisper);
-      }
-    }
-
+    //TODO Direct some to Bot Command Executor.
 
     return responses;
   }
