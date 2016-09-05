@@ -1,4 +1,4 @@
-package bot.util;
+package bot.channel.url;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

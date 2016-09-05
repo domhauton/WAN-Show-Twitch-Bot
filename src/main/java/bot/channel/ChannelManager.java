@@ -22,8 +22,12 @@ import bot.channel.settings.ChannelSettingDAOHashMapImpl;
 import bot.channel.settings.ChannelSettingDao;
 import bot.channel.settings.enums.ChannelSettingInteger;
 import bot.channel.settings.enums.ChannelSettingString;
+import bot.channel.settings.enums.IChannelSetting;
 import bot.channel.timeouts.TimeoutManager;
 import bot.channel.timeouts.TimeoutReason;
+import bot.channel.url.URLConverter;
+import bot.channel.url.URLConverterImpl;
+import bot.channel.url.URLInvalidException;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -38,6 +42,7 @@ public class ChannelManager {
   private final TimeoutManager timeoutManager;
   private final BlacklistManager blacklistManager;
   private final ChannelSettingDao channelSettingDao;
+  private final URLConverter urlConverter;
 
   public ChannelManager(String channelName) {
     this(channelName,
@@ -45,7 +50,8 @@ public class ChannelManager {
         new MessageManager(),
         new TimeoutManager(),
         new BlacklistManager(),
-        new ChannelSettingDAOHashMapImpl());
+        new ChannelSettingDAOHashMapImpl(),
+        new URLConverterImpl());
   }
 
   ChannelManager(
@@ -54,13 +60,15 @@ public class ChannelManager {
       MessageManager messageManager,
       TimeoutManager timeoutManager,
       BlacklistManager blacklistManager,
-      ChannelSettingDao channelSettingDao) {
+      ChannelSettingDao channelSettingDao,
+      URLConverter urlConverter) {
     this.channelName = channelName;
     this.permissionsManager = permissionsManager;
     this.messageManager = messageManager;
     this.timeoutManager = timeoutManager;
     this.blacklistManager = blacklistManager;
     this.channelSettingDao = channelSettingDao;
+    this.urlConverter = urlConverter;
   }
 
   /**
@@ -183,5 +191,17 @@ public class ChannelManager {
 
   public String getChannelName() {
     return channelName;
+  }
+
+  public String customiseURL(String link) throws ChannelOperationException {
+    try {
+      return urlConverter.convertLink(link);
+    } catch (URLInvalidException e) {
+      throw new ChannelOperationException(e.getMessage());
+    }
+  }
+
+  public <T> T getChannelSetting(IChannelSetting<T> channelSetting) {
+    return channelSettingDao.getSettingOrDefault(getChannelName(), channelSetting);
   }
 }

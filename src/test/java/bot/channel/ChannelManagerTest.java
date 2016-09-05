@@ -24,6 +24,9 @@ import bot.channel.settings.ChannelSettingDAOHashMapImpl;
 import bot.channel.settings.enums.ChannelSettingString;
 import bot.channel.timeouts.TimeoutManager;
 import bot.channel.timeouts.TimeoutReason;
+import bot.channel.url.URLConverter;
+import bot.channel.url.URLConverterImpl;
+import bot.channel.url.URLInvalidException;
 
 /**
  * Created by Dominic Hauton on 22/08/2016.
@@ -89,7 +92,8 @@ public class ChannelManagerTest {
         new MessageManager(),
         new TimeoutManager(),
         new BlacklistManager(),
-        mockChannelSettingDAO);
+        mockChannelSettingDAO,
+        new URLConverterImpl());
     expectedException.expect(ChannelOperationException.class);
     tempChannelManager.getPermission(twitchUser1);
   }
@@ -126,7 +130,8 @@ public class ChannelManagerTest {
         mockMessageManager,
         new TimeoutManager(),
         new BlacklistManager(),
-        new ChannelSettingDAOHashMapImpl());
+        new ChannelSettingDAOHashMapImpl(),
+        new URLConverterImpl());
     expectedException.expect(ChannelOperationException.class);
     tempChannelManager.addChannelMessage(twitchMessage);
   }
@@ -210,5 +215,36 @@ public class ChannelManagerTest {
   public void getChannelNameTest() throws Exception {
     String actualChannelName = channelManager.getChannelName();
     Assert.assertEquals(actualChannelName, channelName);
+  }
+
+  @Test
+  public void customiseURLTest() throws Exception {
+    String exampleString = "foobar";
+    String actualString = channelManager.customiseURL(exampleString);
+    Assert.assertEquals(exampleString, actualString);
+  }
+
+  @Test
+  public void customiseURLFailTest() throws Exception {
+    String exampleString = "foobar";
+    URLConverter urlConverter = Mockito.mock(URLConverterImpl.class);
+    Mockito.when(urlConverter.convertLink(exampleString)).thenThrow(new URLInvalidException("foobar"));
+    ChannelManager tempChannelManager = new ChannelManager(
+        channelName,
+        new PermissionsManager(),
+        new MessageManager(),
+        new TimeoutManager(),
+        new BlacklistManager(),
+        new ChannelSettingDAOHashMapImpl(),
+        urlConverter);
+    expectedException.expect(ChannelOperationException.class);
+    tempChannelManager.customiseURL(exampleString);
+  }
+
+  @Test
+  public void getChannelSettingTest() throws Exception {
+    String channelSetting = channelManager.getChannelSetting(ChannelSettingString.DEFAULT_PERMISSION);
+    Assert.assertNotNull(channelSetting);
+    Assert.assertEquals(ChannelSettingString.DEFAULT_PERMISSION.getDefault(), channelSetting);
   }
 }

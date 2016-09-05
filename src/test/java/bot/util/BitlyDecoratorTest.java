@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import org.junit.Assert;
 import org.junit.Test;
 
+import bot.channel.url.BitlyDecorator;
 import bot.util.config.AppInjector;
 import bot.util.config.Environment;
 

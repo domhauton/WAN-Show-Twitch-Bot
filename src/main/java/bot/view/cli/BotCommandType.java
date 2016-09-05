@@ -6,19 +6,17 @@ import java.util.HashSet;
 import java.util.stream.Stream;
 
 import bot.channel.permissions.UserPermission;
-import bot.view.cli.executors.BlacklistExecutor;
-import bot.view.cli.executors.ChannelSettingModifier;
+import bot.view.cli.executors.BlacklistModifier;
 import bot.view.cli.executors.CommandExecutor;
-import bot.view.cli.executors.PermissionModifier;
+import bot.view.cli.executors.LinkRepeater;
 import bot.view.cli.executors.UnknownCommandExecutor;
 
 /**
  * Created by Dominic Hauton on 23/05/2016.
  */
 enum BotCommandType {
-  BLACKLIST(new BlacklistExecutor(), UserPermission.BotModerator, new String[]{"blacklist", "bl"}),
-  PERMISSIONS(new PermissionModifier(), UserPermission.BotAdmin, new String[]{"perm", "permission", "chmod"}),
-  SHOW(new ChannelSettingModifier(), UserPermission.BotModerator, new String[]{"channel", "show"}),
+  BLACKLIST(new BlacklistModifier(), UserPermission.BotModerator, new String[]{"blacklist", "bl"}),
+  LINK_REPEATER(new LinkRepeater(), UserPermission.BotAdmin, new String[]{"repeat", "rep", "r"}),
   UNKNOWN(new UnknownCommandExecutor(), UserPermission.ChannelModerator, new String[]{""});
 
   private Collection<String> aliases;

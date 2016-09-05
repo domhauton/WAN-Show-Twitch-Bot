@@ -28,7 +28,7 @@ import twitch.chat.data.OutboundTwitchWhisper;
  * <p>
  * Handles blacklist command executions.
  */
-public class BlacklistExecutor implements CommandExecutor {
+public class BlacklistModifier implements CommandExecutor {
 
   private static final ImmutableMap<Character, BlacklistType> blacklistFlagMap = ImmutableMap
       .<Character, BlacklistType>builder()
@@ -38,6 +38,17 @@ public class BlacklistExecutor implements CommandExecutor {
       .build();
 
   private static final BlacklistType defaultBlacklistType = BlacklistType.WORD;
+
+  /**
+   * Finds the type from one of the type flags in the passed argument.
+   */
+  static BlacklistType extractBlackListType(Collection<Character> flags) {
+    return flags.stream()
+        .filter(blacklistFlagMap::containsKey)
+        .map(blacklistFlagMap::get)
+        .findFirst()
+        .orElse(defaultBlacklistType);
+  }
 
   @Override
   public BotCommandResult executeCommand(
@@ -103,12 +114,12 @@ public class BlacklistExecutor implements CommandExecutor {
    * @param blacklistPhrase String to search the current blacklist for.
    */
   private BotCommandResult removeBlacklistItem(String blacklistPhrase,
-                                               ChannelManager channelManager) {
+                                               ChannelManager channelManager)
+      throws BotCommandException {
     Collection<BlacklistEntry> removedBlacklistEntries
         = channelManager.removeBlacklistItem(blacklistPhrase);
     if (removedBlacklistEntries.isEmpty()) {
-      return new BotCommandResult(Collections.emptyList(),
-          "Could not find any entry matching " + blacklistPhrase);
+      throw new BotCommandException("Could not find any entry matching " + blacklistPhrase);
     } else {
       return new BotCommandResult(Collections.emptyList(),
           "Found and removed: " + removedBlacklistEntries
@@ -123,14 +134,15 @@ public class BlacklistExecutor implements CommandExecutor {
    */
   private BotCommandResult removeBlacklistItem(ChannelManager channelManager,
                                                String blacklistPhrase,
-                                               BlacklistType blacklistType) {
+                                               BlacklistType blacklistType)
+      throws BotCommandException {
     try {
       channelManager.removeBlacklistItem(blacklistPhrase, blacklistType);
       return new BotCommandResult(Collections.emptyList(),
           "Successfully removed " + blacklistPhrase + " from blacklist");
     } catch (ChannelOperationException e) {
-      return new BotCommandResult(Collections.emptyList(),
-          "Blacklist item " + blacklistPhrase + " not found. Try with flag -f.");
+      throw new BotCommandException("Blacklist item " +
+          blacklistPhrase + " not found. Try with flag -f.");
     }
   }
 
@@ -148,16 +160,5 @@ public class BlacklistExecutor implements CommandExecutor {
       throw botCommandException.get();
     }
     return firstArgument;
-  }
-
-  /**
-   * Finds the type from one of the type flags in the passed argument.
-   */
-  static BlacklistType extractBlackListType(Collection<Character> flags) {
-    return flags.stream()
-        .filter(blacklistFlagMap::containsKey)
-        .map(blacklistFlagMap::get)
-        .findFirst()
-        .orElse(defaultBlacklistType);
   }
 }

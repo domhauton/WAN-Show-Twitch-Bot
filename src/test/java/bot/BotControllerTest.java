@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.mockito.Mockito;
 
 import bot.channel.TwitchUser;
-import bot.util.BitlyDecorator;
+import bot.channel.url.BitlyDecorator;
 import twitch.chat.sender.TwitchMessageRouter;
 
 /**

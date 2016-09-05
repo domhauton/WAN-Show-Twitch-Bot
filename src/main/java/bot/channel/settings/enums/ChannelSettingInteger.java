@@ -6,7 +6,8 @@ package bot.channel.settings.enums;
  * Double
  */
 public enum ChannelSettingInteger implements IChannelSetting<Integer> {
-  CHANNEL_RETROSPECTIVE_LOOKBACK(50);
+  CHANNEL_RETROSPECTIVE_LOOKBACK(50),
+  LINK_REPEAT_COUNT(5);
 
   private Integer defaultValue;
 
