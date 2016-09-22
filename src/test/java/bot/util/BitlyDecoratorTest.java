@@ -18,7 +18,7 @@ import bot.util.config.Environment;
 public class BitlyDecoratorTest {
 
   @Test
-  public void shortenURLIntegrationTest() throws Exception {
+  public void shortenURLIntegrationFlightTest() throws Exception {
     Injector injector = Guice.createInjector(new AppInjector(Environment.DEV));
     BitlyDecorator bitlyDecorator = injector.getInstance(BitlyDecorator.class);
     String exampleURLString = "http://www.example.com";
