@@ -1,31 +1,31 @@
 package bot.channel.permissions;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Created by Dominic Hauton on 18/07/2016.
- *
+ * <p>
  * Testing authorisation works in expected direction
  */
-public class UserPermissionTest {
+class UserPermissionTest {
 
   @Test
-  public void authorizedForActionOfPermissionLevelLessThan() throws Exception {
-    Assert.assertTrue("ChannelOwner should have access to BotAdmin", UserPermission.ChannelOwner
-        .authorizedForActionOfPermissionLevel(UserPermission.BotAdmin));
+  void authorizedForActionOfPermissionLevelLessThan() throws Exception {
+    Assertions.assertTrue(UserPermission.ChannelOwner.authorizedForActionOfPermissionLevel(UserPermission.BotAdmin),
+        "ChannelOwner should have access to BotAdmin");
   }
 
   @Test
-  public void authorizedForActionOfPermissionLevelEqualTo() throws Exception {
-    Assert.assertTrue("ChannelOwner should have access to ChannelAdmin Actions", UserPermission.ChannelOwner
-        .authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner));
+  void authorizedForActionOfPermissionLevelEqualTo() throws Exception {
+    Assertions.assertTrue(UserPermission.ChannelOwner.authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner),
+        "ChannelOwner should have access to ChannelAdmin Actions");
   }
 
   @Test
-  public void unauthorizedForActionOfPermissionLevelGreaterThan() throws Exception {
-    Assert.assertFalse("ChannelOwner should have access to BotAdmin", UserPermission.BotAdmin
-        .authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner));
+  void unauthorizedForActionOfPermissionLevelGreaterThan() throws Exception {
+    Assertions.assertFalse(UserPermission.BotAdmin.authorizedForActionOfPermissionLevel(UserPermission.ChannelOwner),
+        "ChannelOwner should have access to BotAdmin");
   }
 
 }

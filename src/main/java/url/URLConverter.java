@@ -1,4 +1,4 @@
-package bot.channel.url;
+package url;
 
 /**
  * Created by Dominic Hauton on 05/09/2016.

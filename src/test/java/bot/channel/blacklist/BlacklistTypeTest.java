@@ -1,66 +1,67 @@
 package bot.channel.blacklist;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Pattern;
 
 /**
  * Created by Dominic Hauton on 12/07/2016.
- *
+ * <p>
  * Check enum is functioning correctly.
  */
-public class BlacklistTypeTest extends BlacklistEntryTest {
+class BlacklistTypeTest extends BlacklistEntryTest {
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     blacklistEntryMatchAll = new BlacklistEntry(BlacklistType.REGEX.stringToPattern(".*"));
     blacklistEntryContainsWord = new BlacklistEntry(BlacklistType.WORD.stringToPattern(exampleWord));
     blacklistEntryMatchExact = new BlacklistEntry(BlacklistType.MESSAGE.stringToPattern(exampleWord));
   }
 
   @Test
-  public void regexBlackListTypeConverterTest() throws Exception {
+  void regexBlackListTypeConverterTest() throws Exception {
     Pattern actualPattern = BlacklistType.REGEX.stringToPattern(".*");
     Pattern expectedPattern = Pattern.compile(".*");
-    Assert.assertEquals("Check produced patterns are the same", expectedPattern.pattern(), actualPattern.pattern());
+    Assertions.assertEquals(expectedPattern.pattern(), actualPattern.pattern(), "Check produced patterns are the same");
   }
 
   @Test
-  public void wordBlackListTypeConverterTest() throws Exception {
+  void wordBlackListTypeConverterTest() throws Exception {
     String word = "foobar";
     Pattern actualPattern = BlacklistType.WORD.stringToPattern(word);
     Pattern expectedPattern = Pattern.compile("^.*\\Q" + word + "\\E.*$");
-    Assert.assertEquals("Check produced patterns are the same. If failing check manual escape.", expectedPattern
-            .pattern(),
-        actualPattern.pattern());
+    Assertions.assertEquals(expectedPattern.pattern(), actualPattern.pattern(),
+        "Check produced patterns are the same. If failing check manual escape.");
   }
 
   @Test
-  public void wordBlackListTypeConverterTestWithEscapes() throws Exception {
+  void wordBlackListTypeConverterTestWithEscapes() throws Exception {
     String word = "foobar\\E";
     Pattern actualPattern = BlacklistType.WORD.stringToPattern(word);
     String quotedWord = Pattern.quote(word);
     Pattern expectedPattern = Pattern.compile("^.*" + quotedWord + ".*$");
-    Assert.assertEquals("Check produced patterns are the same.", expectedPattern.pattern(), actualPattern.pattern());
+    Assertions.assertEquals(expectedPattern.pattern(), actualPattern.pattern(),
+        "Check produced patterns are the same.");
   }
 
   @Test
-  public void messageBlackListTypeConverterTest() throws Exception {
+  void messageBlackListTypeConverterTest() throws Exception {
     String message = "foobar";
     Pattern actualPattern = BlacklistType.MESSAGE.stringToPattern(message);
     Pattern expectedPattern = Pattern.compile("^\\Q" + message + "\\E$");
-    Assert.assertEquals("Check produced patterns are the same. If failing check escapes.", expectedPattern.pattern
-        (), actualPattern.pattern());
+    Assertions.assertEquals(expectedPattern.pattern(), actualPattern.pattern(),
+        "Check produced patterns are the same. If failing check escapes.");
   }
 
   @Test
-  public void messageBlackListTypeConverterTestWithEscapes() throws Exception {
+  void messageBlackListTypeConverterTestWithEscapes() throws Exception {
     String message = "foobar\\E";
     Pattern actualPattern = BlacklistType.MESSAGE.stringToPattern(message);
     String quotedWord = Pattern.quote(message);
     Pattern expectedPattern = Pattern.compile("^" + quotedWord + "$", Pattern.MULTILINE);
-    Assert.assertEquals("Check produced patterns are the same.", expectedPattern.pattern(), actualPattern.pattern());
+    Assertions.assertEquals(expectedPattern.pattern(), actualPattern.pattern(),
+        "Check produced patterns are the same.");
   }
 }

@@ -1,13 +1,5 @@
 package bot.channel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.joda.time.Duration;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 import bot.channel.blacklist.BlacklistEntry;
 import bot.channel.blacklist.BlacklistManager;
 import bot.channel.blacklist.BlacklistOperationException;
@@ -25,9 +17,16 @@ import bot.channel.settings.enums.ChannelSettingString;
 import bot.channel.settings.enums.IChannelSetting;
 import bot.channel.timeouts.TimeoutManager;
 import bot.channel.timeouts.TimeoutReason;
-import bot.channel.url.URLConverter;
-import bot.channel.url.URLConverterImpl;
-import bot.channel.url.URLInvalidException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joda.time.Duration;
+import url.URLConverter;
+import url.URLConverterImpl;
+import url.URLInvalidException;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.

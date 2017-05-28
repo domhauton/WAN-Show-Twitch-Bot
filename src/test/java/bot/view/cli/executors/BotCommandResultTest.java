@@ -1,26 +1,25 @@
 package bot.view.cli.executors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import twitch.chat.data.OutboundTwitchMessage;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import twitch.chat.data.OutboundTwitchMessage;
-
 /**
  * Created by Dominic Hauton on 04/09/2016.
- *
+ * <p>
  * Simple getter setter test
  */
-public class BotCommandResultTest {
+class BotCommandResultTest {
   private BotCommandResult botCommandResult;
   private Collection<OutboundTwitchMessage> twitchMessages;
   private String message = "this is a return message";
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     OutboundTwitchMessage twitchMessage1 = new OutboundTwitchMessage("foobar1", "target1");
     OutboundTwitchMessage twitchMessage2 = new OutboundTwitchMessage("foobar1", "target1");
     twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2);
@@ -28,13 +27,13 @@ public class BotCommandResultTest {
   }
 
   @Test
-  public void getOutboundTwitchMessages() throws Exception {
-    Assert.assertEquals(twitchMessages, botCommandResult.getOutboundTwitchMessages());
+  void getOutboundTwitchMessages() throws Exception {
+    Assertions.assertEquals(twitchMessages, botCommandResult.getOutboundTwitchMessages());
   }
 
   @Test
-  public void getCommandExecutionMessage() throws Exception {
-    Assert.assertEquals(message, botCommandResult.getcommandExecutionMessage());
+  void getCommandExecutionMessage() throws Exception {
+    Assertions.assertEquals(message, botCommandResult.getcommandExecutionMessage());
   }
 
 }

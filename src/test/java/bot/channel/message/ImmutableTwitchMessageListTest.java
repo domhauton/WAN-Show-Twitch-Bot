@@ -1,23 +1,22 @@
 package bot.channel.message;
 
+import bot.channel.TwitchUser;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import bot.channel.TwitchUser;
-
 /**
  * Created by Dominic Hauton on 19/03/2016.
- *
+ * <p>
  * Test for all functions in ImmutableTwitchMessageList
  */
-public class ImmutableTwitchMessageListTest {
+class ImmutableTwitchMessageListTest {
 
   private static final String user1 = "user1";
   private static final String user2 = "user2";
@@ -31,8 +30,8 @@ public class ImmutableTwitchMessageListTest {
   private TwitchMessage twitchMessage3;
   private TwitchMessage twitchMessage4;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     DateTime dateTime = DateTime.now();
     TwitchUser twitchUser1 = new TwitchUser(user1);
     TwitchUser twitchUser2 = new TwitchUser(user2);
@@ -43,7 +42,7 @@ public class ImmutableTwitchMessageListTest {
   }
 
   @Test
-  public void testUserFilteringRemoveHalf() {
+  void testUserFilteringRemoveHalf() {
     Collection<TwitchMessage> originalTwitchMessages =
         Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage3, twitchMessage4);
 
@@ -53,11 +52,11 @@ public class ImmutableTwitchMessageListTest {
     ImmutableTwitchMessageList actualFilteredMessageList = immutableMessageList.filterUser(new TwitchUser(user1));
     ImmutableTwitchMessageList expectedFilteredTwitchMessages = new ImmutableTwitchMessageList(expectedMessages);
 
-    Assert.assertEquals("Filtered out user1 messages", expectedFilteredTwitchMessages, actualFilteredMessageList);
+    Assertions.assertEquals(expectedFilteredTwitchMessages, actualFilteredMessageList, "Filtered out user1 messages");
   }
 
   @Test
-  public void testUserFilteringRemoveNone() {
+  void testUserFilteringRemoveNone() {
     Collection<TwitchMessage> originalTwitchMessages =
         Arrays.asList(twitchMessage2, twitchMessage4);
 
@@ -67,11 +66,11 @@ public class ImmutableTwitchMessageListTest {
     ImmutableTwitchMessageList actualFilteredMessageList = immutableMessageList.filterUser(new TwitchUser(user2));
     ImmutableTwitchMessageList expectedFilteredTwitchMessages = new ImmutableTwitchMessageList(expectedMessages);
 
-    Assert.assertEquals("Filtered out no messages", expectedFilteredTwitchMessages, actualFilteredMessageList);
+    Assertions.assertEquals(expectedFilteredTwitchMessages, actualFilteredMessageList, "Filtered out no messages");
   }
 
   @Test
-  public void testUserFilteringRemoveAll() {
+  void testUserFilteringRemoveAll() {
     Collection<TwitchMessage> originalTwitchMessages =
         Arrays.asList(twitchMessage2, twitchMessage4);
 
@@ -79,97 +78,99 @@ public class ImmutableTwitchMessageListTest {
     ImmutableTwitchMessageList actualFilteredMessageList = immutableMessageList.filterUser(new TwitchUser(user1));
     ImmutableTwitchMessageList expectedFilteredTwitchMessages = new ImmutableTwitchMessageList(new HashSet<>());
 
-    Assert.assertEquals("Filtered out no messages", expectedFilteredTwitchMessages, actualFilteredMessageList);
+    Assertions.assertEquals(expectedFilteredTwitchMessages, actualFilteredMessageList, "Filtered out no messages");
   }
 
   @Test
-  public void testImmutableMessageListGivenNull() {
+  void testImmutableMessageListGivenNull() {
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(null);
-    Assert.assertEquals("Ensure list is empty.", twitchMessageList.size(), 0);
+    Assertions.assertEquals(twitchMessageList.size(), 0, "Ensure list is empty.");
   }
 
   @Test
-  public void testSize() {
+  void testSize() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage3);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertEquals("Ensure counts both messages.", twitchMessageList.size(), 2);
+    Assertions.assertEquals(twitchMessageList.size(), 2, "Ensure counts both messages.");
   }
 
   @Test
-  public void testTimeSpanNoMessages() {
+  void testTimeSpanNoMessages() {
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(null);
-    Assert.assertEquals("Ensure period zero is given if empty", twitchMessageList.getMessageTimePeriod(), Period.ZERO);
+    Assertions.assertEquals(twitchMessageList.getMessageTimePeriod(), Period.ZERO, "Ensure period zero is given if empty");
   }
 
   @Test
-  public void testTimeSpanTwoMessages() {
+  void testTimeSpanTwoMessages() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertEquals("Ensure period zero is given if empty", twitchMessageList.getMessageTimePeriod(), new Period(0, 0, 1, 0));
+    Assertions.assertEquals(twitchMessageList.getMessageTimePeriod(), new Period(0, 0, 1, 0),
+        "Ensure period zero is given if empty");
   }
 
   @Test
-  public void testTimeSpanThreeMessages() {
+  void testTimeSpanThreeMessages() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertEquals("Ensure period zero is given if empty", twitchMessageList.getMessageTimePeriod(), new Period(0, 0, 3, 0));
+    Assertions.assertEquals(twitchMessageList.getMessageTimePeriod(), new Period(0, 0, 3, 0),
+        "Ensure period zero is given if empty");
   }
 
   @Test
-  public void stream() {
+  void stream() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertEquals("Ensure stream returned has correct count", twitchMessageList.stream().count(), twitchMessageList.size());
+    Assertions.assertEquals(twitchMessageList.stream().count(), twitchMessageList.size(), "Ensure stream returned has correct count");
   }
 
   @Test
-  public void containsSimplePayloadTrueSimple() {
+  void containsSimplePayloadTrueSimple() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1) >= 1);
+    Assertions.assertTrue(twitchMessageList.containsSimplePayload(payload1) >= 1, "Assert MESSAGE is found correctly.");
   }
 
   @Test
-  public void containsSimplePayloadTrueSpaces() {
+  void containsSimplePayloadTrueSpaces() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1 + " ") >= 1);
+    Assertions.assertTrue(twitchMessageList.containsSimplePayload(payload1 + " ") >= 1, "Assert MESSAGE is found correctly.");
   }
 
   @Test
-  public void containsSimplePayloadTrueUpperCase() {
+  void containsSimplePayloadTrueUpperCase() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1.toUpperCase()) >= 1);
+    Assertions.assertTrue(twitchMessageList.containsSimplePayload(payload1.toUpperCase()) >= 1, "Assert MESSAGE is found correctly.");
   }
 
   @Test
-  public void containsSimplePayloadTrueUpperCaseAndSpace() {
+  void containsSimplePayloadTrueUpperCaseAndSpace() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertTrue("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1.toUpperCase() + " ") >= 1);
+    Assertions.assertTrue(twitchMessageList.containsSimplePayload(payload1.toUpperCase() + " ") >= 1, "Assert MESSAGE is found correctly.");
   }
 
   @Test
-  public void containsSimplePayloadFalse() {
+  void containsSimplePayloadFalse() {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertFalse("Assert MESSAGE is found correctly.", twitchMessageList.containsSimplePayload(payload1 + "foobar") >= 1);
+    Assertions.assertFalse(twitchMessageList.containsSimplePayload(payload1 + "foobar") >= 1, "Assert MESSAGE is found correctly.");
   }
 
   @Test
-  public void hashCodeTest() throws Exception {
+  void hashCodeTest() throws Exception {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList1 = new ImmutableTwitchMessageList(twitchMessages);
     ImmutableTwitchMessageList twitchMessageList2 = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertEquals("Hashcodes should be the same", twitchMessageList1.hashCode(), twitchMessageList2.hashCode());
+    Assertions.assertEquals(twitchMessageList1.hashCode(), twitchMessageList2.hashCode(), "Hashcodes should be the same");
   }
 
   @Test
-  public void testToString() throws Exception {
+  void testToString() throws Exception {
     Collection<TwitchMessage> twitchMessages = Arrays.asList(twitchMessage1, twitchMessage2, twitchMessage4);
     ImmutableTwitchMessageList twitchMessageList1 = new ImmutableTwitchMessageList(twitchMessages);
-    Assert.assertTrue("List should contain at least one of the added messages", twitchMessageList1.toString()
-        .contains(twitchMessage1.toString()));
+    Assertions.assertTrue(twitchMessageList1.toString().contains(twitchMessage1.toString()),
+        "List should contain at least one of the added messages");
   }
 }

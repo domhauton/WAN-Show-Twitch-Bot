@@ -1,24 +1,21 @@
 package twitch.chat.listener;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
+import config.TwitchInfo;
+import irc.ChatHandshake;
+import irc.TwitchChatAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.Period;
+import twitch.chat.data.InboundTwitchMessage;
+import twitch.chat.exceptions.TwitchChatException;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.function.Consumer;
 
-import irc.ChatHandshake;
-import irc.TwitchChatAdapter;
-import twitch.chat.data.InboundTwitchMessage;
-import twitch.chat.exceptions.TwitchChatException;
-
 /**
  * Created by Dominic Hauton on 25/03/2016.
- *
+ * <p>
  * Connects to a given TwitchChannel and listens for messages.
  */
 public class TwitchChannelListener implements TwitchMessageSupplier {
@@ -35,14 +32,16 @@ public class TwitchChannelListener implements TwitchMessageSupplier {
   private String ircServer;
   private Integer ircPort;
 
-  @Inject
-  public TwitchChannelListener(
-      @Named("twitch.irc.public.twitchChannel") String twitchChannelName,
-      @Named("twitch.username") String twitchUsername,
-      @Named("twitch.oauth.token") String oAuthToken,
-      @Named("twitch.irc.public.server") String ircServer,
-      @Named("twitch.irc.public.port") Integer ircPort
-  ) {
+  public TwitchChannelListener(TwitchInfo twitchInfo) {
+    this(twitchInfo.getChannel().getChannelName(),
+        twitchInfo.getUsername(),
+        twitchInfo.getoAuth(),
+        twitchInfo.getChannel().getHostname(),
+        twitchInfo.getChannel().getPort());
+  }
+
+  TwitchChannelListener(String twitchChannelName, String twitchUsername, String oAuthToken,
+                        String ircServer, Integer ircPort) {
     log.info("Starting bot for channel {} on server {}", twitchChannelName, ircServer);
 
     this.twitchChannelName = twitchChannelName;

@@ -1,23 +1,23 @@
 package bot.channel.message;
 
+import bot.channel.TwitchUser;
 import org.joda.time.DateTime;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.IntStream;
 
-import bot.channel.TwitchUser;
-
 /**
  * Created by Dominic Hauton on 15/07/2016.
- *
+ * <p>
  * Testing the message manager.
  */
-public class MessageManagerTest {
+
+class MessageManagerTest {
   private final static String channel1 = "fooBarChannel1";
   private final static TwitchUser twitchUser1 = new TwitchUser("fooUser1");
   private final static TwitchUser twitchUser2 = new TwitchUser("fooUser2");
@@ -28,71 +28,73 @@ public class MessageManagerTest {
 
   private MessageManager messageManager;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     messageManager = new MessageManager(4, 10);
   }
 
   @Test
-  public void addFirstMessageAndGetSnapshotTest() throws Exception {
+  void addFirstMessageAndGetSnapshotTest() throws Exception {
     ImmutableTwitchMessageList channelSnapshotEmpty = messageManager.getChannelSnapshot();
-    Assert.assertTrue("Should contain no messages", channelSnapshotEmpty.size() == 0);
+    Assertions.assertTrue(channelSnapshotEmpty.size() == 0, "Should contain no messages");
     messageManager.addMessage(twitchMessage1User1);
     ImmutableTwitchMessageList channelSnapshotOneMessage = messageManager.getChannelSnapshot();
-    Assert.assertTrue("Should only contain one message.", channelSnapshotOneMessage.size() == 1);
+    Assertions.assertTrue(channelSnapshotOneMessage.size() == 1, "Should only contain one message.");
     ImmutableTwitchMessageList expectedImmutableMessageList = new ImmutableTwitchMessageList(Collections.singletonList(twitchMessage1User1));
-    Assert.assertEquals("Actual immutableMessageList should be identical to the singleton list given. Correct "
-        + "size but incorrect message!", channelSnapshotOneMessage, expectedImmutableMessageList);
+    Assertions.assertEquals(channelSnapshotOneMessage, expectedImmutableMessageList,
+        "Actual immutableMessageList should be identical to the singleton list given. Correct "
+            + "size but incorrect message!");
   }
 
   @Test
-  public void addFirstFourMessagesAndGetSnapshotTest() throws Exception {
+  void addFirstFourMessagesAndGetSnapshotTest() throws Exception {
     putAllMessagesIntoMessageManager();
     ImmutableTwitchMessageList actualFullChannelSnapshot = messageManager.getChannelSnapshot();
     Collection<TwitchMessage> expectedTwitchMessageCollection = Arrays.asList(twitchMessage1User1, twitchMessage2User1, twitchMessage1User2, twitchMessage2User2);
     ImmutableTwitchMessageList expectedFullChannelSnapshot = new ImmutableTwitchMessageList(expectedTwitchMessageCollection);
-    Assert.assertEquals("Messages should come out in correct order and match each other", expectedFullChannelSnapshot, actualFullChannelSnapshot);
+    Assertions.assertEquals(expectedFullChannelSnapshot, actualFullChannelSnapshot,
+        "Messages should come out in correct order and match each other");
   }
 
   @Test
-  public void addFirstFourMessagesAndGetUserSnapshotTest() throws Exception {
+  void addFirstFourMessagesAndGetUserSnapshotTest() throws Exception {
     putAllMessagesIntoMessageManager();
 
     ImmutableTwitchMessageList actualUser1Snapshot = messageManager.getUserSnapshot(twitchUser1);
     Collection<TwitchMessage> expectedTwitchMessageCollectionUser1 = Arrays.asList(twitchMessage1User1, twitchMessage2User1);
     ImmutableTwitchMessageList expectedUser1Snapshot = new ImmutableTwitchMessageList(expectedTwitchMessageCollectionUser1);
-    Assert.assertEquals("Only user 1 messages should be returned. In correct order.", expectedUser1Snapshot,
-        actualUser1Snapshot);
+    Assertions.assertEquals(expectedUser1Snapshot, actualUser1Snapshot,
+        "Only user 1 messages should be returned. In correct order.");
 
     ImmutableTwitchMessageList actualUser2Snapshot = messageManager.getUserSnapshot(twitchUser2);
     Collection<TwitchMessage> expectedTwitchMessagesUser2 = Arrays.asList(twitchMessage1User2,
         twitchMessage2User2);
     ImmutableTwitchMessageList expectedUser2Snapshot = new ImmutableTwitchMessageList(expectedTwitchMessagesUser2);
-    Assert.assertEquals("Only user 2 messages should be returned. In correct order.", expectedUser2Snapshot,
-        actualUser2Snapshot);
+    Assertions.assertEquals(expectedUser2Snapshot, actualUser2Snapshot,
+        "Only user 2 messages should be returned. In correct order.");
   }
 
   @Test
-  public void extractMessagesForEmptyUserTest() throws Exception {
+  void extractMessagesForEmptyUserTest() throws Exception {
     messageManager.addMessage(twitchMessage1User1);
     ImmutableTwitchMessageList userSnapshot = messageManager.getUserSnapshot(twitchUser2);
-    Assert.assertTrue("There should be no messages for given user", userSnapshot.size() == 0);
+    Assertions.assertTrue(userSnapshot.size() == 0, "There should be no messages for given user");
   }
 
   @Test
-  public void extractMessagesForEmptyChannelSnapshot() throws Exception {
+  void extractMessagesForEmptyChannelSnapshot() throws Exception {
     ImmutableTwitchMessageList actualEmptySnapshot = messageManager.getChannelSnapshot();
     ImmutableTwitchMessageList expectedEmptySnaphot = new ImmutableTwitchMessageList(Collections.emptyList());
-    Assert.assertEquals("Should be able to return empty snapshot", expectedEmptySnaphot, actualEmptySnapshot);
+    Assertions.assertEquals(expectedEmptySnaphot, actualEmptySnapshot, "Should be able to return empty snapshot");
   }
 
   @Test
-  public void overflowBufferTest() throws Exception {
+  void overflowBufferTest() throws Exception {
     IntStream.range(0, 12).forEach(x -> messageManager.addMessage(twitchMessage1User1));
     ImmutableTwitchMessageList userSnapshot = messageManager.getUserSnapshot(twitchUser1);
     ImmutableTwitchMessageList channelSnapshot = messageManager.getChannelSnapshot();
-    Assert.assertTrue("User snapshot should be of size 4.", userSnapshot.size() == 4);
-    Assert.assertTrue("Channel snapshot should be of size 10.", channelSnapshot.size() == 10);
+    Assertions.assertTrue(userSnapshot.size() == 4, "User snapshot should be of size 4.");
+    Assertions.assertTrue(channelSnapshot.size() == 10, "Channel snapshot should be of size 10.");
   }
 
   private void putAllMessagesIntoMessageManager() {

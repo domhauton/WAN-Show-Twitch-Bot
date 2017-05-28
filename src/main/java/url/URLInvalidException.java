@@ -1,4 +1,4 @@
-package bot.channel.url;
+package url;
 
 import bot.channel.ChannelOperationException;
 

@@ -3,9 +3,9 @@ package twitch.chat.sender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -16,43 +16,43 @@ import java.util.stream.IntStream;
 
 /**
  * Created by Dominic Hauton on 17/03/2016.
- *
+ * <p>
  * Tests the AsyncEventBuffer. Tests may fail unexpectedly due to time limitations.
  */
-public class AsyncEventBufferTest {
+class AsyncEventBufferTest {
 
   private AsyncEventBuffer asyncEventBuffer;
   private Logger log = LogManager.getLogger();
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     asyncEventBuffer = new AsyncEventBuffer(10, 1);
   }
 
   @Test
-  public void testEventRate() throws InterruptedException {
+  void testEventRate() throws InterruptedException {
     IntStream.range(0, 10).forEachOrdered(value -> {
-      Assert.assertTrue("Adding MESSAGE " + value, asyncEventBuffer.addMessage());
+      Assertions.assertTrue(asyncEventBuffer.addMessage(), "Adding MESSAGE " + value);
       log.info("Adding MESSAGE " + value + ". Expect Accept.");
     });
     Thread.sleep(950);
     log.info("Adding MESSAGE. Expect Reject.");
-    Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
     Thread.sleep(100);
     IntStream.range(10, 20).forEachOrdered(value -> {
-      Assert.assertTrue("Adding MESSAGE " + value, asyncEventBuffer.addMessage());
+      Assertions.assertTrue(asyncEventBuffer.addMessage(), "Adding MESSAGE " + value);
       log.info("Adding MESSAGE " + value + ". Expect Accept.");
     });
     Thread.sleep(950);
     log.info("Adding MESSAGE. Expect Reject.");
-    Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
   }
 
   /**
    * Fails if method is not synchronized
    */
   @Test
-  public void testEventRateMultiThread() throws InterruptedException {
+  void testEventRateMultiThread() throws InterruptedException {
     Semaphore semaphore = new Semaphore(0);
 
     Supplier<Boolean> callEventBuffer = () -> {
@@ -60,7 +60,7 @@ public class AsyncEventBufferTest {
         semaphore.acquire(1);
         return asyncEventBuffer.addMessage();
       } catch (InterruptedException e) {
-        Assert.fail("Interrupted Exception during test.");
+        Assertions.fail("Interrupted Exception during test.");
         return false;
       }
     };
@@ -69,15 +69,15 @@ public class AsyncEventBufferTest {
     IntStream.range(0, 20)
         .mapToObj(value -> CompletableFuture
             .supplyAsync(callEventBuffer::get, threadPool)
-            .thenAccept(result -> Assert.assertTrue("Adding MESSAGE " + value, result)))
+            .thenAccept(result -> Assertions.assertTrue(result, "Adding MESSAGE " + value)))
         .collect(Collectors.toList()); // Required to force evaluation
     semaphore.release(10);
 
     Thread.sleep(950); // Release 10 messages
-    Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
     Thread.sleep(100);
     semaphore.release(10); // Release 10 messages
     Thread.sleep(950);
-    Assert.assertFalse("Sending MESSAGE before time up", asyncEventBuffer.addMessage());
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
   }
 }

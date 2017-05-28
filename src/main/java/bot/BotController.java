@@ -1,30 +1,5 @@
 package bot;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.joda.time.Period;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import bot.channel.ChannelManager;
 import bot.channel.ChannelOperationException;
 import bot.channel.TwitchUser;
@@ -32,20 +7,35 @@ import bot.channel.message.ImmutableTwitchMessageList;
 import bot.channel.message.TwitchMessage;
 import bot.channel.permissions.UserPermission;
 import bot.channel.timeouts.TimeoutReason;
-import bot.channel.url.BitlyDecorator;
 import bot.util.DateTimeUtil;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.Period;
 import twitch.chat.data.InboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchMessage;
 import twitch.chat.data.OutboundTwitchTimeout;
 import twitch.chat.data.OutboundTwitchWhisper;
-import twitch.chat.sender.TwitchMessageRouter;
+import url.URLConverter;
+import url.URLConverterImpl;
 
-class BotController {
-  private Logger log = LogManager.getLogger();
-  private Logger messageLog = LogManager.getLogger("Message Log");
-  private Logger actionLog = LogManager.getLogger("Action Log");
-  private MessageRepeater messageRepeater;
-  private TwitchMessageRouter twitchMessageRouter;
+import java.io.Closeable;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+public class BotController implements Runnable, Closeable {
+  private final Logger log = LogManager.getLogger();
+  private final Logger messageLog = LogManager.getLogger("Message Log");
+  private final Logger actionLog = LogManager.getLogger("Action Log");
+  private final MessageRepeater messageRepeater;
+  private final Consumer<OutboundTwitchMessage> twitchMessageConsumer;
 
   private ChannelManager channelManager;
   private Set<String> blockedWords;
@@ -59,38 +49,33 @@ class BotController {
   private float messagesPerSecond = 2.5f;
   private int repetitionSearch = 4;
 
-  private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should start every week.
+  private DateTime showStartTime = new DateTime(2016, 3, 11, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver"))); //The set time the show should run every week.
   private DateTime commandTimeTTL, commandTimeLLL, commandTimeHelp, streamStartTime;
   private ImmutableSet<Character> permittedChars;
 
   private List<String> commandWords = new ArrayList<>(Arrays.asList("!ttl", "!lll", "!help", "!ttt"));
 
-  private BitlyDecorator bitlyDecorator;
+  private URLConverter urlConverter = new URLConverterImpl();
 
-  @Inject
-  public BotController(BitlyDecorator bitlyDecorator,
-                       TwitchMessageRouter twitchMessageRouter,
-                       MessageRepeater messageRepeater,
-                       @Named("twitch.irc.public.twitchChannel") String channelName) {
+  public BotController(Consumer<OutboundTwitchMessage> twitchMessageConsumer, String channelName) {
     channelManager = new ChannelManager(channelName);
     permittedChars = ImmutableSet.copyOf("abcdefghijklmnopqrstuvwxyz.!@$%123454567890".chars().mapToObj(a -> (char) a).collect(Collectors.toList()));
     this.blockedMessages = new HashSet<>();
     this.blockedWords = new HashSet<>();
-    this.bitlyDecorator = bitlyDecorator;
-    this.twitchMessageRouter = twitchMessageRouter;
+    this.urlConverter = urlConverter;
+    this.twitchMessageConsumer = twitchMessageConsumer;
 
     commandTimeTTL = commandTimeLLL = commandTimeHelp = DateTime.now().minusSeconds(60);
     streamStartTime = new DateTime(2016, 3, 25, 16, 30, DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Vancouver")));
 
+    messageRepeater = new MessageRepeater(this::sendChatMessage, MessageRepeater.getDefault());
     loadSettings();
-    this.messageRepeater = messageRepeater;
-    this.messageRepeater.start();
   }
 
   /**
    * Processes the given twitchMessage as required for the channel.
    */
-  Collection<OutboundTwitchMessage> processMessage(InboundTwitchMessage inboundTwitchMessage) {
+  public void processMessage(InboundTwitchMessage inboundTwitchMessage) {
     TwitchMessage twitchMessage = (TwitchMessage) inboundTwitchMessage;
     try {
       channelManager.addChannelMessage(twitchMessage);
@@ -100,12 +85,7 @@ class BotController {
     }
 
     messageLog.info(twitchMessage::toString); //Stores the MESSAGE in the chat log.
-
-    Collection<OutboundTwitchMessage> responses = new LinkedList<>();
-
     //TODO Direct some to Bot Command Executor.
-
-    return responses;
   }
 
 
@@ -119,9 +99,9 @@ class BotController {
       String timeTillLive = getTimeTillLive();
       if (!Strings.isNullOrEmpty(timeTillLive)) {
         OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(timeTillLive, twitchMessage.getTwitchChannel());
-        twitchMessageRouter.sendMessage(outboundChannelMessage);
+        twitchMessageConsumer.accept(outboundChannelMessage);
         OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(timeTillLive, senderUsername);
-        twitchMessageRouter.sendMessage(outboundWhisper);
+        twitchMessageConsumer.accept(outboundWhisper);
       }
     } else if (message.equalsIgnoreCase("LLL"))
       lastLinusLink(twitchMessage.getUsername(), twitchMessage.getTwitchChannel());
@@ -140,11 +120,11 @@ class BotController {
 
     if (sendToChannel) {
       OutboundTwitchMessage outboundChannelMessage = new OutboundTwitchMessage(outboundMessagePayload, twitchChannelName);
-      twitchMessageRouter.sendMessage(outboundChannelMessage);
+      twitchMessageConsumer.accept(outboundChannelMessage);
       commandTimeTTL = DateTime.now();
     } else {
       OutboundTwitchWhisper outboundUserWhisper = new OutboundTwitchWhisper(outboundMessagePayload, senderUserName);
-      twitchMessageRouter.sendMessage(outboundUserWhisper);
+      twitchMessageConsumer.accept(outboundUserWhisper);
     }
   }
 
@@ -194,11 +174,11 @@ class BotController {
           twitchMessage.getUsername(), linkRepeatCountMod);
       outboundTwitchMessages.addAll(repeatedLinks);
     } else if (message.startsWith("!loop add")) {
-      outboundTwitchMessages.add(messageRepeater.addMessage(message.substring(10)));
+      messageRepeater.addMessage(message.substring(10));
     } else if (message.startsWith("!loop removeLast")) {
-      outboundTwitchMessages.add(messageRepeater.clearLast());
+      messageRepeater.clearLast();
     } else if (message.startsWith("!loop removeAll")) {
-      outboundTwitchMessages.add(messageRepeater.clearAll());
+      messageRepeater.clearAll();
     }
     return outboundTwitchMessages;
   }
@@ -213,7 +193,7 @@ class BotController {
       Integer repeatCount) {
     if (url.startsWith("http://") || url.startsWith("https://")) {
       try {
-        url = bitlyDecorator.shortenURL(url);
+        url = urlConverter.convertLink(url);
       } catch (Exception e) {
         log.warn("Failed to convert bitly link: {}", url);
       }
@@ -231,12 +211,12 @@ class BotController {
     boolean lastLinkExists = !Strings.isNullOrEmpty(lastHostLink);
     String outboundMessagePayload = lastLinkExists ? "Linus' Last Link: " + lastHostLink : "Linus has not posted a link recently.";
     OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(outboundMessagePayload, sourceUserUsername);
-    twitchMessageRouter.sendMessage(outboundWhisper);
+    twitchMessageConsumer.accept(outboundWhisper);
 
     boolean sendToChannel = new Period(commandTimeLLL, DateTime.now()).toStandardSeconds().getSeconds() > 40;
     if (sendToChannel) {
       OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
-      twitchMessageRouter.sendMessage(outboundTwitchMessage);
+      twitchMessageConsumer.accept(outboundTwitchMessage);
       commandTimeLLL = DateTime.now();
     }
   }
@@ -247,12 +227,12 @@ class BotController {
   private void sendHelpMessage(String sourceUserUsername, String sourceChannel) {
     String outboundMessagePayload = "You can find out more about the bot here: http://bit.ly/1DnLq9M. If you want to request an unban please tweet @deadfire19";
     OutboundTwitchWhisper outboundWhisper = new OutboundTwitchWhisper(outboundMessagePayload, sourceUserUsername);
-    twitchMessageRouter.sendMessage(outboundWhisper);
+    twitchMessageConsumer.accept(outboundWhisper);
 
     boolean sendToChannel = new Period(commandTimeHelp, DateTime.now()).toStandardSeconds().getSeconds() > 30;
     if (sendToChannel) {
       OutboundTwitchMessage outboundTwitchMessage = new OutboundTwitchMessage(outboundMessagePayload, sourceChannel);
-      twitchMessageRouter.sendMessage(outboundTwitchMessage);
+      twitchMessageConsumer.accept(outboundTwitchMessage);
       commandTimeHelp = DateTime.now();
     }
   }
@@ -260,10 +240,7 @@ class BotController {
   /**
    * Checks if a MESSAGE is in the blacklist
    */
-  private void isMessagePermitted(
-      TwitchMessage twitchMessage,
-      Collection<String> blockedWords,
-      Collection<String> blockedMessages) {
+  private void isMessagePermitted(TwitchMessage twitchMessage, Set<String> blockedWords, Set<String> blockedMessages) {
     boolean containsBlacklistedWord = blockedWords.stream().anyMatch(twitchMessage::containsString);
     boolean isBlacklistedMessage = blockedMessages.stream().anyMatch(twitchMessage::equalsSimplePayload);
     boolean messagePermitted = containsBlacklistedWord || isBlacklistedMessage;
@@ -330,14 +307,33 @@ class BotController {
       TimeoutReason timeoutReason) {
     OutboundTwitchWhisper privateUserBanNotification = new OutboundTwitchWhisper(timeoutReason.getMessage(), twitchUser
         .getUsername());
-    twitchMessageRouter.sendMessage(privateUserBanNotification);
+    twitchMessageConsumer.accept(privateUserBanNotification);
     Duration timeoutDuration = channelManager.addUserTimeout(twitchUser.getUsername(), timeoutReason);
     OutboundTwitchMessage twitchTimeout = new OutboundTwitchTimeout(channel, twitchUser.getUsername(), timeoutDuration);
-    twitchMessageRouter.sendMessage(twitchTimeout);
+    twitchMessageConsumer.accept(twitchTimeout);
     actionLog.info("Timeout {} for {}. Reason: {}. Message: {}",
         twitchUser::toString,
         timeoutDuration::toString,
         timeoutReason::toString,
         timeoutReason::getMessage);
+  }
+
+  private void sendChatMessage(String message) {
+    OutboundTwitchMessage privateUserBanNotification = new OutboundTwitchMessage(message, channelManager.getChannelName());
+    twitchMessageConsumer.accept(privateUserBanNotification);
+  }
+
+  public void setUrlConverter(URLConverter urlConverter) {
+    this.urlConverter = urlConverter;
+  }
+
+  @Override
+  public void close() {
+
+  }
+
+  @Override
+  public void run() {
+    messageRepeater.run();
   }
 }

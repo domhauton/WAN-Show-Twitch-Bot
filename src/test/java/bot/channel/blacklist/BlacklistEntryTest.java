@@ -1,63 +1,60 @@
 package bot.channel.blacklist;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Pattern;
 
 /**
  * Created by Dominic Hauton on 12/07/2016.
- * <p>
+ *
  * Test for a blacklist entry
  */
-public class BlacklistEntryTest {
+class BlacklistEntryTest {
   static final String exampleWord = "foobar";
 
   BlacklistEntry blacklistEntryMatchExact;
   BlacklistEntry blacklistEntryContainsWord;
   BlacklistEntry blacklistEntryMatchAll;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     Pattern matchAll = Pattern.compile("^.*$");
     blacklistEntryMatchAll = new BlacklistEntry(matchAll);
-    Pattern matchContainsWord = Pattern.compile(
-        "^.*" + exampleWord + ".*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    Pattern matchContainsWord = Pattern.compile("^.*" + exampleWord + ".*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     blacklistEntryContainsWord = new BlacklistEntry(matchContainsWord);
     Pattern matchExact = Pattern.compile("^" + exampleWord + "$");
     blacklistEntryMatchExact = new BlacklistEntry(matchExact);
   }
 
   @Test
-  public void matchesExactTest() throws Exception {
-    Assert.assertTrue("Should match exact MESSAGE.", blacklistEntryMatchExact.matches(exampleWord));
-    Assert.assertFalse("Should not match WORD with spaces.", blacklistEntryMatchExact.matches(" " + exampleWord));
-    Assert.assertFalse("Should not match WORD with spaces.", blacklistEntryMatchExact.matches(exampleWord + " "));
-    Assert.assertFalse("Should not match double WORD.", blacklistEntryMatchExact.matches(
-        exampleWord + exampleWord));
+  void matchesExactTest() throws Exception {
+    Assertions.assertTrue(blacklistEntryMatchExact.matches(exampleWord), "Should match exact MESSAGE.");
+    Assertions.assertFalse(blacklistEntryMatchExact.matches(" " + exampleWord), "Should not match WORD with spaces.");
+    Assertions.assertFalse(blacklistEntryMatchExact.matches(exampleWord + " "), "Should not match WORD with spaces.");
+    Assertions.assertFalse(blacklistEntryMatchExact.matches(exampleWord + exampleWord), "Should not match double WORD.");
   }
 
   @Test
-  public void matchesContainsWordTest() throws Exception {
-    Assert.assertTrue("Should match exact MESSAGE.", blacklistEntryContainsWord.matches(exampleWord));
-    Assert.assertTrue("Should match WORD with spaces.", blacklistEntryContainsWord.matches(" " + exampleWord));
-    Assert.assertTrue("Should match WORD with spaces.", blacklistEntryContainsWord.matches(exampleWord + " "));
-    Assert.assertTrue("Should match double WORD.", blacklistEntryContainsWord.matches(exampleWord + exampleWord));
-    Assert.assertTrue("Sound match phase with REGEX control chars.", blacklistEntryContainsWord.matches(
-        "$^*" + exampleWord));
-    Assert.assertTrue("Should match uppercase", blacklistEntryContainsWord.matches(exampleWord.toUpperCase()));
-    Assert.assertFalse("Should fail to match missing char", blacklistEntryContainsWord.matches(exampleWord.substring(2)));
+  void matchesContainsWordTest() throws Exception {
+    Assertions.assertTrue(blacklistEntryContainsWord.matches(exampleWord), "Should match exact MESSAGE.");
+    Assertions.assertTrue(blacklistEntryContainsWord.matches(" " + exampleWord), "Should match WORD with spaces.");
+    Assertions.assertTrue(blacklistEntryContainsWord.matches(exampleWord + " "), "Should match WORD with spaces.");
+    Assertions.assertTrue(blacklistEntryContainsWord.matches(exampleWord + exampleWord), "Should match double WORD.");
+    Assertions.assertTrue(blacklistEntryContainsWord.matches("$^*" + exampleWord), "Sound match phase with REGEX control chars.");
+    Assertions.assertTrue(blacklistEntryContainsWord.matches(exampleWord.toUpperCase()), "Should match uppercase");
+    Assertions.assertFalse(blacklistEntryContainsWord.matches(exampleWord.substring(2)), "Should fail to match missing char");
   }
 
   @Test
-  public void matchesAnyTest() throws Exception {
-    Assert.assertTrue("Should match exact MESSAGE.", blacklistEntryMatchAll.matches(exampleWord));
-    Assert.assertTrue("Should match WORD with spaces.", blacklistEntryMatchAll.matches(" " + exampleWord));
-    Assert.assertTrue("Should match WORD with spaces.", blacklistEntryMatchAll.matches(exampleWord + " "));
-    Assert.assertTrue("Should match double WORD.", blacklistEntryMatchAll.matches(exampleWord + exampleWord));
-    Assert.assertTrue("Should match uppercase", blacklistEntryMatchAll.matches(exampleWord.toUpperCase()));
-    Assert.assertTrue("Should match missing char", blacklistEntryMatchAll.matches(exampleWord.substring(2)));
-    Assert.assertTrue("Should match empty string", blacklistEntryMatchAll.matches(""));
+  void matchesAnyTest() throws Exception {
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(exampleWord), "Should match exact MESSAGE.");
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(" " + exampleWord), "Should match WORD with spaces.");
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(exampleWord + " "), "Should match WORD with spaces.");
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(exampleWord + exampleWord), "Should match double WORD.");
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(exampleWord.toUpperCase()), "Should match uppercase");
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(exampleWord.substring(2)), "Should match missing char");
+    Assertions.assertTrue(blacklistEntryMatchAll.matches(""), "Should match empty string");
   }
 }
