@@ -1,0 +1,25 @@
+bitly:
+  username: deadfire19
+  token: R_f621467eae108ed53f8795e86d0ced1e
+
+twitch:
+  username: LTT_BOT
+  oauth: oauth:0c0fg1d3oynevmo0g7od2jd93514v9
+  channel:
+    server: com.domhauton.wanbot.irc.chat.twitch.tv
+    channel: "#linustech"
+    port: 80
+    messages:
+      messages: 80
+      timeunit: 30
+  whisper:
+    server: com.domhauton.wanbot.irc.chat.twitch.tv
+    twitchChannel: "#jtv"
+    port: 6667
+    messages:
+      messages: 99
+      timeunit: 60
+
+
+# username=LTTGhost
+# oauth=oauth:85vjn72jlce3sza0smaf975yifabe2

@@ -34,7 +34,7 @@ jar {
     baseName = 'wanbot'
     version = project.version
     manifest {
-        attributes 'Implementation-Title': 'WanBot',
+        attributes 'Implementation-Title': 'wanbot',
                 'Implementation-Version': project.version,
                 'Main-Class': project.group + '.Main'
     }

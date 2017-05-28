@@ -1,18 +1,8 @@
-/.settings
-/bin
-/lib
-/out
-/src/resources
-/banlog.txt
-/settings
-/settings.txt
-/LTT IRC Bot.iml
-/chatlog.txt
-/timestamps.txt
-/.classpath
-/.project
 /.idea
-src/main/resources/com.domhauton.wanbot.bot-dev.properties
-src/main/resources/com.domhauton.wanbot.bot.properties
 .gradle/
-
+build/
+logs/
+src/main/resources/bot-dev.properties
+src/main/resources/bot.properties
+/src/main/resources/wanbot-config.yaml
+/src/test/resources/wanbot-config.yaml
