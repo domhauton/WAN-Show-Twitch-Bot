@@ -5,28 +5,28 @@
 \maketitle
 \tableofcontents
 \section{Host Commands}
-Hosts (Tier0) have no special commands. Links posted by hosts will can be used by the !lll command and if a host's post contains "http://" or "https://" the link will be repeated by the bot. 
+Hosts (Tier0) have no special commands. Links posted by hosts will can be used by the !lll command and if a host's post contains "http://" or "https://" the link will be repeated by the com.domhauton.wanbot.bot.
 \section{Bot Operator Commands}
 Commands for Tier1 users and above.
 \subsection{Blacklisting Words}
-To black list a word use the syntax \emph{"!bot blw word"} where "word" would be blacklisted. The bot will inform you if the word is already on the blacklist and if it has been added successfully.
+To black list a word use the syntax \emph{"!com.domhauton.wanbot.bot blw word"} where "word" would be blacklisted. The com.domhauton.wanbot.bot will inform you if the word is already on the blacklist and if it has been added successfully.
 \subsection{Removing BlackListed Words}
-To remove a blacklisted word use the command \emph{"!bot rmblw word"} where "word" would be removed from the blacklist. The bot will inform you if the word was actually on the blacklist or if the the word was not found on the blacklist.
+To remove a blacklisted word use the command \emph{"!com.domhauton.wanbot.bot rmblw word"} where "word" would be removed from the blacklist. The com.domhauton.wanbot.bot will inform you if the word was actually on the blacklist or if the the word was not found on the blacklist.
 \subsection{Making users an Operator}
 There are 3 tiers of operators.
 \begin{itemize}
 \item {Tier0 - Used for the twitchChannel hosts}
-\item {Tier1 - Used for bot operators}
-\item {Tier2 - Gives users bot functionality}
-\item {Tier3 - Used for IRC chat moderators, gives them immunity from bot bans}
+\item {Tier1 - Used for com.domhauton.wanbot.bot operators}
+\item {Tier2 - Gives users com.domhauton.wanbot.bot functionality}
+\item {Tier3 - Used for IRC chat moderators, gives them immunity from com.domhauton.wanbot.bot bans}
 \end{itemize}
-To make someone an operator use the command \emph{"!bot addop tier\# username"}. The tier must be 0 - 3 and the username must be lowercase.
+To make someone an operator use the command \emph{"!com.domhauton.wanbot.bot addop tier\# username"}. The tier must be 0 - 3 and the username must be lowercase.
 \subsection{Removing Operators}
-To remove an operator use the command \emph{"!bot rm username"}. This command will not allow you to remove the final tier0 operator.
+To remove an operator use the command \emph{"!com.domhauton.wanbot.bot rm username"}. This command will not allow you to remove the final tier0 operator.
 \subsection{Set the show start timeUnit}
-To set the show start timeUnit for the timestamp functionality use the command \emph{"!bot sstart"}.
-\subsection{Setting bot variables}
-To set a bot variable use the command \emph{"!bot set variablename value"}.\\
+To set the show start timeUnit for the timestamp functionality use the command \emph{"!com.domhauton.wanbot.bot sstart"}.
+\subsection{Setting com.domhauton.wanbot.bot variables}
+To set a com.domhauton.wanbot.bot variable use the command \emph{"!com.domhauton.wanbot.bot set variablename value"}.\\
 \begin{tabular}{| l | l |}
 \hline
 Variable Name & Meaning\\ \hline
@@ -43,7 +43,7 @@ repetitionSearch & How many messages are checked for common substrings.\\ \hline
 Commands for Tier2 users and above
 \subsection{Repeating Links}
 Tier0 users only need to post a link (a payload containing "http://" or "https://"\\
-Other users need to use the command \emph{"!link url"}.
+Other users need to use the command \emph{"!link com.domhauton.wanbot.url"}.
 \section{User Commands}
 Commands for any user.
 \subsection{Last Linus Link}
@@ -56,12 +56,12 @@ Replies with the payload: "[BOT] The next WAN Show should begin in: \# day \# ho
 The command is deactivated for the 24 hours after the start of the WAN show.
 \subsection{Help Command}
 Command: !help\\
-Displays: "[BOT] You can find out more about the bot here: http://goo.gl/jZ1CmS. If you want to request an unban please tweet @deadfire19"
+Displays: "[BOT] You can find out more about the com.domhauton.wanbot.bot here: http://goo.gl/jZ1CmS. If you want to request an unban please tweet @deadfire19"
 \subsection{Report}
 Command: !report username\\
-If you report a user the bot operators will be notified.
+If you report a user the com.domhauton.wanbot.bot operators will be notified.
 \subsection{Timestamps}
-The bot allows you to generate timestamps during the show to help with the YouTube description. Each submitters timestamps are kept separate and everyone's timestamps are credited. Linus will most likely put the best set of timestamps in the description. At the start of the show the show start timeUnit will be set. You will see a print out from the bot: "[BOT] Show Main timeUnit has been set." From that point on your timestamps will be recorded.\\\\
+The com.domhauton.wanbot.bot allows you to generate timestamps during the show to help with the YouTube description. Each submitters timestamps are kept separate and everyone's timestamps are credited. Linus will most likely put the best set of timestamps in the description. At the start of the show the show start timeUnit will be set. You will see a print out from the com.domhauton.wanbot.bot: "[BOT] Show com.domhauton.wanbot.Main timeUnit has been set." From that point on your timestamps will be recorded.\\\\
  
 To record a timeUnit stamp use the command \emph{"!ts topicname"} for example posting  "!ts Apple goes Bankrupt" would store the timeUnit stamp "00:00:00 Apple goes Bankrupt" under your name.
  \\\\

@@ -12,7 +12,7 @@
 /.classpath
 /.project
 /.idea
-src/main/resources/bot-dev.properties
-src/main/resources/bot.properties
+src/main/resources/com.domhauton.wanbot.bot-dev.properties
+src/main/resources/com.domhauton.wanbot.bot.properties
 .gradle/
 
