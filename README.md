@@ -1,5 +1,7 @@
 # WAN-Show-Twitch-Bot
 
+[![Build Status](https://travis-ci.org/domhauton/wanbot.svg?branch=master)](https://travis-ci.org/domhauton/wanbot) [![Dependency Status](https://www.versioneye.com/user/projects/592b3bbbc0295d003a53faca/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/592b3bbbc0295d003a53faca) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
+
 An IRC Chat bot for moderating the weekly WAN show Twitch stream https://www.twitch.tv/linustech
 
 # Features
