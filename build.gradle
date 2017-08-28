@@ -4,8 +4,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath group: 'org.junit.platform', name: 'junit-platform-gradle-plugin', version: '1.0.0-M6'
-        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '1.2.4'
+        classpath group: 'org.junit.platform', name: 'junit-platform-gradle-plugin', version: '1.0.0-RC3'
+        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '2.0.1'
     }
 }
 
@@ -14,8 +14,8 @@ repositories {
     jcenter()
 }
 
-ext.junitPlatformVersion = '1.0.0-M6'
-ext.junitJupiterVersion  = '5.0.0-M6'
+ext.junitPlatformVersion = '1.0.0-RC3'
+ext.junitJupiterVersion  = '5.0.0-RC3'
 ext.log4jVersion         = '2.7'
 
 apply plugin: 'java'
@@ -25,8 +25,12 @@ apply plugin: 'jacoco'
 apply plugin: 'org.junit.platform.gradle.plugin'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+project.ext {
+    luceneVersion = "6.6.0"
+}
+
 group 'com.domhauton.wanbot'
-version '1.0.0-alpha.1'
+version '0.0.1'
 
 sourceCompatibility = 1.8
 
@@ -40,6 +44,8 @@ jar {
     }
 }
 
+build.dependsOn(shadowJar)
+
 compileTestJava {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -47,7 +53,7 @@ compileTestJava {
 }
 
 junitPlatform {
-    platformVersion '1.0.0-M6'
+    platformVersion '1.0.0-RC3'
     filters {
         engines {
             include 'junit-jupiter'
@@ -70,7 +76,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.0'
     // https://mvnrepository.com/artifact/com.google.guava/guava
-    compile group: 'com.google.guava', name: 'guava', version: '22.0'
+    compile group: 'com.google.guava', name: 'guava', version: '23.0'
     // https://mvnrepository.com/artifact/joda-time/joda-time
     compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
@@ -80,17 +86,16 @@ dependencies {
     // https://mvnrepository.com/artifact/pircbot/pircbot
     compile group: 'pircbot', name: 'pircbot', version: '1.5.0'
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-core
-    compile group: 'org.apache.lucene', name: 'lucene-core', version: '6.6.0'
+    compile group: 'org.apache.lucene', name: 'lucene-core', version: luceneVersion
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-facet
-    compile group: 'org.apache.lucene', name: 'lucene-facet', version: '6.6.0'
+    compile group: 'org.apache.lucene', name: 'lucene-facet', version: luceneVersion
 }
 
 dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.0-M6'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.0-RC3'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.0.0-M6'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.0.0-RC3'
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.8.47'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.9.0'
 }
-
