@@ -30,21 +30,8 @@ project.ext {
 }
 
 group 'com.domhauton.wanbot'
-version '0.0.1'
 
 sourceCompatibility = 1.8
-
-jar {
-    baseName = 'wanbot'
-    version = project.version
-    manifest {
-        attributes 'Implementation-Title': 'wanbot',
-                'Implementation-Version': project.version,
-                'Main-Class': project.group + '.Main'
-    }
-}
-
-build.dependsOn(shadowJar)
 
 compileTestJava {
     sourceCompatibility = 1.8
@@ -53,7 +40,7 @@ compileTestJava {
 }
 
 junitPlatform {
-    platformVersion '1.0.0-RC3'
+    platformVersion '1.0.1'
     filters {
         engines {
             include 'junit-jupiter'
@@ -99,3 +86,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
     testCompile group: 'org.mockito', name: 'mockito-core', version: '2.11.0'
 }
+
+task copyToLib(type: Copy) {
+    into "$buildDir/output/libs"
+    from configurations.runtime
+}
+
+build.dependsOn(copyToLib)
