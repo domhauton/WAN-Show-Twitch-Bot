@@ -1,7 +1,7 @@
 # A docker image for the linustechtips wanbot
 #
 
-FROM openjdk/8-jdk
+FROM openjdk:8-jdk
 
 MAINTAINER Dominic Hauton <domhauton@gmail.com>
 
