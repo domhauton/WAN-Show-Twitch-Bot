@@ -23,4 +23,4 @@ LABEL org.label-schema.name="wanbot" \
         org.label-schema.usage="README.md" \
         org.label-schema.schema-version="1.0"
 
-RUN java -cp "$INSTALL_DIR/libs/*:$(ls $INSTALL_DIR/app/*.jar)" com.domhauton.wanbot.Main
+ENTRYPOINT java -cp "$INSTALL_DIR/libs/*:$(ls $INSTALL_DIR/app/*.jar)" com.domhauton.wanbot.Main
