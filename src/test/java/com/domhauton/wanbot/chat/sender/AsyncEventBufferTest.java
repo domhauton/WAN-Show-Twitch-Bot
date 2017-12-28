@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -67,17 +66,17 @@ class AsyncEventBufferTest {
 
     ExecutorService threadPool = Executors.newFixedThreadPool(10);
     IntStream.range(0, 20)
-        .mapToObj(value -> CompletableFuture
+        .forEach(value -> CompletableFuture
             .supplyAsync(callEventBuffer::get, threadPool)
-            .thenAccept(result -> Assertions.assertTrue(result, "Adding MESSAGE " + value)))
-        .collect(Collectors.toList()); // Required to force evaluation
+            .thenAccept(result -> Assertions.assertTrue(result, "Adding MESSAGE " + value))
+        );
     semaphore.release(10);
 
-    Thread.sleep(950); // Release 10 messages
+    Thread.sleep(900); // Release 10 messages
     Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
-    Thread.sleep(100);
+    Thread.sleep(200);
     semaphore.release(10); // Release 10 messages
-    Thread.sleep(950);
+    Thread.sleep(800);
     Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
   }
 }

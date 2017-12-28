@@ -32,7 +32,9 @@ class AsyncEventBuffer {
   synchronized boolean addMessage() {
     if (messageQueue[iteratorIndex] < System.currentTimeMillis()) {
       messageQueue[iteratorIndex++] = System.currentTimeMillis() + eventLifeTimeMillis;
-      if (iteratorIndex == maxEventCount) iteratorIndex = 0;
+      if (iteratorIndex == maxEventCount) {
+        iteratorIndex = 0;
+      }
       return true;
     } else {
       return false;
