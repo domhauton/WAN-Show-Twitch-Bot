@@ -1,8 +1,6 @@
 language: java
 
 sudo: required
-
-# required for oraclejdk9
 dist: trusty
 
 jdk:
@@ -26,13 +24,14 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-before_install:
+before_script:
  - chmod +x gradlew
-
-# Display Gradle version instead of letting Travis execute './gradlew assemble' by default
-install: ./gradlew -version
 
 script:
   - java -version
   - ./gradlew -version
-  - ./gradlew --refresh-dependencies clean check -Dscan
+  - ./gradlew --full-stacktrace --refresh-dependencies --no-daemon clean build
+
+after_success:
+  - ./gradlew --full-stacktrace --no-daemon jacocoTestReport || echo "Code coverage failed"
+  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"

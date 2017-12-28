@@ -93,3 +93,10 @@ task copyToLib(type: Copy) {
 }
 
 build.dependsOn(copyToLib)
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
