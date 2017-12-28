@@ -34,15 +34,17 @@ class AsyncEventBufferTest {
       Assertions.assertTrue(asyncEventBuffer.addMessage(), "Adding MESSAGE " + value);
       log.info("Adding MESSAGE " + value + ". Expect Accept.");
     });
-    Thread.sleep(950);
+
+    Thread.sleep(900);
     log.info("Adding MESSAGE. Expect Reject.");
     Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
-    Thread.sleep(100);
+    Thread.sleep(200);
+
     IntStream.range(10, 20).forEachOrdered(value -> {
       Assertions.assertTrue(asyncEventBuffer.addMessage(), "Adding MESSAGE " + value);
       log.info("Adding MESSAGE " + value + ". Expect Accept.");
     });
-    Thread.sleep(950);
+    Thread.sleep(800);
     log.info("Adding MESSAGE. Expect Reject.");
     Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
   }
