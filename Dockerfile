@@ -12,7 +12,7 @@ ENV INSTALL_DIR=/opt/wanbot
 
 COPY build/libs $INSTALL_DIR/app
 COPY build/output/libs $INSTALL_DIR/libs
-COPY prod.yml ./.config/wanbot.yml
+COPY prod.yml $INSTALL_DIR/config/wanbot.yml
 
 LABEL org.label-schema.name="wanbot" \
         org.label-schema.description="Chat bot monitoring the linustechtips wan show twitch chat." \
