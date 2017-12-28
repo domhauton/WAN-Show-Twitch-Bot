@@ -1,0 +1,18 @@
+bitly:
+  enabled: true
+twitch:
+  irc:
+    public:
+      channel: #linustech
+      hostname: irc.chat.twitch.tv
+      port: 80
+      rateLimit:
+        windowSizeSecs: 30
+        eventsPerWindow: 80
+    whisper:
+      channel: #jtv
+      hostname: irc.chat.twitch.tv
+      port: 6667
+      rateLimit:
+        windowSizeSecs: 60
+        eventsPerWindow: 99

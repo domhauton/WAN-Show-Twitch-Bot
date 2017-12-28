@@ -2,7 +2,6 @@
 .gradle/
 build/
 logs/
-src/main/resources/bot-dev.properties
-src/main/resources/bot.properties
-/src/main/resources/wanbot-config.yaml
-/src/test/resources/wanbot-config.yaml
+/dev-env
+out/
+src/test/resources/
