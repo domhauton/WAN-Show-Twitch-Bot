@@ -5,7 +5,6 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.junit.platform', name: 'junit-platform-gradle-plugin', version: '1.0.1'
-        classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '2.0.1'
     }
 }
 
@@ -23,7 +22,6 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'jacoco'
 apply plugin: 'org.junit.platform.gradle.plugin'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 project.ext {
     luceneVersion = "6.6.0"
