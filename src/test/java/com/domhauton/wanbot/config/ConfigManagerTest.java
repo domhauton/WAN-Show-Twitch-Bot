@@ -16,84 +16,85 @@ import java.security.SecureRandom;
  */
 class ConfigManagerTest {
   private static final SecureRandom secureRandom = new SecureRandom();
-  private String testCfgLocation;
+  private Path configFilePath;
 
   @BeforeEach
   void setUp() throws Exception {
     String testCfgDirLocation = createRandomFolder(System.getProperty("java.io.tmpdir") + File.separator + "wanbot-testing");
-    testCfgLocation = testCfgDirLocation + File.separator + "wanbot.yml";
+    String testCfgLocation = testCfgDirLocation + File.separator + "wanbot.yml";
+    configFilePath = Paths.get(testCfgLocation);
   }
 
   @Test
   @DisplayName("Saving works")
   void saveConfig() throws Exception {
-    Files.deleteIfExists(Paths.get(testCfgLocation));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Files.deleteIfExists(configFilePath);
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
 
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), ConfigManager.loadDefaultConfig());
-    Assertions.assertTrue(Files.deleteIfExists(Paths.get(testCfgLocation)));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    ConfigManager.saveConfig(configFilePath, ConfigManager.loadDefaultConfig());
+    Assertions.assertTrue(Files.deleteIfExists(configFilePath));
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
   }
 
   @Test
   @DisplayName("Saving IO Exception works")
   void saveConfigFails() throws Exception {
-    Files.deleteIfExists(Paths.get(testCfgLocation));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Files.deleteIfExists(configFilePath);
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
 
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), ConfigManager.loadDefaultConfig());
-    Assertions.assertTrue(Paths.get(testCfgLocation).toFile().setWritable(false));
-    Assertions.assertThrows(ConfigException.class, () -> ConfigManager.saveConfig(Paths.get(testCfgLocation), ConfigManager.loadDefaultConfig()));
-    Assertions.assertTrue(Paths.get(testCfgLocation).toFile().setWritable(true));
-    Assertions.assertTrue(Files.deleteIfExists(Paths.get(testCfgLocation)));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    ConfigManager.saveConfig(configFilePath, ConfigManager.loadDefaultConfig());
+    Assertions.assertTrue(configFilePath.toFile().setWritable(false));
+    Assertions.assertThrows(ConfigException.class, () -> ConfigManager.saveConfig(configFilePath, ConfigManager.loadDefaultConfig()));
+    Assertions.assertTrue(configFilePath.toFile().setWritable(true));
+    Assertions.assertTrue(Files.deleteIfExists(configFilePath));
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
   }
 
   @Test
   @DisplayName("Loading IO Exception works")
   void loadConfigFails() throws Exception {
-    Files.deleteIfExists(Paths.get(testCfgLocation));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Files.deleteIfExists(configFilePath);
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
 
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), ConfigManager.loadDefaultConfig());
-    Assertions.assertTrue(Paths.get(testCfgLocation).toFile().setReadable(false));
-    Assertions.assertThrows(ConfigException.class, () -> ConfigManager.loadConfig(Paths.get(testCfgLocation)));
-    Assertions.assertTrue(Paths.get(testCfgLocation).toFile().setReadable(true));
+    ConfigManager.saveConfig(configFilePath, ConfigManager.loadDefaultConfig());
+    Assertions.assertTrue(configFilePath.toFile().setReadable(false));
+    Assertions.assertThrows(ConfigException.class, () -> ConfigManager.loadConfig(configFilePath));
+    Assertions.assertTrue(configFilePath.toFile().setReadable(true));
 
-    Assertions.assertEquals(ConfigManager.loadDefaultConfig(), ConfigManager.loadConfig(Paths.get(testCfgLocation)));
+    Assertions.assertEquals(ConfigManager.loadDefaultConfig(), ConfigManager.loadConfig(configFilePath));
 
-    Assertions.assertTrue(Files.deleteIfExists(Paths.get(testCfgLocation)));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Assertions.assertTrue(Files.deleteIfExists(configFilePath));
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
   }
 
   @Test
   @DisplayName("Loading invalid YAML works")
   void loadConfigFailsYAML() throws Exception {
-    Files.deleteIfExists(Paths.get(testCfgLocation));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Files.deleteIfExists(configFilePath);
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
 
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), ConfigManager.loadDefaultConfig());
+    ConfigManager.saveConfig(configFilePath, ConfigManager.loadDefaultConfig());
 
-    Files.write(Paths.get(testCfgLocation), "tsdatdra".getBytes(), StandardOpenOption.APPEND);
+    Files.write(configFilePath, "tsdatdra".getBytes(), StandardOpenOption.APPEND);
 
-    Assertions.assertThrows(ConfigException.class, () -> ConfigManager.loadConfig(Paths.get(testCfgLocation)));
+    Assertions.assertThrows(ConfigException.class, () -> ConfigManager.loadConfig(configFilePath));
 
-    Assertions.assertTrue(Files.deleteIfExists(Paths.get(testCfgLocation)));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Assertions.assertTrue(Files.deleteIfExists(configFilePath));
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
   }
 
   @Test
   @DisplayName("Loading from a save")
   void saveLoadTest() throws Exception {
-    Files.deleteIfExists(Paths.get(testCfgLocation));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Files.deleteIfExists(configFilePath);
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
 
     BotConfig cfg = ConfigManager.loadDefaultConfig();
     boolean defaultVal = cfg.getBitly().isEnabled();
     cfg.getBitly().setEnabled(!defaultVal);
 
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), cfg);
-    BotConfig config = ConfigManager.loadConfig(Paths.get(testCfgLocation));
+    ConfigManager.saveConfig(configFilePath, cfg);
+    BotConfig config = ConfigManager.loadConfig(configFilePath);
     Assertions.assertEquals(!defaultVal, config.getBitly().isEnabled());
     Assertions.assertEquals(defaultVal, ConfigManager.loadDefaultConfig().getBitly().isEnabled());
   }
@@ -101,21 +102,21 @@ class ConfigManagerTest {
   @Test
   @DisplayName("Loading from an overwritten save")
   void overwriteTest() throws Exception {
-    Files.deleteIfExists(Paths.get(testCfgLocation));
-    Assertions.assertFalse(Files.deleteIfExists(Paths.get(testCfgLocation)));
+    Files.deleteIfExists(configFilePath);
+    Assertions.assertFalse(Files.deleteIfExists(configFilePath));
 
     BotConfig cfg = ConfigManager.loadDefaultConfig();
     String defaultChannel = cfg.getTwitch().getChannel().getChannel();
     cfg.getTwitch().getChannel().setChannel("#foobar1");
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), cfg);
+    ConfigManager.saveConfig(configFilePath, cfg);
 
-    BotConfig loadedConfig1 = ConfigManager.loadConfig(Paths.get(testCfgLocation));
+    BotConfig loadedConfig1 = ConfigManager.loadConfig(configFilePath);
     Assertions.assertEquals("#foobar1", loadedConfig1.getTwitch().getChannel().getChannel());
     Assertions.assertEquals(defaultChannel, ConfigManager.loadDefaultConfig().getTwitch().getChannel().getChannel());
     loadedConfig1.getTwitch().getChannel().setChannel("#foobar2");
-    ConfigManager.saveConfig(Paths.get(testCfgLocation), cfg);
+    ConfigManager.saveConfig(configFilePath, cfg);
 
-    BotConfig loadedConfig2 = ConfigManager.loadConfig(Paths.get(testCfgLocation));
+    BotConfig loadedConfig2 = ConfigManager.loadConfig(configFilePath);
     Assertions.assertEquals("#foobar1", loadedConfig2.getTwitch().getChannel().getChannel());
   }
 

@@ -1,6 +1,5 @@
 Configuration:
-  status: warn
-
+  status: trace
   Appenders:
     Console:
       name: Console
@@ -10,9 +9,5 @@ Configuration:
   Loggers:
     Root:
       level: trace
-      AppenderRef:
-        ref: Console
-    MessageLog:
-      level: info
       AppenderRef:
         ref: Console
