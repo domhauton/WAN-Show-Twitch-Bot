@@ -35,18 +35,18 @@ class AsyncEventBufferTest {
       log.info("Adding MESSAGE " + value + ". Expect Accept.");
     });
 
-    Thread.sleep(900);
+    Thread.sleep(700);
     log.info("Adding MESSAGE. Expect Reject.");
-    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
-    Thread.sleep(200);
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE 1 before time up");
+    Thread.sleep(400);
 
     IntStream.range(10, 20).forEachOrdered(value -> {
       Assertions.assertTrue(asyncEventBuffer.addMessage(), "Adding MESSAGE " + value);
       log.info("Adding MESSAGE " + value + ". Expect Accept.");
     });
-    Thread.sleep(800);
+    Thread.sleep(700);
     log.info("Adding MESSAGE. Expect Reject.");
-    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE 2 before time up");
   }
 
   /**
@@ -74,11 +74,11 @@ class AsyncEventBufferTest {
         );
     semaphore.release(10);
 
-    Thread.sleep(900); // Release 10 messages
-    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
-    Thread.sleep(200);
+    Thread.sleep(700); // Release 10 messages
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE 1 before time up");
+    Thread.sleep(400);
     semaphore.release(10); // Release 10 messages
-    Thread.sleep(800);
-    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE before time up");
+    Thread.sleep(700);
+    Assertions.assertFalse(asyncEventBuffer.addMessage(), "Sending MESSAGE 2 before time up");
   }
 }

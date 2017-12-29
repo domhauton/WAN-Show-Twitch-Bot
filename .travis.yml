@@ -33,5 +33,5 @@ script:
   - ./gradlew --full-stacktrace --refresh-dependencies --no-daemon clean build
 
 after_success:
-  - ./gradlew --full-stacktrace --no-daemon junitPlatformJacocoReport && cp build/jacoco/xml/jacoco.xml jacoco.xml || echo "Code coverage failed"
+  - ./gradlew --full-stacktrace --no-daemon jacocoReport && cp build/test-results/TEST-junit-jupiter.xml jacoco.xml || echo "Code coverage failed"
   - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
