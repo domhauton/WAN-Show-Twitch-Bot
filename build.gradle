@@ -106,9 +106,9 @@ afterEvaluate {
         classDirectories = files(sourceSets.main.output)
 
         reports {
-            xml.enabled true
+            xml.setEnabled(true)
             xml.destination file("${buildDir}/jacoco/report.xml")
-            html.enabled true
+            html.setEnabled(true)
             html.destination file("${buildDir}/jacoco/html")
         }
     }
