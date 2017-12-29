@@ -94,17 +94,26 @@ task copyToLib(type: Copy) {
 
 build.dependsOn(copyToLib)
 
-jacoco {
-    toolVersion = "0.7.9"
-    applyTo junitPlatformTest
-}
+afterEvaluate {
+    def junitPlatformTestTask = (JavaExec) project.tasks.getByName('junitPlatformTest')
 
-jacocoTestReport {
-    sourceDirectories = files("./src/main")
-    classDirectories = files("$buildDir/classes/main")
-
-    reports {
-        xml.enabled true
-        html.enabled true
+    jacoco {
+        applyTo(junitPlatformTestTask)
     }
+
+    project.task(type: JacocoReport, "jacocoJupTestReport") {
+        executionData(junitPlatformTestTask)
+        sourceSets(sourceSets.main)
+        sourceDirectories = files(sourceSets.main.allSource.srcDirs)
+        classDirectories = files(sourceSets.main.output)
+
+        reports {
+            xml.enabled true
+            xml.destination file("${buildDir}/jacoco/report.xml")
+            html.enabled true
+            html.destination file("${buildDir}/jacoco/html")
+        }
+    }
+
+    check.dependsOn jacocoJupTestReport
 }

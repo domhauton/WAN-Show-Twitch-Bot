@@ -28,10 +28,7 @@ before_script:
  - chmod +x gradlew
 
 script:
-  - java -version
-  - ./gradlew -version
-  - ./gradlew --full-stacktrace --refresh-dependencies --no-daemon clean build
+  - ./gradlew --full-stacktrace --refresh-dependencies --no-daemon check
 
 after_success:
-  - ./gradlew --full-stacktrace --no-daemon jacocoTestReport && cp build/test-results/TEST-junit-jupiter.xml jacoco.xml || echo "Code coverage failed"
-  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+  - cp build/jacoco/report.xml jacoco.xml && bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
