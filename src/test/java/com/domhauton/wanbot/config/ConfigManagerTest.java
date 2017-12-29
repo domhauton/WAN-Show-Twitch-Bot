@@ -1,9 +1,6 @@
 package com.domhauton.wanbot.config;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -37,6 +34,7 @@ class ConfigManagerTest {
   }
 
   @Test
+  @Tag("dockerbuildskip")
   @DisplayName("Saving IO Exception works")
   void saveConfigFails() throws Exception {
     Files.deleteIfExists(configFilePath);
@@ -51,6 +49,7 @@ class ConfigManagerTest {
   }
 
   @Test
+  @Tag("dockerbuildskip")
   @DisplayName("Loading IO Exception works")
   void loadConfigFails() throws Exception {
     Files.deleteIfExists(configFilePath);

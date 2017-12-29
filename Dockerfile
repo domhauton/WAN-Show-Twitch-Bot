@@ -7,6 +7,8 @@ WORKDIR /home/wanbot-build
 ADD ./src ./src
 ADD ./gradle ./gradle
 COPY ./build.gradle ./gradlew ./
+# Uncomment exclude dockerskip line
+RUN sed -i '/DOCKER-BUILD-ONLY/s/^\/\///' ./build.gradle
 # Use wrapper instead of gradle image to ensure consistency
 RUN ./gradlew --full-stacktrace --no-daemon build
 
