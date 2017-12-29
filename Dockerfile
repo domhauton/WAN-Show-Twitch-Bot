@@ -6,7 +6,7 @@ WORKDIR /home/wanbot-build
 
 ADD ./src ./src
 ADD ./gradle ./gradle
-COPY ./prod.yml ./build.gradle ./gradlew ./
+COPY ./build.gradle ./gradlew ./
 # Use wrapper instead of gradle image to ensure consistency
 RUN ./gradlew --full-stacktrace --no-daemon build
 
@@ -16,7 +16,6 @@ ENV INSTALL_DIR=/opt/wanbot
 
 COPY --from=build-step /home/wanbot-build/build/libs $INSTALL_DIR/app
 COPY --from=build-step /home/wanbot-build/build/output/libs $INSTALL_DIR/libs
-COPY prod.yml $INSTALL_DIR/config/wanbot.yml
 
 LABEL org.label-schema.name="wanbot" \
         org.label-schema.description="Chat bot monitoring the linustechtips wan show twitch chat." \
@@ -24,4 +23,4 @@ LABEL org.label-schema.name="wanbot" \
         org.label-schema.usage="README.md" \
         org.label-schema.schema-version="1.0"
 
-ENTRYPOINT java -cp "$INSTALL_DIR/libs/*:$(ls $INSTALL_DIR/app/*.jar)" com.domhauton.wanbot.Main
+ENTRYPOINT java -cp "$INSTALL_DIR/libs/*:$(ls $INSTALL_DIR/app/*.jar)" com.domhauton.wanbot.Main --config /config/wanbot.yml

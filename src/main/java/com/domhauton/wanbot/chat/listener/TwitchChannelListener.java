@@ -2,7 +2,7 @@ package com.domhauton.wanbot.chat.listener;
 
 import com.domhauton.wanbot.chat.data.InboundTwitchMessage;
 import com.domhauton.wanbot.chat.exceptions.TwitchChatException;
-import com.domhauton.wanbot.config.TwitchInfo;
+import com.domhauton.wanbot.config.items.TwitchInfo;
 import com.domhauton.wanbot.irc.ChatHandshake;
 import com.domhauton.wanbot.irc.TwitchChatAdapter;
 import org.apache.logging.log4j.LogManager;
@@ -33,9 +33,9 @@ public class TwitchChannelListener implements TwitchMessageSupplier {
   private Integer ircPort;
 
   public TwitchChannelListener(TwitchInfo twitchInfo) {
-    this(twitchInfo.getChannel().getChannelName(),
-        twitchInfo.getUsername(),
-        twitchInfo.getoAuth(),
+    this(twitchInfo.getChannel().getChannel(),
+        "foobar1",
+        "foobar2",
         twitchInfo.getChannel().getHostname(),
         twitchInfo.getChannel().getPort());
   }

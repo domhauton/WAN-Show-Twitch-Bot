@@ -1,0 +1,17 @@
+bitly:
+  enabled: true
+twitch:
+  public:
+    channel: "#lttghost"
+    hostname: irc.chat.twitch.tv
+    port: 6667
+    rateLimit:
+      windowSizeSecs: 30
+      eventsPerWindow: 80
+  whisper:
+    channel: "#jtv"
+    hostname: irc.chat.twitch.tv
+    port: 6667
+    rateLimit:
+      windowSizeSecs: 60
+      eventsPerWindow: 99

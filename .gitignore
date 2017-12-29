@@ -1,7 +1,6 @@
 /.idea
+/dev-env
 .gradle/
 build/
 logs/
-/dev-env
 out/
-src/test/resources/

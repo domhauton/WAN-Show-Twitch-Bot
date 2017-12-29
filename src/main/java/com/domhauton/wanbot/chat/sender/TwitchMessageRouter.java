@@ -3,8 +3,8 @@ package com.domhauton.wanbot.chat.sender;
 import com.domhauton.wanbot.chat.data.OutboundTwitchMessage;
 import com.domhauton.wanbot.chat.data.OutboundTwitchWhisper;
 import com.domhauton.wanbot.chat.exceptions.TwitchChatException;
-import com.domhauton.wanbot.config.IrcInfo;
-import com.domhauton.wanbot.config.TwitchInfo;
+import com.domhauton.wanbot.config.items.TwitchInfo;
+import com.domhauton.wanbot.config.items.TwitchIrc;
 
 /**
  * Created by Dominic Hauton on 12/03/2016.
@@ -18,8 +18,8 @@ public class TwitchMessageRouter {
 
   public TwitchMessageRouter(TwitchInfo twitchInfo) {
     this.twitchInfo = twitchInfo;
-    this.whisperSender = new MessageSender(twitchInfo.getUsername(), twitchInfo.getoAuth());
-    this.channelSender = new MessageSender(twitchInfo.getUsername(), twitchInfo.getoAuth());
+    this.whisperSender = new MessageSender("foo1", "bar1");
+    this.channelSender = new MessageSender("foo2", "bar2");
   }
 
   public void sendMessage(OutboundTwitchMessage outboundTwitchMessage) {
@@ -31,9 +31,9 @@ public class TwitchMessageRouter {
   }
 
   public void connect() throws TwitchChatException {
-    IrcInfo whisperInfo = twitchInfo.getWhisper();
-    whisperSender.connect(whisperInfo.getChannelName(), whisperInfo.getHostname(), whisperInfo.getPort());
-    IrcInfo channelInfo = twitchInfo.getChannel();
-    channelSender.connect(channelInfo.getChannelName(), channelInfo.getHostname(), channelInfo.getPort());
+    TwitchIrc whisperInfo = twitchInfo.getWhisper();
+    whisperSender.connect(whisperInfo.getChannel(), whisperInfo.getHostname(), whisperInfo.getPort());
+    TwitchIrc channelInfo = twitchInfo.getChannel();
+    channelSender.connect(channelInfo.getChannel(), channelInfo.getHostname(), channelInfo.getPort());
   }
 }

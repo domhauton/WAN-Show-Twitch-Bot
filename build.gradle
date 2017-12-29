@@ -20,10 +20,11 @@ apply plugin: 'org.junit.platform.gradle.plugin'
 project.ext {
     log4jVersion = "2.9.1"
     luceneVersion = "6.6.0"
-    jacksonVersion = "2.9.2"
+    jacksonVersion = "2.9.3"
     guavaVersion = "23.2-jre"
     jodaTimeVersion = "2.9.9"
     commons4Version = "4.1"
+    commonsCliVersion = "1.4"
     bitlyVersion = "2.0.0"
     pircBotVersion = "1.5.0"
 
@@ -65,6 +66,8 @@ dependencies {
     compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: jacksonVersion
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     // https://mvnrepository.com/artifact/com.google.guava/guava
     compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     // https://mvnrepository.com/artifact/joda-time/joda-time
@@ -75,6 +78,8 @@ dependencies {
     compile group: 'com.rosaloves', name: 'bitlyj', version: bitlyVersion
     // https://mvnrepository.com/artifact/pircbot/pircbot
     compile group: 'pircbot', name: 'pircbot', version: pircBotVersion
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+    compile group: 'commons-cli', name: 'commons-cli', version: commonsCliVersion
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-core
     compile group: 'org.apache.lucene', name: 'lucene-core', version: luceneVersion
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-facet
