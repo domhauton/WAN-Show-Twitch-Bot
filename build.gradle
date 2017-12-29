@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
     }
     dependencies {
         classpath group: 'org.junit.platform', name: 'junit-platform-gradle-plugin', version: '1.0.1'
@@ -10,12 +9,7 @@ buildscript {
 
 repositories {
     mavenCentral()
-    jcenter()
 }
-
-ext.junitPlatformVersion = '1.0.1'
-ext.junitJupiterVersion  = '5.0.1'
-ext.log4jVersion         = '2.7'
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -24,7 +18,18 @@ apply plugin: 'jacoco'
 apply plugin: 'org.junit.platform.gradle.plugin'
 
 project.ext {
+    log4jVersion = "2.9.1"
     luceneVersion = "6.6.0"
+    jacksonVersion = "2.9.2"
+    guavaVersion = "23.2-jre"
+    jodaTimeVersion = "2.9.9"
+    commons4Version = "4.1"
+    bitlyVersion = "2.0.0"
+    pircBotVersion = "1.5.0"
+
+    junitPlatformVersion = "1.0.1"
+    junitJupiterVersion = "5.0.1"
+    mockitoVersion = "2.11.0"
 }
 
 group 'com.domhauton.wanbot'
@@ -38,7 +43,7 @@ compileTestJava {
 }
 
 junitPlatform {
-    platformVersion '1.0.1'
+    platformVersion junitPlatformVersion
     filters {
         engines {
             include 'junit-jupiter'
@@ -55,21 +60,21 @@ junitPlatform {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.9.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4jVersion
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
-    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.2'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: jacksonVersion
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.2'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
     // https://mvnrepository.com/artifact/com.google.guava/guava
-    compile group: 'com.google.guava', name: 'guava', version: '23.2-jre'
+    compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     // https://mvnrepository.com/artifact/joda-time/joda-time
-    compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
+    compile group: 'joda-time', name: 'joda-time', version: jodaTimeVersion
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
-    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: commons4Version
     // https://mvnrepository.com/artifact/com.rosaloves/bitlyj
-    compile group: 'com.rosaloves', name: 'bitlyj', version: '2.0.0'
+    compile group: 'com.rosaloves', name: 'bitlyj', version: bitlyVersion
     // https://mvnrepository.com/artifact/pircbot/pircbot
-    compile group: 'pircbot', name: 'pircbot', version: '1.5.0'
+    compile group: 'pircbot', name: 'pircbot', version: pircBotVersion
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-core
     compile group: 'org.apache.lucene', name: 'lucene-core', version: luceneVersion
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-facet
@@ -78,12 +83,14 @@ dependencies {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.0.1'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.11.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
 }
+
+// Copy all libs to build directory for docker image generation
 
 task copyToLib(type: Copy) {
     into "$buildDir/output/libs"
@@ -91,6 +98,8 @@ task copyToLib(type: Copy) {
 }
 
 build.dependsOn(copyToLib)
+
+// Configure jacoco to correctly parse junit jupiter test results
 
 afterEvaluate {
     def junitPlatformTestTask = (JavaExec) project.tasks.getByName('junitPlatformTest')
